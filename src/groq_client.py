@@ -118,30 +118,50 @@ class GroqClient:
         response_data = self._make_request(messages)
         
         if not response_data or 'choices' not in response_data:
+            logger.error(f"Groq 未回傳有效數據")
             return None
         
         content = response_data['choices'][0]['message']['content']
+        logger.info(f"Groq 原始回應：{content[:200]}...")
         
-        # 解析 JSON 回應 - 加入容錯機制
+        # 解析 JSON 回應 - 加入寬容的容錯機制
         try:
-            # ✅ 從回應中提取 JSON（移除可能的 Markdown 標記）
+            # ✅ 移除 Markdown 標記
             content = content.strip()
-            if content.startswith('```json'):
-                content = content.split('```json')[1].split('```')[0].strip()
-            elif content.startswith('```'):
-                content = content.split('```')[1].split('```')[0].strip()
+            if content.startswith('```'):
+                # 處理 ```json ... ``` 或 ``` ... ```
+                content = content.split('```')[1] if '```' in content[3:] else content[3:]
+                content = content.rsplit('```')[0] if '```' in content else content
+                content = content.strip()
             
-            result = json.loads(content)
+            # ✅ 嘗試多種 JSON 解析方式
+            try:
+                # 方式 1：直接解析
+                result = json.loads(content)
+            except json.JSONDecodeError:
+                # 方式 2：移除可能的額外字元
+                import re
+                content_clean = re.sub(r'^\s*[\{"]\s*', '{', content)
+                content_clean = re.sub(r'\s*[\}"]\s*$', '}', content_clean)
+                result = json.loads(content_clean)
             
-            # ✅ 驗證必要欄位
+            # ✅ 驗證必要欄位並加入預設值
             required_fields = ['ev_score', 'recommendation', 'reason']
-            for field in required_fields:
-                if field not in result:
-                    logger.warning(f"Groq 回傳缺少必要欄位：{result.keys()}")
-                    return None
+            missing_fields = [f for f in required_fields if f not in result]
+            
+            if missing_fields:
+                logger.warning(f"Groq 回傳缺少欄位：{missing_fields}")
+                logger.warning(f"實際欄位：{list(result.keys())}")
+                # 加入預設值
+                if 'ev_score' not in result:
+                    result['ev_score'] = 50  # 預設中性分數
+                if 'recommendation' not in result:
+                    result['recommendation'] = "觀望"
+                if 'reason' not in result:
+                    result['reason'] = "AI 分析失敗，使用預設值"
             
             return {
-                'ev_score': int(result.get('ev_score', 0)),
+                'ev_score': int(result.get('ev_score', 50)),
                 'recommendation': result.get('recommendation', '觀望'),
                 'reason': result.get('reason', ''),
                 'raw_response': content
@@ -153,6 +173,8 @@ class GroqClient:
             return None
         except Exception as e:
             logger.error(f"解析 Groq 回應時出錯：{e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return None
     
     def judge_regime(self, market_data: Dict) -> Optional[Dict]:
