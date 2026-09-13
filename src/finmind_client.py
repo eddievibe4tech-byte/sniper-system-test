@@ -4,6 +4,7 @@ FinMind API 客戶端模組
 """
 import os
 import logging
+import time
 import requests
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
@@ -28,6 +29,10 @@ class FinMindClient:
             'User-Agent': 'SniperSystem/1.0',
             'Content-Type': 'application/json'
         })
+        # ✅ 加入請求間隔設定（避免速率限制）
+        self.request_interval = 1.0  # 每次請求間隔 1 秒
+        self.max_retries = 3
+        self.retry_delay = 2
     
     def _make_request(self, dataset: str, stock_id: str, days: int = 60) -> Optional[List[Dict]]:
         """
@@ -55,24 +60,40 @@ class FinMindClient:
             'token': self.token,
         }
         
-        try:
-            response = self.session.get(self.base_url, params=request_params, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            
-            if data.get('status') == 200:
-                # FinMind 回傳的 data 直接是陣列
-                return data.get('data', [])
-            else:
-                logger.error(f"FinMind {dataset} 失敗：{data.get('status')} {data.get('msg', 'Unknown error')}")
-                return None
+        for attempt in range(self.max_retries):
+            try:
+                # ✅ 加入請求間隔，避免觸發速率限制
+                time.sleep(self.request_interval)
                 
-        except requests.exceptions.Timeout:
-            print("API 請求超時")
-            return None
-        except requests.exceptions.RequestException as e:
-            logger.error(f"FinMind {dataset} 請求失敗：{e}")
-            return None
+                response = self.session.get(self.base_url, params=request_params, timeout=10)
+                
+                if response.status_code == 429:
+                    # 速率限制，等待更長時間
+                    logger.warning(f"FinMind 速率限制，等待 {self.retry_delay * (attempt + 1)} 秒")
+                    time.sleep(self.retry_delay * (attempt + 1))
+                    continue
+                
+                if response.status_code != 200:
+                    logger.error(f"FinMind {dataset} 失敗：{response.status_code} {response.text}")
+                    return None
+                
+                data = response.json()
+                
+                if data.get('status') == 200:
+                    # FinMind 回傳的 data 直接是陣列
+                    return data.get('data', [])
+                else:
+                    logger.error(f"FinMind {dataset} 失敗：{data.get('status')} {data.get('msg', 'Unknown error')}")
+                    return None
+                    
+            except requests.exceptions.Timeout:
+                logger.warning(f"API 請求超時 (Attempt {attempt + 1})")
+                time.sleep(self.retry_delay)
+            except requests.exceptions.RequestException as e:
+                logger.error(f"FinMind {dataset} 請求失敗 (Attempt {attempt + 1}): {e}")
+                time.sleep(self.retry_delay)
+        
+        return None
     
     def get_revenue(self, stock_id: str, months: int = 3) -> Optional[Dict]:
         """
@@ -217,23 +238,42 @@ class FinMindClient:
         Returns:
             包含最新財報數據的字典
         """
-        data = self._make_request('FinancialStatements', code, days=days)
-        if not data:
-            return None
+        # ✅ 使用正確的 Dataset 名稱（FinMind v4）
+        # 先嘗試月營收（較穩定）
+        try:
+            data = self._make_request('TaiwanStockMonthRevenue', code, days=days)
+            if data and len(data) > 0:
+                latest = data[-1]
+                return {
+                    'revenue': latest.get('revenue', 0),
+                    'revenue_yoy': latest.get('revenue_yoy', 0),
+                    'gross_margin': 0,  # 月營收沒有毛利率
+                    'net_margin': 0,
+                    'eps': 0,
+                }
+        except Exception as e:
+            logger.warning(f"TaiwanStockMonthRevenue 失敗：{e}")
         
-        # 取最近一季財報
-        latest = data[-1]
-        revenue = latest.get('Revenue', 0) or 0
-        gross_profit = latest.get('GrossProfit', 0) or 0
-        net_income = latest.get('NetIncome', 0) or 0
-        eps = latest.get('BasicEarningsPerShare', 0) or 0
+        # 如果月營收失敗，嘗試完整財報
+        try:
+            data = self._make_request('TaiwanStockFinancialStatements', code, days=days)
+            if data and len(data) > 0:
+                latest = data[-1]
+                revenue = latest.get('Revenue', 0) or 0
+                gross_profit = latest.get('GrossProfit', 0) or 0
+                net_income = latest.get('NetIncome', 0) or 0
+                eps = latest.get('BasicEarningsPerShare', 0) or 0
+                
+                return {
+                    'revenue': revenue,
+                    'gross_margin': (gross_profit / revenue * 100) if revenue > 0 else 0,
+                    'net_margin': (net_income / revenue * 100) if revenue > 0 else 0,
+                    'eps': eps,
+                }
+        except Exception as e:
+            logger.warning(f"TaiwanStockFinancialStatements 失敗：{e}")
         
-        return {
-            'revenue': revenue,
-            'gross_margin': (gross_profit / revenue * 100) if revenue > 0 else 0,
-            'net_margin': (net_income / revenue * 100) if revenue > 0 else 0,
-            'eps': eps,
-        }
+        return None
     
     def get_technical_indicators(self, code: str) -> Dict:
         """

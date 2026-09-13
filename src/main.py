@@ -170,12 +170,27 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
             for stock in stocks:
                 code = stock['code']
                 try:
+                    # 抓取基本數據
                     prices = finmind.get_stock_price(code) or []
                     revenue = finmind.get_revenue(code) or {}
                     
-                    # ✅ 新增：抓取財報與技術指標
-                    financials = finmind.get_financial_statements(code) or {}
-                    technicals = finmind.get_technical_indicators(code)
+                    # ✅ 財報數據加入容錯（失敗時使用預設值）
+                    try:
+                        financials = finmind.get_financial_statements(code) or {}
+                    except Exception as e:
+                        logger.warning(f"{code} 財報數據抓取失敗，使用預設值：{e}")
+                        financials = {
+                            'gross_margin': 0,
+                            'net_margin': 0,
+                            'eps': 0,
+                        }
+                    
+                    # ✅ 技術指標加入容錯
+                    try:
+                        technicals = finmind.get_technical_indicators(code)
+                    except Exception as e:
+                        logger.warning(f"{code} 技術指標計算失敗：{e}")
+                        technicals = {'ma5': 0, 'ma20': 0, 'rsi': 50, 'macd': 0, 'price_above_ma20': False}
                     
                     # 🔴 修正：除以零風險防護
                     change_5d = round((prices[-1] / prices[-6] - 1) * 100, 2) if (len(prices) >= 6 and prices[-6] != 0) else 0.0
