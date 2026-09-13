@@ -171,14 +171,22 @@
         const REPO_NAME = 'sniper-system-test';
         
         // 🟢 P0 Patch 1: 統一 Fetch Helper - 計算專案根目錄（相容 GitHub Pages 的子路徑）
-        const BASE = window.location.pathname.endsWith('/')
-            ? window.location.pathname
-            : window.location.pathname.replace(/[^/]*$/, '');
+        console.log('🔍 [DEBUG] 開始載入儀表板...');
+        const path = window.location.pathname;
+        const BASE = path.includes('/sniper-system-test/') 
+            ? '/sniper-system-test/' 
+            : path.endsWith('/') ? path : path.replace(/[^/]*$/, '');
+        console.log('🔍 [DEBUG] BASE 路徑:', BASE);
         
         async function fetchJSON(relPath) {
             const url = BASE + relPath + '?v=' + Date.now();  // 破 GitHub Pages 快取
+            console.log('🔍 [DEBUG] 嘗試載入:', url);
             const res = await fetch(url);
-            if (!res.ok) throw new Error(`${relPath} → HTTP ${res.status}`);
+            if (!res.ok) {
+                console.error('🔴 [ERROR] 載入失敗:', relPath, 'HTTP', res.status);
+                throw new Error(`${relPath} → HTTP ${res.status}`);
+            }
+            console.log('🟢 [SUCCESS] 載入成功:', relPath);
             return res.json();
         }
         
