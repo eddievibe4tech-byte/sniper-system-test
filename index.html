@@ -89,6 +89,13 @@
             </div>
         </div>
 
+        <!-- ⚡ 明日突破觀察（路徑 A） -->
+        <div class="bg-white border rounded-lg p-4 mb-6">
+            <h2 class="text-xl font-semibold mb-2">⚡ 明日突破觀察（路徑 A）</h2>
+            <p class="text-sm text-gray-500 mb-4">盤後篩選量比 &gt;2；次日盤中放量 (量比&gt;4) 突破才行動</p>
+            <div id="setup-table" class="overflow-x-auto"><p class="text-gray-500">載入中...</p></div>
+        </div>
+
         <!-- 🎯 今日 AI 狙擊分析 -->
         <div class="bg-white border rounded-lg p-4 mb-6">
             <h2 class="text-xl font-semibold mb-4">🎯 今日 AI 狙擊分析</h2>
@@ -958,7 +965,42 @@
             await loadScreener();
             // 3. 載入加密貨幣資料
             await loadCrypto();
+            // 4. 載入 Setup 突破觀察資料
+            await loadSetup();
         });
+
+        // ⚡ 載入明日突破觀察表格
+        async function loadSetup() {
+            const el = document.getElementById('setup-table');
+            try {
+                const res = await fetch('data/setup_watchlist.json?v=' + Date.now());
+                if (!res.ok) throw new Error(res.status);
+                const data = await res.json();
+                if (!data.setups || data.setups.length === 0) {
+                    el.innerHTML = '<p class="text-gray-500 text-center py-4">今日無接近突破的 Setup。</p>';
+                    return;
+                }
+                let html = '<table class="min-w-full divide-y divide-gray-200"><thead><tr>' +
+                    '<th class="px-4 py-2 text-left text-xs">股票</th><th class="px-4 py-2 text-left text-xs">收盤</th>' +
+                    '<th class="px-4 py-2 text-left text-xs">突破價</th><th class="px-4 py-2 text-left text-xs">距離</th>' +
+                    '<th class="px-4 py-2 text-left text-xs">量比</th><th class="px-4 py-2 text-left text-xs">技術分</th>' +
+                    '<th class="px-4 py-2 text-left text-xs">觸發規則</th></tr></thead><tbody>';
+                data.setups.forEach(s => {
+                    html += `<tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm font-bold">${escapeHTML(s.code)} ${escapeHTML(s.name)}</td>
+                        <td class="px-4 py-3 text-sm">${s.close}</td>
+                        <td class="px-4 py-3 text-sm font-bold text-blue-700">${s.breakout_price}</td>
+                        <td class="px-4 py-3 text-sm">${s.distance_to_break_pct}%</td>
+                        <td class="px-4 py-3 text-sm">${s.volume_ratio}x</td>
+                        <td class="px-4 py-3 text-sm">${s.tech_score}</td>
+                        <td class="px-4 py-3 text-xs text-gray-600">${escapeHTML(s.trigger_note)}</td>
+                    </tr>`;
+                });
+                el.innerHTML = html + '</tbody></table>';
+            } catch (e) {
+                el.innerHTML = '<p class="text-gray-500 text-center py-4">暫無 Setup 數據</p>';
+            }
+        }
     </script>
 </body>
 </html>

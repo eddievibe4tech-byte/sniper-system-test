@@ -41,6 +41,6 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add data/crypto_candidates.json
+          [ -f data/crypto_candidates.json ] && git add data/crypto_candidates.json || echo "⚠️ 無 crypto_candidates.json"
           git commit -m "🪙 Daily Crypto Analysis: $(date +'%Y-%m-%d')" || echo "No changes"
-          git push
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main || echo "⚠️ push 失敗（無變更時屬正常）"
