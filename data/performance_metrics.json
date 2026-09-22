@@ -1,15 +1,15 @@
 {
-  "total_predictions": 150,
-  "verified_count": 0,
-  "accuracy_rate": "資料不足",
+  "total_predictions": 164,
+  "verified_count": 28,
+  "accuracy_rate": 35.7,
   "current_version": 1,
-  "last_updated": "2026-09-18T22:12:31.402160+08:00",
+  "last_updated": "2026-09-22T18:07:01.113899+08:00",
   "version_stats": [
     {
       "version": 1,
-      "predictions": 150,
-      "correct": 0,
-      "accuracy": 0.0
+      "predictions": 164,
+      "correct": 10,
+      "accuracy": 6.1
     }
   ]
 }

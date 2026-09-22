@@ -1,0 +1,11 @@
+{
+  "setups": [],
+  "rules": {
+    "near_high_pct": 3.0,
+    "lookback_high": 20,
+    "volume_ratio_min": 2.0,
+    "tech_score_min": 60,
+    "rsi_max": 70
+  },
+  "updated_at": "2026-09-22T10:07:06.943192"
+}
