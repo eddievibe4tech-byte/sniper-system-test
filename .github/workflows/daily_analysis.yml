@@ -51,7 +51,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add data/*.json docs/review_2026-*.md docs/report_2026-*.html 2>/dev/null || true
+          git add data/*.json docs/review_*.md docs/report_*.html 2>/dev/null || true
           git commit -m "🎯 Daily analysis: $(date +'%Y-%m-%d')" || echo "No changes"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main || echo "⚠️ push 失敗（無變更時屬正常）"
 

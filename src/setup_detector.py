@@ -33,7 +33,9 @@ def detect_setups(finmind: FinMindClient, stocks: List[Dict]) -> List[Dict]:
             continue
         closes = [float(r["close"]) for r in rows]
         vols   = [float(r.get("trading_volume", 0)) for r in rows]
-        close, high20 = closes[-1], max(closes[-SETUP_RULES["lookback_high"]:])
+        close = closes[-1]
+        # 計算過去 20 天高點（排除今天），尋找「即將突破」的 Setup
+        high20 = max(closes[-(SETUP_RULES["lookback_high"] + 1):-1])
         avg_vol = sum(vols[-21:-1]) / 20
         vol_ratio = vols[-1] / avg_vol if avg_vol > 0 else 0
 
@@ -69,12 +71,18 @@ def detect_setups(finmind: FinMindClient, stocks: List[Dict]) -> List[Dict]:
 def main():
     base = os.path.join(os.path.dirname(__file__), "..", "data")
     finmind = FinMindClient()
-    pool = json.load(open(os.path.join(base, "stock_pool.json"), encoding="utf-8"))
+    
+    # 使用 with 確保檔案正確關閉
+    with open(os.path.join(base, "stock_pool.json"), encoding="utf-8") as f:
+        pool = json.load(f)
+    
     setups = detect_setups(finmind, pool.get("stocks", []))
-    json.dump({"setups": setups, "rules": SETUP_RULES,
-               "updated_at": datetime.now().isoformat()},
-              open(os.path.join(base, "setup_watchlist.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=2)
+    
+    with open(os.path.join(base, "setup_watchlist.json"), "w", encoding="utf-8") as f:
+        json.dump({"setups": setups, "rules": SETUP_RULES,
+                   "updated_at": datetime.now().isoformat()},
+                  f, ensure_ascii=False, indent=2)
+    
     print(f"✅ Setup 偵測完成：{len(setups)} 檔")
 
 if __name__ == "__main__":
