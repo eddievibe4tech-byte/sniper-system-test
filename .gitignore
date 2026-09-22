@@ -31,6 +31,4 @@ build/
 
 # Results and analysis snapshots
 results/
-docs/report_*.html
-docs/review_*.md
 ```

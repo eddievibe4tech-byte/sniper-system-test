@@ -40,6 +40,7 @@ jobs:
       - name: Execute Daily Analysis (Full Mode)
         run: |
           python -m src.main --mode full   # ✅ 跑一次即可，內部會自動生成靜態報告
+          python -m src.setup_detector || echo "⚠️ setup detector 失敗"
         env:
           FINMIND_TOKEN: ${{ secrets.FINMIND_API_TOKEN }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -47,14 +48,12 @@ jobs:
       # ❌ 已刪除重複的 Generate Static Review Report 步驟（避免每天執行兩次分析）
 
       - name: Commit and Push changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update daily analysis and static review [skip ci]"
-          branch: main
-          commit_user_name: "Sniper Bot"
-          commit_user_email: "bot@sniper-system.com"
-          # ✅ 確保把生成的 md/html 檔案 commit 回來
-          file_pattern: 'docs/*.md docs/*.html data/*.json results/*.json'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/*.json docs/review_2026-*.md docs/report_2026-*.html 2>/dev/null || true
+          git commit -m "🎯 Daily analysis: $(date +'%Y-%m-%d')" || echo "No changes"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main || echo "⚠️ push 失敗（無變更時屬正常）"
 
       - name: Upload Analysis Results (Backup)
         uses: actions/upload-artifact@v4
