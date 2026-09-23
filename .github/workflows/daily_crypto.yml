@@ -37,12 +37,23 @@ jobs:
           CRYPTO_COUNT=$(python -c "import json; print(len(json.load(open('../data/crypto_candidates.json')).get('candidates', [])))")
           echo "🪙 加密貨幣候選數量：$CRYPTO_COUNT"
 
+      - name: Validate telemetry.json before commit
+        run: |
+          if [ -f data/telemetry.json ]; then
+            python3 -c "import json; json.load(open('data/telemetry.json'))" && \
+              echo "✅ telemetry.json 格式正確" || \
+              (echo "❌ telemetry.json 格式錯誤！" && head -5 data/telemetry.json && exit 1)
+          fi
+
       - name: Commit and Push results
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          # 存在才 add，避免檔案不存在時直接報錯退出
-          git add data/crypto_candidates.json data/telemetry.json docs/latest_report.html docs/latest_review.md 2>/dev/null || true
+          # 分開處理，避免一個文件失敗影響其他
+          [ -f data/crypto_candidates.json ] && git add data/crypto_candidates.json || echo "⚠️ 無 crypto_candidates.json"
+          [ -f data/telemetry.json ] && git add data/telemetry.json || echo "⚠️ 無 telemetry.json"
+          [ -f docs/latest_report.html ] && git add docs/latest_report.html || echo "⚠️ 無 latest_report.html"
+          [ -f docs/latest_review.md ] && git add docs/latest_review.md || echo "⚠️ 無 latest_review.md"
+          
           git commit -m "🪙 Auto crypto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
-          # 使用 GITHUB_TOKEN 強制 push
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
