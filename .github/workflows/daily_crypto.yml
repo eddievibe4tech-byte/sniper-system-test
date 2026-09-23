@@ -37,10 +37,12 @@ jobs:
           CRYPTO_COUNT=$(python -c "import json; print(len(json.load(open('../data/crypto_candidates.json')).get('candidates', [])))")
           echo "🪙 加密貨幣候選數量：$CRYPTO_COUNT"
 
-      - name: Commit Results
+      - name: Commit and Push results
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          [ -f data/crypto_candidates.json ] && git add data/crypto_candidates.json || echo "⚠️ 無 crypto_candidates.json"
-          git commit -m "🪙 Daily Crypto Analysis: $(date +'%Y-%m-%d')" || echo "No changes"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main || echo "⚠️ push 失敗（無變更時屬正常）"
+          # 存在才 add，避免檔案不存在時直接報錯退出
+          git add data/crypto_candidates.json data/telemetry.json docs/latest_report.html docs/latest_review.md 2>/dev/null || true
+          git commit -m "🪙 Auto crypto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
+          # 使用 GITHUB_TOKEN 強制 push
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main

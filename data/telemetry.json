@@ -1,3 +1,4 @@
+Legacy records marked: 36
 {
   "records": [
     {
@@ -22,7 +23,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2308",
@@ -46,7 +48,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2454",
@@ -70,7 +73,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2881",
@@ -94,7 +98,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2330",
@@ -118,7 +123,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2308",
@@ -142,7 +148,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2454",
@@ -166,7 +173,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2881",
@@ -190,7 +198,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2330",
@@ -215,7 +224,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2308",
@@ -240,7 +250,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2454",
@@ -265,7 +276,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2881",
@@ -290,7 +302,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2330",
@@ -315,7 +328,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2308",
@@ -340,7 +354,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2454",
@@ -365,7 +380,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2881",
@@ -390,7 +406,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2330",
@@ -415,7 +432,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2308",
@@ -440,7 +458,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2454",
@@ -525,7 +544,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2308",
@@ -550,7 +570,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2454",
@@ -575,7 +596,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2881",
@@ -600,7 +622,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2330",
@@ -625,7 +648,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2308",
@@ -650,7 +674,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2454",
@@ -675,7 +700,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2881",
@@ -700,7 +726,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2330",
@@ -725,7 +752,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2308",
@@ -750,7 +778,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2454",
@@ -775,7 +804,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2881",
@@ -800,7 +830,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2330",
@@ -825,7 +856,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2308",
@@ -850,7 +882,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2454",
@@ -875,7 +908,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2881",
@@ -900,7 +934,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2330",
@@ -955,7 +990,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2454",
@@ -980,7 +1016,8 @@
       },
       "prediction": {},
       "actual_result": null,
-      "accuracy": null
+      "accuracy": null,
+      "legacy": true
     },
     {
       "id": "20260913-2881",
