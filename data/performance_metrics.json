@@ -1,15 +1,15 @@
 {
-  "total_predictions": 192,
-  "verified_count": 28,
-  "accuracy_rate": 35.7,
+  "total_predictions": 206,
+  "verified_count": 56,
+  "accuracy_rate": 39.3,
   "current_version": 1,
-  "last_updated": "2026-09-22T22:12:16.857939+08:00",
+  "last_updated": "2026-09-23T22:12:51.122058+08:00",
   "version_stats": [
     {
       "version": 1,
-      "predictions": 192,
-      "correct": 10,
-      "accuracy": 5.2
+      "predictions": 206,
+      "correct": 22,
+      "accuracy": 10.7
     }
   ]
 }
