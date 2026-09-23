@@ -25,8 +25,8 @@ def generate_static_review(
         生成的檔案路徑
     """
     os.makedirs(output_dir, exist_ok=True)
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    md_path = os.path.join(output_dir, f"review_{date_str}.md")
+    # P0-2 修正：使用固定檔名覆蓋，而非帶日期的檔名
+    md_path = os.path.join(output_dir, "latest_review.md")
     
     # 若無資料，使用預設值
     if not regime:
@@ -43,7 +43,7 @@ def generate_static_review(
             analysis_results = []
     
     # 建立 Markdown 內容
-    md_content = f"# 🎯 {date_str} 每日複盤與市場體制分析\n\n"
+    md_content = f"# 🎯 {datetime.now().strftime('%Y-%m-%d')} 每日複盤與市場體制分析\n\n"
     md_content += f"**市場體制**: {regime.get('regime', '未知')} | **信心度**: {regime.get('confidence', '中')}\n\n"
     
     if regime.get('reason'):
@@ -78,7 +78,8 @@ def generate_static_review(
     
     print(f"✅ 靜態報告已生成：{md_path}")
     
-    # 同時更新 index.md 作為最新報告入口
+    # P0-2 修正：使用固定檔名，傳入當前日期
+    date_str = datetime.now().strftime("%Y-%m-%d")
     _update_index_md(output_dir, md_path, date_str, regime, analysis_results)
     
     return md_path
@@ -192,8 +193,9 @@ def generate_html_report(
         生成的 HTML 檔案路徑
     """
     os.makedirs(output_dir, exist_ok=True)
+    # P0-2 修正：使用固定檔名覆蓋，而非帶日期的檔名
     date_str = datetime.now().strftime("%Y-%m-%d")
-    html_path = os.path.join(output_dir, f"report_{date_str}.html")
+    html_path = os.path.join(output_dir, "latest_report.html")
     
     if not regime:
         regime = {'regime': '未知', 'confidence': '中'}
