@@ -6,7 +6,7 @@
 import json
 import os
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 BASE = os.path.join(os.path.dirname(__file__), "..", "data")
 CAPITAL = 5000  # 單筆紀律上限
@@ -46,10 +46,12 @@ def crypto_section(crypto: Optional[Dict]) -> Dict:
     if fng is not None and fng > 75:
         action, alloc = "市場極度貪婪：不追高，預算持穩定幣", 0
     elif golden:
-        action, alloc = f"黃金買點出現：{golden[0]['symbol']} 分 2 批進場", CAPITAL // 2
+        # P1 修正：改用 .get() 防 KeyError（上游 JSON 欄位缺失時不致整天無 advice）
+        action = f"黃金買點出現：{golden[0].get('symbol', '?')} 分 2 批進場"
+        alloc = CAPITAL // 2
     elif right_side:
         top = right_side[0]
-        action = (f"右側確認：{top['symbol']} 可進場；"
+        action = (f"右側確認：{top.get('symbol', '?')} 可進場；"
                   f"停損={top.get('stop_loss', '跌破 MA20')}；"
                   f"停利={top.get('take_profit', 'RSI>70 或 FNG>70')}")
         alloc = CAPITAL // 2
@@ -85,12 +87,13 @@ def tw_section(deep: Optional[Dict], setup: Optional[Dict]) -> Dict:
 
     if setups:
         s = setups[0]
-        action = (f"明日盤中：{s['name']} 放量(量比>4)突破 {s['breakout_price']} 才進場；"
-                  f"停損=突破價-2%")
+        # P1 修正：改用 .get() 防 KeyError
+        action = (f"明日盤中：{s.get('name', '未知')} 放量(量比>4)突破 "
+                  f"{s.get('breakout_price', '?')} 才進場；停損=突破價-2%")
         alloc = CAPITAL // 2
     elif buy_level:
         b = buy_level[0]
-        action = (f"{b['name']} 達買入級(EV={b['ev_score']})；"
+        action = (f"{b.get('name', '未知')} 達買入級(EV={b.get('ev_score')})；"
                   f"等回踩 MA20({b.get('ma20')}) 不破再進場")
         alloc = CAPITAL // 2
     else:
@@ -131,13 +134,15 @@ def main():
     out = os.path.join(BASE, "advice.json")
     with open(out, "w", encoding="utf-8") as f:
         json.dump(advice, f, ensure_ascii=False, indent=2)
+    print(f"✅ 已輸出：{out}")
 
     # 終端摘要
     print("=" * 50)
     print(f"台股 Regime：{advice['tw_regime']}｜FNG：{c.get('fng')}")
     print(f"[加密] {c['action']}（配置 {c['alloc']}）")
     for coin in c["right_side"][:3]:
-        print(f"   🔵 右側確認：{coin['symbol']} RSI={coin.get('rsi')} "
+        # P1 修正：.get() 防 KeyError
+        print(f"   🔵 右側確認：{coin.get('symbol', '?')} RSI={coin.get('rsi')} "
               f"勝率參考={coin.get('win_rate')}")
     print(f"[台股] {t['action']}（配置 {t['alloc']}）")
     print(f"[現金] 保留 {advice['cash']['alloc']}")

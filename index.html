@@ -848,7 +848,7 @@
         // 🟡 P2 修正：新增載入 Screener 候選股表格的函數
         async function loadScreener() {
             try {
-                const res = await fetch('data/screener_candidates.json');
+                const res = await fetch(BASE + 'data/screener_candidates.json?v=' + Date.now());
                 if (!res.ok) throw new Error('No data');
                 const data = await res.json();
                 
@@ -891,7 +891,7 @@
         // 🪙 新增載入加密貨幣候選股表格的函數
         async function loadCrypto() {
             try {
-                const res = await fetch('data/crypto_candidates.json');
+                const res = await fetch(BASE + 'data/crypto_candidates.json?v=' + Date.now());
                 if (!res.ok) throw new Error('No crypto data');
                 const data = await res.json();
                 
@@ -983,7 +983,7 @@
         async function loadSetup() {
             const el = document.getElementById('setup-table');
             try {
-                const res = await fetch('data/setup_watchlist.json?v=' + Date.now());
+                const res = await fetch(BASE + 'data/setup_watchlist.json?v=' + Date.now());
                 if (!res.ok) throw new Error(res.status);
                 const data = await res.json();
                 if (!data.setups || data.setups.length === 0) {
@@ -1030,6 +1030,8 @@
                 });
                 html += `<p>🇹🇼 <b>台股</b>：${escapeHTML(t.action || '-')}（${t.alloc ?? 0} 元）</p>`;
                 html += `<p>💵 <b>保留現金</b>：${cash.alloc ?? 0} 元 — ${escapeHTML(cash.note || '')}</p>`;
+                // P2：顯示 advice.json 生成時間，方便確認 advisor 是否準時執行
+                html += `<p class="text-xs text-gray-400 mt-2">生成時間：${a.updated_at ? new Date(a.updated_at).toLocaleString('zh-TW') : '-'}</p>`;
                 el.innerHTML = html;
             } catch (e) {
                 el.innerHTML = '<p class="text-gray-500">暫無建議資料（advisor 尚未執行）</p>';
