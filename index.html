@@ -96,6 +96,14 @@
             <div id="setup-table" class="overflow-x-auto"><p class="text-gray-500">載入中...</p></div>
         </div>
 
+        <!-- 💰 今日 5,000 元配置建議 -->
+        <div class="bg-white border rounded-lg p-4 mb-6">
+            <h2 class="text-xl font-semibold mb-2">💰 今日 5,000 元配置建議</h2>
+            <div id="advice-box" class="text-sm text-gray-700 space-y-2">
+                <p class="text-gray-500">載入中...</p>
+            </div>
+        </div>
+
         <!-- 🎯 今日 AI 狙擊分析 -->
         <div class="bg-white border rounded-lg p-4 mb-6">
             <h2 class="text-xl font-semibold mb-4">🎯 今日 AI 狙擊分析</h2>
@@ -840,7 +848,7 @@
         // 🟡 P2 修正：新增載入 Screener 候選股表格的函數
         async function loadScreener() {
             try {
-                const res = await fetch('data/screener_candidates.json');
+                const res = await fetch(BASE + 'data/screener_candidates.json?v=' + Date.now());
                 if (!res.ok) throw new Error('No data');
                 const data = await res.json();
                 
@@ -883,7 +891,7 @@
         // 🪙 新增載入加密貨幣候選股表格的函數
         async function loadCrypto() {
             try {
-                const res = await fetch('data/crypto_candidates.json');
+                const res = await fetch(BASE + 'data/crypto_candidates.json?v=' + Date.now());
                 if (!res.ok) throw new Error('No crypto data');
                 const data = await res.json();
                 
@@ -967,13 +975,15 @@
             await loadCrypto();
             // 4. 載入 Setup 突破觀察資料
             await loadSetup();
+            // 5. 載入今日 5,000 元配置建議
+            await loadAdvice();
         });
 
         // ⚡ 載入明日突破觀察表格
         async function loadSetup() {
             const el = document.getElementById('setup-table');
             try {
-                const res = await fetch('data/setup_watchlist.json?v=' + Date.now());
+                const res = await fetch(BASE + 'data/setup_watchlist.json?v=' + Date.now());
                 if (!res.ok) throw new Error(res.status);
                 const data = await res.json();
                 if (!data.setups || data.setups.length === 0) {
@@ -999,6 +1009,32 @@
                 el.innerHTML = html + '</tbody></table>';
             } catch (e) {
                 el.innerHTML = '<p class="text-gray-500 text-center py-4">暫無 Setup 數據</p>';
+            }
+        }
+
+        // 💰 載入今日 5,000 元配置建議（data/advice.json）
+        async function loadAdvice() {
+            const el = document.getElementById('advice-box');
+            try {
+                const res = await fetch(BASE + 'data/advice.json?v=' + Date.now());
+                if (!res.ok) throw new Error(res.status);
+                const a = await res.json();
+                const c = a.crypto || {}, t = a.tw_stock || {}, cash = a.cash || {};
+                let html = `<p><b>市場狀態</b>：台股 ${escapeHTML(a.tw_regime || '-')}｜加密 FNG ${c.fng ?? '-'}</p>`;
+                html += `<p>🪙 <b>加密</b>：${escapeHTML(c.action || '-')}（${c.alloc ?? 0} 元）</p>`;
+                (c.right_side || []).slice(0, 3).forEach(x => {
+                    html += `<p class="ml-4">🔵 右側確認：<b>${escapeHTML(x.symbol)}</b> RSI=${x.rsi || '-'}｜停損 ${escapeHTML(x.stop_loss || '跌破MA20')}</p>`;
+                });
+                (c.golden || []).slice(0, 3).forEach(x => {
+                    html += `<p class="ml-4">🟢 黃金買點：<b>${escapeHTML(x.symbol)}</b> RSI=${x.rsi || '-'}</p>`;
+                });
+                html += `<p>🇹🇼 <b>台股</b>：${escapeHTML(t.action || '-')}（${t.alloc ?? 0} 元）</p>`;
+                html += `<p>💵 <b>保留現金</b>：${cash.alloc ?? 0} 元 — ${escapeHTML(cash.note || '')}</p>`;
+                // P2：顯示 advice.json 生成時間，方便確認 advisor 是否準時執行
+                html += `<p class="text-xs text-gray-400 mt-2">生成時間：${a.updated_at ? new Date(a.updated_at).toLocaleString('zh-TW') : '-'}</p>`;
+                el.innerHTML = html;
+            } catch (e) {
+                el.innerHTML = '<p class="text-gray-500">暫無建議資料（advisor 尚未執行）</p>';
             }
         }
     </script>

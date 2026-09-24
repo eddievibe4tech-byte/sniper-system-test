@@ -1,0 +1,58 @@
+{
+  "updated_at": "2026-09-24T00:47:30.888042",
+  "capital": 5000,
+  "tw_regime": "震盪",
+  "crypto": {
+    "status": "missing",
+    "msg": "crypto_candidates.json 不存在：請先修復並重跑 Daily Crypto Analysis",
+    "fng": null,
+    "market_scenario": null,
+    "right_side": [],
+    "golden": [],
+    "action": "資料缺失，加密貨幣預算暫持穩定幣",
+    "alloc": 0
+  },
+  "tw_stock": {
+    "status": "ok",
+    "buy_level": [
+      {
+        "code": "2881",
+        "name": "富邦金",
+        "industry": "金融",
+        "regime": "震盪",
+        "revenue_yoy": 280.36,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 2,
+        "margin_change": -40,
+        "change_5d": 2.32,
+        "volatility": 25.05,
+        "ma5": 152.8,
+        "ma20": 148.28,
+        "rsi": 68.97,
+        "macd": 4.03,
+        "price_above_ma20": true,
+        "current_price": 154.5,
+        "data_source": "finmind",
+        "ev_score": 64,
+        "recommendation": "謹慎買入",
+        "reason": "股價站穩MA20，融資出清籌碼乾淨，但RSI近超買且震盪市，宜回檔再進（缺失欄位：毛利率、淨利率、EPS）",
+        "raw_response": "\n<think>\nLet me analyze 富邦金 (2881) based on the given data and rules.\n\n**Industry: 金融 (Financial)**\n- Per the rules: 忽略營收 YoY 與 EPS；改看股價位置、波動率、融資增減\n\n**基本面（權重 30%）- 金融產業調整**\n- 月營收年增率：280.36% → 金融產業忽略營收 YoY\n- 毛利率：數據缺失 → 不作為負面證據\n- 淨利率：數據缺失 → 不作為負面證據\n- EPS：數據缺失 → 金融產業忽略 EPS\n\nSince it's financial sector, I should focus on stock price position, volatility, and margin changes instead of revenue YoY and EPS.\n\nFor financial sector, let me reassess:\n- 股價位置：154.5 > MA20 (148.28) → 正面\n- 波動率：25.05% → 中等\n- 融資增減：-40張 → 散戶出清，籌碼乾淨（利多）\n\n基本面評分（金融調整）：\n- 由於金融產業忽略營收YoY和EPS，毛利率和淨利率缺失\n- 股價位置良好（>MA20）\n- 融資減少（散戶出清）\n- 基本面給分：由於數據缺失較多，但股價位置好，給中等偏上分數\n- 基本面：約 50-55 分（數據缺失，但股價位置正面）\n\nWait, let me re-read the scoring logic more carefully. The scoring dimensions are:\n\n1. 基本面（權重 30%）\n   - 營收年增率 > 20%：+20 分\n   - 毛利率 > 30%：+10 分\n   - EPS > 5：+10 分\n\nBut for 金融: 忽略營收 YoY 與 EPS；改看股價位置、波動率、融資增減\n\nSo for financial, the fundamental scoring should be adjusted:\n- 股價位置（>MA20）：正面\n- 波動率：25.05%（中等）\n- 融資增減：-40張（散戶出清，利多）\n\nLet me score each dimension:\n\n**1. 基本面（權重 30%）- 金融調整**\n- 金融產業忽略營收YoY和EPS\n- 毛利率、淨利率數據缺失 → 不作為負面證據\n- 股價位置：154.5 > MA20 (148.28) → 正面\n- 融資減少：-40張 → 散戶出清（利多）\n- 波動率：25.05% → 中等\n- 基本面評分：由於數據缺失，但可用指標正面，給約 55-60 分\n- 基礎分 40 + 股價位置好 +10 + 融資減少 +5 + 波動率中等 +5 = 60\n\nActually, let me think about this differently. The base score for each dimension should be around 50 (neutral), then adjust.\n\nLet me restructure:\n\n**1. 基本面（30%）- 金融產業**\n- 忽略營收YoY和EPS\n- 毛利率缺失、淨利率缺失 → 不引用\n- 股價位置 > MA20：+10\n- 融資減少（散戶出清）：+5\n- 波動率 25%（中等）：+5\n- 基本面分數：50 + 10 + 5 + 5 = 70? \n\nHmm, let me think about this more carefully. The scoring criteria given are specific:\n\nFor 基本面:\n- 營收年增率 > 20%：+20 分 → 金融忽略\n- 毛利率 > 30%：+10 分 → 數據缺失，不引用\n- EPS > 5：+10 分 → 金融忽略\n\nSo for financial, the fundamental criteria are mostly N/A. I should use the adjusted criteria:\n- 股價位置（>MA20）：+15\n- 融資減少：+5\n- 波動率合理：+5\n\nBase 40 + 15 + 5 + 5 = 65? Or maybe base 50 + adjustments.\n\nLet me just be practical and score:\n\n**1. 基本面（30%）- 金融**\n- 股價 > MA20：+15\n- 融資減少（散戶出清）：+5\n- 波動率 25%（合理範圍）：+5\n- 毛利率/淨利率/EPS 缺失：不扣分\n- 基本面分數：50 + 15 + 5 + 5 = 75? \n\nActually, I think the scoring should start from 0 and add points, with a max of 100 per dimension. Let me re-read the examples.\n\nLooking at the examples:\n- Example 1: 營收+35%, 毛利率42%, 股價>MA20, RSI55, 投信連買5天, 波動率18% → 85\n- Example 2: 營收-15%, 毛利率18%, 股價<MA20, RSI75, 投信連買0天, 波動率45% → 25\n- Example 3: 營收+8%, 毛利率28%, 股價>MA20, RSI50, 投信連買1天, 波動率25% → 55\n\nLet me try to reverse-engineer the scoring:\n\nExample 1 (85):\n- 基本面: 營收>20% (+20) + 毛利率>30% (+10) + EPS>5? (assume yes, +10) = 40/40 → 40 * 0.3 = 12\n- 技術面: 股價>MA20 (+15) + MACD>0? (assume yes, +10) + RSI 40-60 (+5) = 30/30 → 30 * 0.3 = 9\n- 籌碼面: 投信連買>3天 (+15) = 15/20 → 15 * 0.2 = 3\n- 風險: 波動率<20% (+10) = 10/20 → 10 * 0.2 = 2\n- Total: 12 + 9 + 3 + 2 = 26? That doesn't add up to 85.\n\nHmm, maybe the scoring is different. Let me think of it as each dimension scored 0-100, then weighted.\n\nExample 1 (85):\n- 基本面: 營收>20% (+20) + 毛利率>30% (+10) + EPS>5 (+10) = 40 out of 40 → 100\n- 技術面: 股價>MA20 (+15) + MACD>0 (+10) + RSI 40-60 (+5) = 30 out of 30 → 100\n- 籌碼面: 投信連買>3天 (+15) = 15 out of 20 → 75\n- 風險: 波動率<20% (+10) = 10 out of 20 → 50\n- Weighted: 100*0.3 + 100*0.3 + 75*0.2 + 50*0.2 = 30 + 30 + 15 + 10 = 85 ✓\n\nExample 2 (25):\n- 基本面: 營收<0 (0) + 毛利率<30% (0) + EPS<5 (0) = 0/40 → 0\n- 技術面: 股價<MA20 (0) + MACD<0 (0) + RSI>70 (-10) = -10 → 0 (floor at 0)\n- 籌碼面: 投信連買0天 (0) = 0/20 → 0\n- 風險: 波動率>40% (-10) = -10 → 0 (floor at 0)\n- Weighted: 0 + 0 + 0 + 0 = 0? But answer is 25.\n\nHmm, that doesn't work either. Let me try another approach.\n\nMaybe the base score is 50 for each dimension, and adjustments are made:\n\nExample 1 (85):\n- 基本面: 50 + 20 + 10 + 10 = 90 → 90*0.3 = 27\n- 技術面: 50 + 15 + 10 + 5 = 80 → 80*0.3 = 24\n- 籌碼面: 50 + 15 = 65 → 65*0.2 = 13\n- 風險: 50 + 10 = 60 → 60*0.2 = 12\n- Total: 27 + 24 + 13 + 12 = 76? Not 85.\n\nLet me try yet another approach. Maybe it's simpler:\n\nExample 1 (85):\n- 基本面: 營收>20% (+20) + 毛利率>30% (+10) + EPS>5 (+10) = 40\n- 技術面: 股價>MA20 (+15) + MACD>0 (+10) + RSI 40-60 (+5) = 30\n- 籌碼面: 投信連買>3天 (+15) = 15\n- 風險: 波動率<20% (+10) = 10\n- Total: 40 + 30 + 15 + 10 = 95? Not 85.\n\nHmm. Let me try:\n- 基本面: 40 * 0.3 = 12\n- 技術面: 30 * 0.3 = 9\n- 籌碼面: 15 * 0.2 = 3\n- 風險: 10 * 0.2 = 2\n- Total: 26? No.\n\nOK, I think the scoring might be more holistic and the examples are approximate. Let me just apply the logic reasonably.\n\nFor 富邦金 (2881) - 金融產業:\n\n**1. 基本面（30%）- 金融產業調整**\n- 忽略營收YoY（280.36%）和EPS（缺失）\n- 毛利率缺失、淨利率缺失 → 不引用\n- 股價位置：154.5 > MA20 (148.28) → 正面\n- 融資減少：-40張 → 散戶出清，籌碼乾淨（利多）\n- 波動率：25.05% → 中等\n- 基本面評分：由於金融產業主要看股價位置和籌碼，股價在MA20之上，融資減少，給 65 分\n\n**2. 技術面（30%）**\n- 股價 > MA20：True → +15\n- MACD > 0：4.03 > 0 → +10\n- RSI：68.97 → 接近超買但未超過70，在40-70之間 → +5（中性偏強）\n  - Actually RSI 68.97 is close to 70 but not over. The criteria says RSI 40-60: +5, RSI > 70: -10. 68.97 is between 60 and 70, so it's not in the 40-60 range. Let me give +3 or so.\n  - Actually, re-reading: RSI 40-60（中性）：+5 分. 68.97 is above 60 but below 70. It's not explicitly covered. I'll give a small positive, maybe +3.\n- 5日漲跌幅：2.32% → 不超過10%，無過熱問題\n- 技術面評分：15 + 10 + 3 = 28 out of ~30 → 約 75 分\n\n**3. 籌碼面（20%）**\n- 投信連續買超：2天 → 未超過3天，給部分分數 +8\n- 融資減少：-40張 → 散戶出清 +5\n- 籌碼面評分：8 + 5 = 13 out of 20 → 約 65 分\n\n**4. 風險控管（20%）**\n- 波動率：25.05% → 在20-40%之間，中等風險\n- 5日漲跌幅：2.32% → 不超過10%，無過熱\n- 市場體制：震盪 → 中性\n- 風險評分：約 55 分\n\n**綜合評分：**\n- 基本面：65 * 0.3 = 19.5\n- 技術面：75 * 0.3 = 22.5\n- 籌碼面：65 * 0.2 = 13\n- 風險：55 * 0.2 = 11\n- Total: 19.5 + 22.5 + 13 + 11 = 66\n\nHmm, let me reconsider. The stock is:\n- Above MA20 (positive)\n- MACD positive (positive)\n- RSI 68.97 (approaching overbought but not there yet)\n- Margin decreasing (positive for financials - retail clearing)\n- Trust fund buying for 2 days (positive but not >3)\n- Volatility 25% (moderate)\n- 5-day change 2.32% (not overheated)\n- Market regime: 震盪 (range-bound)\n\nThis looks like a moderately positive setup. Score around 62-68 seems right.\n\nLet me settle on 65.\n\nRecommendation: 回檔觀察 or 謹慎買入?\n- Score 65 is moderate positive\n- RSI approaching 70 (caution)\n- 震盪市場\n- 投信連買只有2天（未達3天門檻）\n- 融資減少是正面的\n\nI think 謹慎買入 is appropriate for 65. Or 回檔觀察 since RSI is getting high and it's a range-bound market.\n\nActually, with RSI at 68.97 (close to overbought) and 震盪 market, I'd lean towards 回檔觀察. But the technicals are solid (above MA20, MACD positive, margin clearing). Let me go with 謹慎買入 at 65.\n\nWait, let me reconsider the score. \n\nFor 金融產業:\n- 基本面: 股價位置好，融資減少 → 65\n- 技術面: 股價>MA20, MACD>0, RSI接近超買 → 70\n- 籌碼面: 投信2天（未達3天），融資減少 → 60\n- 風險: 波動率25%中等，5日漲幅2.32%正常，震盪市場 → 55\n\nWeighted: 65*0.3 + 70*0.3 + 60*0.2 + 55*0.2 = 19.5 + 21 + 12 + 11 = 63.5 ≈ 64\n\nLet me go with 64.\n\nRecommendation: 謹慎買入 (score 60-70 range)\n\nReason (50字內): \"股價站穩MA20，融資出清籌碼乾淨，但RSI近超買且震盪市，宜回檔再進\"\n\nLet me count: 股價站穩MA20，融資出清籌碼乾淨，但RSI近超買且震盪市，宜回檔再進 = about 30 characters. Good.\n\nActually let me recount: 股(1)價(2)站(3)穩(4)M(5)A(6)2(7)0(8)，(9)融(10)資(11)出(12)清(13)籌(14)碼(15)乾(16)淨(17)，(18)但(19)R(20)S(21)I(22)近(23)超(24)買(25)且(26)震(27)盪(28)市(29)，(30)宜(31)回(32)檔(33)再(34)進(35) = 35 characters. Under 50. Good.\n\nLet me finalize: ev_score: 64, recommendation: 謹慎買入\n</think>\n\n{\n  \"ev_score\": 64,\n  \"recommendation\": \"謹慎買入\",\n  \"reason\": \"股價站穩MA20，融資出清籌碼乾淨，但RSI近超買且震盪市，宜回檔再進（缺失欄位：毛利率、淨利率、EPS）\"\n}",
+        "risk_level": "🟡 中風險"
+      }
+    ],
+    "setups": [],
+    "action": "富邦金 達買入級(EV=64)；等回踩 MA20(148.28) 不破再進場",
+    "alloc": 2500
+  },
+  "cash": {
+    "alloc": 2500,
+    "note": "未配置預算持現金/穩定幣，等待下一個情境訊號"
+  },
+  "rules": [
+    "單筆 ≤ 5,000 元、同時 ≤ 3 部位",
+    "不符合情境就不進場",
+    "停損紀律優先於一切訊號"
+  ]
+}
