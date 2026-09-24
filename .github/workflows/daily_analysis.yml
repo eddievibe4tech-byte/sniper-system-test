@@ -45,6 +45,10 @@ jobs:
           FINMIND_TOKEN: ${{ secrets.FINMIND_API_TOKEN }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
+      - name: Run Market Advisor
+        run: |
+          python -m src.market_advisor || echo "⚠️ advisor 失敗（不中斷主流程）"
+
       # ❌ 已刪除重複的 Generate Static Review Report 步驟（避免每天執行兩次分析）
 
       - name: Validate telemetry.json before commit
@@ -64,6 +68,7 @@ jobs:
           [ -f data/performance_metrics.json ] && git add data/performance_metrics.json || echo "⚠️ 無 performance_metrics.json"
           [ -f docs/latest_report.html ] && git add docs/latest_report.html || echo "⚠️ 無 latest_report.html"
           [ -f docs/latest_review.md ] && git add docs/latest_review.md || echo "⚠️ 無 latest_review.md"
+          [ -f data/advice.json ] && git add data/advice.json || echo "⚠️ 無 advice.json"
           
           git commit -m "🎯 Auto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
