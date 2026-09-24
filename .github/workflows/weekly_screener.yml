@@ -6,6 +6,11 @@ on:
     - cron: '0 11 * * 5' 
   workflow_dispatch:
 
+# ⚠️ 關鍵：GitHub Actions 自 2024/12 起 GITHUB_TOKEN 預設為唯讀，
+# 必須顯式宣告寫入權限，否則 Commit Candidates 步驟的 git push 會返回 exit 128
+permissions:
+  contents: write
+
 jobs:
   screen:
     runs-on: ubuntu-latest
