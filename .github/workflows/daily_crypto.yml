@@ -6,6 +6,11 @@ on:
     - cron: '0 1 * * *'
   workflow_dispatch:
 
+# ⚠️ 關鍵：GitHub Actions 自 2024/12 起 GITHUB_TOKEN 預設為唯讀，
+# 必須顯式宣告寫入權限，否則 workflow 內 git push 會返回 exit 128
+permissions:
+  contents: write
+
 jobs:
   crypto-screen:
     runs-on: ubuntu-latest
