@@ -74,9 +74,13 @@ def tw_section(deep: Optional[Dict], setup: Optional[Dict]) -> Dict:
                 "action": "deep_analysis.json 缺失", "alloc": 0}
 
     results = deep.get("all_results") or []
-    buy_level = [r for r in results
-                 if r.get("recommendation") in ("謹慎買入", "積極買入")
-                 and (r.get("ev_score") or 0) >= 60]
+    # 過濾掉 AI 思考鏈（raw_response），避免 advice.json 肥大且前端用不到
+    buy_level = []
+    for r in results:
+        if r.get("recommendation") in ("謹慎買入", "積極買入") \
+                and (r.get("ev_score") or 0) >= 60:
+            clean_r = {k: v for k, v in r.items() if k != "raw_response"}
+            buy_level.append(clean_r)
     setups = (setup or {}).get("setups") or []
 
     if setups:

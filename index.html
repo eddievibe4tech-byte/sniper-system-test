@@ -1023,7 +1023,10 @@
                 let html = `<p><b>市場狀態</b>：台股 ${escapeHTML(a.tw_regime || '-')}｜加密 FNG ${c.fng ?? '-'}</p>`;
                 html += `<p>🪙 <b>加密</b>：${escapeHTML(c.action || '-')}（${c.alloc ?? 0} 元）</p>`;
                 (c.right_side || []).slice(0, 3).forEach(x => {
-                    html += `<p class="ml-4">🔵 右側確認：<b>${escapeHTML(x.symbol)}</b> RSI=${x.rsi}｜停損 ${escapeHTML(x.stop_loss || '跌破MA20')}</p>`;
+                    html += `<p class="ml-4">🔵 右側確認：<b>${escapeHTML(x.symbol)}</b> RSI=${x.rsi || '-'}｜停損 ${escapeHTML(x.stop_loss || '跌破MA20')}</p>`;
+                });
+                (c.golden || []).slice(0, 3).forEach(x => {
+                    html += `<p class="ml-4">🟢 黃金買點：<b>${escapeHTML(x.symbol)}</b> RSI=${x.rsi || '-'}</p>`;
                 });
                 html += `<p>🇹🇼 <b>台股</b>：${escapeHTML(t.action || '-')}（${t.alloc ?? 0} 元）</p>`;
                 html += `<p>💵 <b>保留現金</b>：${cash.alloc ?? 0} 元 — ${escapeHTML(cash.note || '')}</p>`;
