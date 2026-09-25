@@ -5015,8 +5015,14 @@
         "volatility": 18.67,
         "rsi": 50.75
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 2.06,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 2425.0
     },
     {
@@ -5060,8 +5066,14 @@
         "volatility": 50.03,
         "rsi": 38.58
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 13.35,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 1685.0
     },
     {
@@ -5105,8 +5117,14 @@
         "volatility": 54.84,
         "rsi": 65.85
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 17.44,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 4500.0
     },
     {
@@ -5150,8 +5168,14 @@
         "volatility": 35.69,
         "rsi": 64.15
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.99,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 151.5
     },
     {
@@ -5195,8 +5219,14 @@
         "volatility": 23.29,
         "rsi": 46.99
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.0,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 250.5
     },
     {
@@ -5240,8 +5270,14 @@
         "volatility": 33.25,
         "rsi": 56.8
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.6,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 344.0
     },
     {
@@ -5285,8 +5321,14 @@
         "volatility": 48.69,
         "rsi": 48.5
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 13.84,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 614.0
     },
     {
@@ -5330,8 +5372,14 @@
         "volatility": 59.94,
         "rsi": 43.45
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 11.62,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 3185.0
     },
     {
@@ -5375,8 +5423,14 @@
         "volatility": 23.06,
         "rsi": 43.2
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -3.39,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 70.9
     },
     {
@@ -5420,8 +5474,14 @@
         "volatility": 42.73,
         "rsi": 37.5
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.85,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 705.0
     },
     {
@@ -5465,8 +5525,14 @@
         "volatility": 66.15,
         "rsi": 64.96
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.41,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 147.5
     },
     {
@@ -5510,8 +5576,14 @@
         "volatility": 34.06,
         "rsi": 62.75
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 112.0
     },
     {
@@ -5555,8 +5627,14 @@
         "volatility": 8.21,
         "rsi": 95.24
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.0,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 145.0
     },
     {
@@ -5600,8 +5678,14 @@
         "volatility": 11.86,
         "rsi": 37.04
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.27,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 18.7
     },
     {
@@ -5645,8 +5729,14 @@
         "volatility": 18.4,
         "rsi": 57.75
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.61,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 2460.0
     },
     {
@@ -5690,8 +5780,14 @@
         "volatility": 51.21,
         "rsi": 42.22
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 10.09,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 1735.0
     },
     {
@@ -5735,8 +5831,14 @@
         "volatility": 56.04,
         "rsi": 72.11
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 12.21,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 4710.0
     },
     {
@@ -5780,8 +5882,14 @@
         "volatility": 35.11,
         "rsi": 61.82
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.33,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 150.5
     },
     {
@@ -5825,8 +5933,14 @@
         "volatility": 23.02,
         "rsi": 50.65
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.0,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 250.5
     },
     {
@@ -5870,8 +5984,14 @@
         "volatility": 33.2,
         "rsi": 52.83
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.31,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 343.0
     },
     {
@@ -5915,8 +6035,14 @@
         "volatility": 50.4,
         "rsi": 62.27
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 9.56,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 638.0
     },
     {
@@ -5960,8 +6086,14 @@
         "volatility": 64.76,
         "rsi": 50.17
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 3.64,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 3430.0
     },
     {
@@ -6005,8 +6137,14 @@
         "volatility": 23.95,
         "rsi": 39.13
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.44,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 69.5
     },
     {
@@ -6050,8 +6188,14 @@
         "volatility": 43.21,
         "rsi": 47.89
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -3.05,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 721.0
     },
     {
@@ -6095,8 +6239,14 @@
         "volatility": 65.93,
         "rsi": 70.45
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.28,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 156.0
     },
     {
@@ -6140,8 +6290,14 @@
         "volatility": 33.85,
         "rsi": 50.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.0,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 110.5
     },
     {
@@ -6185,8 +6341,14 @@
         "volatility": 8.12,
         "rsi": 95.24
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 145.5
     },
     {
@@ -6230,8 +6392,14 @@
         "volatility": 11.2,
         "rsi": 42.31
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.53,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-09-25T22:11:17.833625+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 18.75
     },
     {
@@ -9383,11 +9551,641 @@
       "actual_result": null,
       "accuracy": null,
       "entry_price": 18.65
+    },
+    {
+      "id": "20260925-2330",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "2330",
+      "stock_name": "台積電",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2330",
+        "name": "台積電",
+        "industry": "半導體",
+        "regime": "震盪",
+        "revenue_yoy": 10.1,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 0,
+        "margin_change": 874,
+        "change_5d": 2.06,
+        "volatility": 19.73,
+        "ma5": 2475.0,
+        "ma20": 2432.5,
+        "rsi": 59.42,
+        "macd": 15.96,
+        "price_above_ma20": true,
+        "current_price": 2475.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 50,
+        "recommendation": "回檔觀察",
+        "reason": "技術面偏多、波動率佳，惟缺法人買超與基本面催化，震盪市回檔再佈局（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "2330",
+        "stock_name": "台積電",
+        "industry": "半導體",
+        "close_price": 2475.0,
+        "change_5d": 2.06,
+        "volatility": 19.73,
+        "rsi": 59.42
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 2475.0
+    },
+    {
+      "id": "20260925-2308",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "2308",
+      "stock_name": "台達電",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2308",
+        "name": "台達電",
+        "industry": "電子",
+        "regime": "震盪",
+        "revenue_yoy": -3.71,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 1,
+        "margin_change": 105,
+        "change_5d": 13.35,
+        "volatility": 56.59,
+        "ma5": 1864.0,
+        "ma20": 1780.0,
+        "rsi": 57.14,
+        "macd": 18.75,
+        "price_above_ma20": true,
+        "current_price": 1910.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 55,
+        "recommendation": "回檔觀察",
+        "reason": "技術面偏多但波動率過高、5日漲幅過熱，營收負成長，建議回檔再評估。（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "2308",
+        "stock_name": "台達電",
+        "industry": "電子",
+        "close_price": 1910.0,
+        "change_5d": 13.35,
+        "volatility": 56.59,
+        "rsi": 57.14
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 1910.0
+    },
+    {
+      "id": "20260925-2454",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "2454",
+      "stock_name": "聯發科",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2454",
+        "name": "聯發科",
+        "industry": "半導體",
+        "regime": "震盪",
+        "revenue_yoy": 32.41,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 0,
+        "margin_change": 470,
+        "change_5d": 17.44,
+        "volatility": 55.19,
+        "ma5": 5074.0,
+        "ma20": 4602.25,
+        "rsi": 74.44,
+        "macd": 280.93,
+        "price_above_ma20": true,
+        "current_price": 5285.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 48,
+        "recommendation": "回檔觀察",
+        "reason": "營收強勁但RSI超買、波動率過高，5日漲幅過熱，回檔再戰（缺失：毛利率、EPS）",
+        "stock_code": "2454",
+        "stock_name": "聯發科",
+        "industry": "半導體",
+        "close_price": 5285.0,
+        "change_5d": 17.44,
+        "volatility": 55.19,
+        "rsi": 74.44
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 5285.0
+    },
+    {
+      "id": "20260925-2881",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "2881",
+      "stock_name": "富邦金",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2881",
+        "name": "富邦金",
+        "industry": "金融",
+        "regime": "震盪",
+        "revenue_yoy": 280.36,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 2,
+        "margin_change": 262,
+        "change_5d": -0.99,
+        "volatility": 25.77,
+        "ma5": 152.5,
+        "ma20": 149.43,
+        "rsi": 49.06,
+        "macd": 2.96,
+        "price_above_ma20": true,
+        "current_price": 150.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 38,
+        "recommendation": "回檔觀察",
+        "reason": "技術面站穩MA20、MACD轉正偏多，但籌碼與基本面數據不足，震盪市待回檔確認（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "2881",
+        "stock_name": "富邦金",
+        "industry": "金融",
+        "close_price": 150.0,
+        "change_5d": -0.99,
+        "volatility": 25.77,
+        "rsi": 49.06
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 150.0
+    },
+    {
+      "id": "20260925-2317",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "2317",
+      "stock_name": "鴻海",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2317",
+        "name": "鴻海",
+        "industry": "電子",
+        "regime": "震盪",
+        "revenue_yoy": -2.61,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 0,
+        "margin_change": 1661,
+        "change_5d": 0.0,
+        "volatility": 23.27,
+        "ma5": 252.0,
+        "ma20": 251.28,
+        "rsi": 40.0,
+        "macd": 0.35,
+        "price_above_ma20": false,
+        "current_price": 250.5,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 32,
+        "recommendation": "回檔觀察",
+        "reason": "營收微幅衰退，股價低於均線，法人未介入，震盪待突破（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "2317",
+        "stock_name": "鴻海",
+        "industry": "電子",
+        "close_price": 250.5,
+        "change_5d": 0.0,
+        "volatility": 23.27,
+        "rsi": 40.0
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 250.5
+    },
+    {
+      "id": "20260925-2382",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "2382",
+      "stock_name": "廣達",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2382",
+        "name": "廣達",
+        "industry": "電子",
+        "regime": "震盪",
+        "revenue_yoy": 15.75,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 0,
+        "margin_change": 220,
+        "change_5d": -1.6,
+        "volatility": 33.22,
+        "ma5": 341.9,
+        "ma20": 338.98,
+        "rsi": 45.11,
+        "macd": 2.0,
+        "price_above_ma20": false,
+        "current_price": 338.5,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 35,
+        "recommendation": "回檔觀察",
+        "reason": "營收正成長、MACD轉正，法人未進場且波動率偏高，待MA20方向確認（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "2382",
+        "stock_name": "廣達",
+        "industry": "電子",
+        "close_price": 338.5,
+        "change_5d": -1.6,
+        "volatility": 33.22,
+        "rsi": 45.11
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 338.5
+    },
+    {
+      "id": "20260925-3711",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "3711",
+      "stock_name": "日月光投控",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "3711",
+        "name": "日月光投控",
+        "industry": "半導體",
+        "regime": "震盪",
+        "revenue_yoy": 11.47,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 0,
+        "margin_change": -195,
+        "change_5d": 13.84,
+        "volatility": 52.98,
+        "ma5": 677.2,
+        "ma20": 626.85,
+        "rsi": 73.82,
+        "macd": 23.88,
+        "price_above_ma20": true,
+        "current_price": 699.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 45,
+        "recommendation": "回檔觀察",
+        "reason": "營收穩健但RSI超買、波動率53%過高，5日漲14%過熱，追高風險大，宜待回檔再評估（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "3711",
+        "stock_name": "日月光投控",
+        "industry": "半導體",
+        "close_price": 699.0,
+        "change_5d": 13.84,
+        "volatility": 52.98,
+        "rsi": 73.82
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 699.0
+    },
+    {
+      "id": "20260925-3017",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "3017",
+      "stock_name": "奇鋐",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "3017",
+        "name": "奇鋐",
+        "industry": "電子",
+        "regime": "震盪",
+        "revenue_yoy": 4.79,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 3,
+        "margin_change": 2,
+        "change_5d": 11.62,
+        "volatility": 57.84,
+        "ma5": 3452.0,
+        "ma20": 3366.75,
+        "rsi": 49.43,
+        "macd": 50.52,
+        "price_above_ma20": true,
+        "current_price": 3555.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 43,
+        "recommendation": "回檔觀察",
+        "reason": "技術面偏多但波動率57%過高，5日漲幅過熱，建議回檔再評估（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "3017",
+        "stock_name": "奇鋐",
+        "industry": "電子",
+        "close_price": 3555.0,
+        "change_5d": 11.62,
+        "volatility": 57.84,
+        "rsi": 49.43
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 3555.0
+    },
+    {
+      "id": "20260925-1504",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "1504",
+      "stock_name": "東元",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "1504",
+        "name": "東元",
+        "industry": "重電",
+        "regime": "震盪",
+        "revenue_yoy": -2.18,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 0,
+        "margin_change": -121,
+        "change_5d": -3.39,
+        "volatility": 20.49,
+        "ma5": 68.86,
+        "ma20": 70.61,
+        "rsi": 31.68,
+        "macd": -1.0,
+        "price_above_ma20": false,
+        "current_price": 68.5,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 38,
+        "recommendation": "回檔觀察",
+        "reason": "營收微跌、破MA20、RSI近超賣，融資略減，待站回均線再評估（缺失：毛利率、淨利率、EPS）",
+        "stock_code": "1504",
+        "stock_name": "東元",
+        "industry": "重電",
+        "close_price": 68.5,
+        "change_5d": -3.39,
+        "volatility": 20.49,
+        "rsi": 31.68
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 68.5
+    },
+    {
+      "id": "20260925-1519",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "1519",
+      "stock_name": "華城",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "1519",
+        "name": "華城",
+        "industry": "重電",
+        "regime": "震盪",
+        "revenue_yoy": -6.51,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 0,
+        "margin_change": -43,
+        "change_5d": -0.85,
+        "volatility": 32.99,
+        "ma5": 710.8,
+        "ma20": 722.1,
+        "rsi": 29.91,
+        "macd": -9.67,
+        "price_above_ma20": false,
+        "current_price": 699.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 32,
+        "recommendation": "回檔觀察",
+        "reason": "RSI超賣且融資出清，短線或有反彈，但營收衰退、跌破均線，趨勢偏弱（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "1519",
+        "stock_name": "華城",
+        "industry": "重電",
+        "close_price": 699.0,
+        "change_5d": -0.85,
+        "volatility": 32.99,
+        "rsi": 29.91
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 699.0
+    },
+    {
+      "id": "20260925-2303",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "2303",
+      "stock_name": "聯電",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2303",
+        "name": "聯電",
+        "industry": "半導體",
+        "regime": "震盪",
+        "revenue_yoy": 5.04,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 0,
+        "margin_change": 232,
+        "change_5d": 4.41,
+        "volatility": 57.59,
+        "ma5": 157.4,
+        "ma20": 141.72,
+        "rsi": 70.0,
+        "macd": 8.92,
+        "price_above_ma20": true,
+        "current_price": 154.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 45,
+        "recommendation": "回檔觀察",
+        "reason": "RSI超買且波動率57%過高，多頭趨勢但追高風險大，法人未進場（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "2303",
+        "stock_name": "聯電",
+        "industry": "半導體",
+        "close_price": 154.0,
+        "change_5d": 4.41,
+        "volatility": 57.59,
+        "rsi": 70.0
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 154.0
+    },
+    {
+      "id": "20260925-2882",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "2882",
+      "stock_name": "國泰金",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2882",
+        "name": "國泰金",
+        "industry": "金融",
+        "regime": "震盪",
+        "revenue_yoy": 17.31,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 0,
+        "margin_change": 44,
+        "change_5d": -1.34,
+        "volatility": 31.06,
+        "ma5": 111.5,
+        "ma20": 111.38,
+        "rsi": 37.84,
+        "macd": 1.08,
+        "price_above_ma20": false,
+        "current_price": 110.5,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 45,
+        "recommendation": "回檔觀察",
+        "reason": "股價低於MA20，MACD正、RSI偏弱，無法人加持，待回穩（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "2882",
+        "stock_name": "國泰金",
+        "industry": "金融",
+        "close_price": 110.5,
+        "change_5d": -1.34,
+        "volatility": 31.06,
+        "rsi": 37.84
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 110.5
+    },
+    {
+      "id": "20260925-2412",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "2412",
+      "stock_name": "中華電",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2412",
+        "name": "中華電",
+        "industry": "電信",
+        "regime": "震盪",
+        "revenue_yoy": 17.22,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 0,
+        "margin_change": 0,
+        "change_5d": 0.0,
+        "volatility": 8.36,
+        "ma5": 145.1,
+        "ma20": 140.85,
+        "rsi": 85.71,
+        "macd": 2.65,
+        "price_above_ma20": true,
+        "current_price": 145.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 40,
+        "recommendation": "回檔觀察",
+        "reason": "RSI超買嚴重，無法人加碼，低波動與均線支撐為正面（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "2412",
+        "stock_name": "中華電",
+        "industry": "電信",
+        "close_price": 145.0,
+        "change_5d": 0.0,
+        "volatility": 8.36,
+        "rsi": 85.71
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 145.0
+    },
+    {
+      "id": "20260925-2002",
+      "timestamp": "2026-09-25T22:11:40.144181+08:00",
+      "stock_code": "2002",
+      "stock_name": "中鋼",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2002",
+        "name": "中鋼",
+        "industry": "傳產",
+        "regime": "震盪",
+        "revenue_yoy": -5.96,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": null,
+        "inst_buy_days": 2,
+        "margin_change": -117,
+        "change_5d": -0.27,
+        "volatility": 8.28,
+        "ma5": 18.67,
+        "ma20": 18.88,
+        "rsi": 30.43,
+        "macd": -0.15,
+        "price_above_ma20": false,
+        "current_price": 18.65,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 55,
+        "recommendation": "回檔觀察",
+        "reason": "RSI近超賣、低波動、融資減少籌碼趨穩，但股價低於MA20待確認（缺失欄位：毛利率、淨利率、EPS）",
+        "stock_code": "2002",
+        "stock_name": "中鋼",
+        "industry": "傳產",
+        "close_price": 18.65,
+        "change_5d": -0.27,
+        "volatility": 8.28,
+        "rsi": 30.43
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 18.65
     }
   ],
   "metadata": {
     "created_at": "2024-01-01T00:00:00+08:00",
-    "total_records": 220,
+    "total_records": 234,
     "description": "儲存所有分析預測結果與準確性追蹤",
     "skipped_stocks": [
       {
