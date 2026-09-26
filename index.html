@@ -96,6 +96,13 @@
             <div id="setup-table" class="overflow-x-auto"><p class="text-gray-500">載入中...</p></div>
         </div>
 
+        <!-- 🇺🇸 美股動能觀察 -->
+        <div class="bg-white border rounded-lg p-4 mb-6">
+            <h2 class="text-xl font-semibold mb-2">🇺🇸 美股動能觀察</h2>
+            <p class="text-sm text-gray-500 mb-4">VIX × RSI 四象限：黃金買點 / 動量突破 / 極度危險；財報前 3 日不進新倉</p>
+            <div id="us-table" class="overflow-x-auto"><p class="text-gray-500">載入中...</p></div>
+        </div>
+
         <!-- 💰 今日 5,000 元配置建議 -->
         <div class="bg-white border rounded-lg p-4 mb-6">
             <h2 class="text-xl font-semibold mb-2">💰 今日 5,000 元配置建議</h2>
@@ -951,6 +958,7 @@
                 '右側確認': 'bg-blue-100 text-blue-800',
                 '反彈陷阱': 'bg-yellow-100 text-yellow-800',
                 '極度危險': 'bg-red-100 text-red-800',
+                '動量突破': 'bg-indigo-100 text-indigo-800',
             };
             const cls = styles[scenario] || 'bg-gray-100 text-gray-800';
             const emoji = {
@@ -958,6 +966,7 @@
                 '右側確認': '🔵',
                 '反彈陷阱': '⚠️',
                 '極度危險': '🔴',
+                '動量突破': '🚀',
             };
             const emojiChar = emoji[scenario] || '⚪';
             return `<span class="px-2 py-1 ${cls} rounded text-xs font-bold">${emojiChar} ${escapeHTML(scenario || '中性')}</span>`;
@@ -975,7 +984,9 @@
             await loadCrypto();
             // 4. 載入 Setup 突破觀察資料
             await loadSetup();
-            // 5. 載入今日 5,000 元配置建議
+            // 5. 載入美股動能觀察資料
+            await loadUS();
+            // 6. 載入今日 5,000 元配置建議（v2 統一分配器）
             await loadAdvice();
         });
 
@@ -1012,29 +1023,64 @@
             }
         }
 
-        // 💰 載入今日 5,000 元配置建議（data/advice.json）
+        // 🇺🇸 載入美股動能觀察表格（data/us_candidates.json）
+        async function loadUS() {
+            const el = document.getElementById('us-table');
+            try {
+                const res = await fetch(BASE + 'data/us_candidates.json?v=' + Date.now());
+                if (!res.ok) throw new Error(res.status);
+                const d = await res.json();
+                let html = `<p class="mb-2 text-sm">VIX：<b>${d.vix ?? '-'}</b>｜市場象限：${escapeHTML(d.market_scenario?.scenario || '-')}</p>`;
+                const cands = d.candidates || [];
+                if (!cands.length) {
+                    el.innerHTML = html + '<p class="text-gray-500 text-center py-4">今日無可行動的美股情境。</p>';
+                    return;
+                }
+                html += '<table class="min-w-full divide-y divide-gray-200"><thead><tr>' +
+                    '<th class="px-4 py-2 text-left text-xs">股票</th><th class="px-4 py-2 text-left text-xs">價格</th>' +
+                    '<th class="px-4 py-2 text-left text-xs">距52週高</th><th class="px-4 py-2 text-left text-xs">RSI</th>' +
+                    '<th class="px-4 py-2 text-left text-xs">情境</th><th class="px-4 py-2 text-left text-xs">財報</th>' +
+                    '<th class="px-4 py-2 text-left text-xs">建議/停損</th></tr></thead><tbody>';
+                cands.forEach(c => {
+                    const earn = c.days_to_earnings == null ? '-' :
+                        (c.earnings_guard ? `⚠️ ${c.days_to_earnings} 天後` : `${c.days_to_earnings} 天後`);
+                    html += `<tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-sm font-bold">${escapeHTML(c.symbol)}</td>
+                        <td class="px-4 py-3 text-sm">$${c.price}</td>
+                        <td class="px-4 py-3 text-sm">${c.dist_to_52w_high_pct}%</td>
+                        <td class="px-4 py-3 text-sm">${c.rsi}</td>
+                        <td class="px-4 py-3 text-sm">${renderScenarioBadge(c.scenario)}</td>
+                        <td class="px-4 py-3 text-sm">${earn}</td>
+                        <td class="px-4 py-3 text-xs text-gray-600">${escapeHTML(c.recommendation)}；${escapeHTML(c.stop_loss)}</td>
+                    </tr>`;
+                });
+                el.innerHTML = html + '</tbody></table>';
+            } catch (e) {
+                el.innerHTML = '<p class="text-gray-500 text-center py-4">暫無美股數據（請先執行 Daily US Momentum）</p>';
+            }
+        }
+
+        // 💰 載入今日 5,000 元配置建議 v2（data/advice.json：統一資金分配器）
         async function loadAdvice() {
             const el = document.getElementById('advice-box');
             try {
                 const res = await fetch(BASE + 'data/advice.json?v=' + Date.now());
                 if (!res.ok) throw new Error(res.status);
                 const a = await res.json();
-                const c = a.crypto || {}, t = a.tw_stock || {}, cash = a.cash || {};
-                let html = `<p><b>市場狀態</b>：台股 ${escapeHTML(a.tw_regime || '-')}｜加密 FNG ${c.fng ?? '-'}</p>`;
-                html += `<p>🪙 <b>加密</b>：${escapeHTML(c.action || '-')}（${c.alloc ?? 0} 元）</p>`;
-                (c.right_side || []).slice(0, 3).forEach(x => {
-                    html += `<p class="ml-4">🔵 右側確認：<b>${escapeHTML(x.symbol)}</b> RSI=${x.rsi || '-'}｜停損 ${escapeHTML(x.stop_loss || '跌破MA20')}</p>`;
-                });
-                (c.golden || []).slice(0, 3).forEach(x => {
-                    html += `<p class="ml-4">🟢 黃金買點：<b>${escapeHTML(x.symbol)}</b> RSI=${x.rsi || '-'}</p>`;
-                });
-                html += `<p>🇹🇼 <b>台股</b>：${escapeHTML(t.action || '-')}（${t.alloc ?? 0} 元）</p>`;
-                html += `<p>💵 <b>保留現金</b>：${cash.alloc ?? 0} 元 — ${escapeHTML(cash.note || '')}</p>`;
-                // P2：顯示 advice.json 生成時間，方便確認 advisor 是否準時執行
-                html += `<p class="text-xs text-gray-400 mt-2">生成時間：${a.updated_at ? new Date(a.updated_at).toLocaleString('zh-TW') : '-'}</p>`;
+                let html = `<p><b>市場狀態</b>：台股 ${escapeHTML(a.tw_regime || '-')}｜FNG ${a.fng ?? '-'}｜VIX ${a.vix ?? '-'}</p>`;
+                (a.warnings || []).forEach(w => html += `<p class="text-red-600">${escapeHTML(w)}</p>`);
+                if (!a.plan || a.plan.length === 0) {
+                    html += '<p>今日無符合情境：<b>全數持現金</b></p>';
+                } else {
+                    a.plan.forEach(p => {
+                        html += `<p>• <b>[${escapeHTML(p.market)}] ${escapeHTML(p.label)}</b> → ${p.alloc} 元<br>` +
+                                `<span class="ml-4 text-gray-500">${escapeHTML(p.detail)}</span></p>`;
+                    });
+                }
+                html += `<p>💵 <b>現金保留</b>：${a.cash?.alloc ?? 0} 元</p>`;
                 el.innerHTML = html;
             } catch (e) {
-                el.innerHTML = '<p class="text-gray-500">暫無建議資料（advisor 尚未執行）</p>';
+                el.innerHTML = '<p class="text-gray-500">暫無建議資料</p>';
             }
         }
     </script>

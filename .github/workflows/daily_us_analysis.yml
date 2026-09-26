@@ -1,0 +1,52 @@
+name: Daily US Momentum Analysis (美股動能)
+
+on:
+  schedule:
+    # 美股收盤後：UTC 22:00 ≈ 台北次日 06:00（夏令）/ 05:00（冬令），週一至週五
+    - cron: '0 22 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  us-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:          # ⚠️ 不可省略（上次的教訓）
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install yfinance pandas requests
+
+      - name: Run US Screener
+        run: |
+          cd src
+          python us_screener.py
+
+          if [ ! -f ../data/us_candidates.json ]; then
+            echo "❌ US screener failed to produce file"
+            exit 1
+          fi
+          COUNT=$(python -c "import json; print(len(json.load(open('../data/us_candidates.json')).get('candidates', [])))")
+          echo "🇺🇸 美股候選數量：$COUNT"
+
+      - name: Refresh Market Advisor
+        run: |
+          cd src
+          python market_advisor.py || echo "⚠️ advisor 失敗（不阻斷）"
+
+      - name: Commit and Push results
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          [ -f data/us_candidates.json ] && git add data/us_candidates.json || echo "⚠️ 無 us_candidates.json"
+          [ -f data/advice.json ] && git add data/advice.json || echo "⚠️ 無 advice.json"
+          git commit -m "🇺🇸 Daily US Analysis: $(date +'%Y-%m-%d')" || echo "No changes to commit"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
