@@ -399,6 +399,22 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
                         'data_source': 'yahoo' if use_yahoo_fallback else 'finmind',  # ✅ 加入數據來源標記
                     }
                     
+                    # ✅ 5.5 🔴 方案 A：財報全缺時在呼叫 Groq「之前」攔截，節省 token
+                    # 原問題：FinancialStatements 全面 422 時，14 檔股票仍各消耗一次
+                    # Groq API call（~4-5 秒/次），且 EV 評分基於殘缺數據（無基本面）。
+                    financial_complete = not (gross_margin is None and net_margin is None and eps is None)
+                    if not financial_complete:
+                        logger.warning(
+                            f"{code}: 財報全缺（毛利率/淨利率/EPS 皆為 None），"
+                            f"跳過 AI 分析以節省 Groq token"
+                        )
+                        skipped_stocks.append({
+                            "code": code,
+                            "name": stock.get('name', ''),
+                            "error": "財報全缺：跳過 AI 分析（避免浪費 Groq token）"
+                        })
+                        continue  # 直接跳過，不呼叫 Groq
+
                     # ✅ 6. 呼叫 Groq 分析 (加入容錯)
                     analysis = groq.analyze_stock(prompt_tpl, stock_data)
                     if not analysis:
@@ -467,10 +483,10 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
                     skipped_stocks.append({"code": code, "name": stock.get('name', ''), "error": str(e)})
                 
                 # 🔴 P1 加固：檢查部分失敗（關鍵欄位全缺）
+                # 注意：「財報全缺」已在步骤 5.5 於呼叫 Groq 前攔截並 continue，
+                # 這裡只需補記「無股價資料」（例如 Yahoo 備援回傳空價格但未拋例外）。
                 if code not in [s.get('code') for s in skipped_stocks]:
                     partial_issues = []
-                    if gross_margin is None and net_margin is None and eps is None:
-                        partial_issues.append("財報全缺")
                     if not prices:
                         partial_issues.append("無股價資料")
                     if partial_issues:
