@@ -43,12 +43,32 @@ def _dynamic_date_ranges():
 
 
 def check_live(client):
-    """直接打 FinMind：批量端點不得因缺少 data_id 而回 400/None"""
+    """直接打 FinMind（#92 守門語意修正）
+
+    - 批量 = 「選配能力」：免費 Token 對交易類 dataset 的批量查詢必然 400，
+      screener 有個股保底（fetch_revenue_yoy_map / fetch_inst_streak_map），
+      因此批量 UNSUPPORTED 只警告、不 fail——否則 CI 永久紅、擋死所有 PR。
+    - 個股 = 「必要契約」：保底路徑依賴個股 MonthRevenue，失敗才 fail。
+
+    注意：check_contract()（mock 驗「批量不帶 data_id、個股必帶」）
+    維持硬門檻不變——那才是 #90 要防的回歸。
+    """
     ok = True
+    # 批量：選配。400/None 只警告（screener 有個股保底），不 fail
     for ds, sd, ed in _dynamic_date_ranges():
         data = client._make_request(ds, "", start_date=sd, end_date=ed)
-        print(f"{ds}: {'OK ' + str(len(data)) + ' rows' if data is not None else 'FAIL'}")
-        ok &= data is not None
+        if data is not None:
+            print(f"[bulk-optional] {ds}: OK {len(data)} rows（快路可用）")
+        else:
+            print(f"[bulk-optional] {ds}: UNSUPPORTED(400) → "
+                  f"screener 自動降級個股模式（預期行為）")
+    # 個股：必要。失敗才 fail
+    per = client._make_request("TaiwanStockMonthRevenue", "2330", days=400)
+    if per is None or not per:
+        print("FAIL: 個股 MonthRevenue 不可用（screener 保底路徑斷裂）")
+        ok = False
+    else:
+        print(f"[per-stock-required] MonthRevenue(2330): OK {len(per)} rows")
     return ok
 
 
