@@ -141,13 +141,14 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">波動率</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">EV 分數</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">建議</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">買賣點</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">風險等級</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">AI 理由</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">外部工具</th>
                         </tr>
                     </thead>
                     <tbody id="analysis-table" class="divide-y divide-gray-200">
-                        <tr><td colspan="9" class="px-4 py-4 text-center"><div class="loading-spinner mx-auto mb-2"></div>AI 分析運算中...</td></tr>
+                        <tr><td colspan="10" class="px-4 py-4 text-center"><div class="loading-spinner mx-auto mb-2"></div>AI 分析運算中...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -322,7 +323,7 @@
                     renderAnalysisTable(deep.all_results);
                     // ❌ 已移除：calculateAccuracyStats(metricsData, telemetryData); - 移至變數宣告後
                 } else {
-                    document.getElementById('analysis-table').innerHTML = '<tr><td colspan="9" class="px-4 py-4 text-center text-gray-500">暫無分析數據</td></tr>';
+                    document.getElementById('analysis-table').innerHTML = '<tr><td colspan="10" class="px-4 py-4 text-center text-gray-500">暫無分析數據</td></tr>';
                 }
 
                 // 🟢 P0 Patch 2: 頂部卡 fallback - 讀不到 metrics 就用 telemetry 現算
@@ -507,11 +508,34 @@
         }
 
         // 渲染分析表格（支援排序和篩選）
+        // 🆕 交易計畫渲染（買點/賣點欄位）
+        function renderTradingPlan(plan, currentPrice) {
+            if (!plan || plan.entry_type === 'none') {
+                return '<span class="text-gray-400 text-xs">—</span>';
+            }
+
+            const [low, high] = plan.entry_zone || [0, 0];
+
+            // 狀態顏色
+            const statusColor = plan.entry_type === 'now' ? 'text-green-600 font-bold'
+                               : 'text-yellow-600';
+
+            return `
+                <div class="text-xs space-y-0.5">
+                    <div class="${statusColor}">${escapeHTML(plan.status)}</div>
+                    <div class="text-gray-600">買：<b>${low}~${high}</b></div>
+                    <div class="text-red-500">停損：${plan.stop_loss}</div>
+                    <div class="text-green-600">停利：${plan.take_profit_1}/${plan.take_profit_2}</div>
+                    <div class="text-gray-500">R/R：${plan.risk_reward || '-'}</div>
+                </div>
+            `;
+        }
+
         function renderAnalysisTable(data) {
             const tableBody = document.getElementById('analysis-table');
             
             if (!data || data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="9" class="px-4 py-4 text-center text-gray-500">無數據</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="10" class="px-4 py-4 text-center text-gray-500">無數據</td></tr>';
                 return;
             }
 
@@ -546,6 +570,9 @@
                                 'bg-yellow-100 text-yellow-800'
                             }">${escapeHTML(r.recommendation) || '-'}</span>
                         </td>
+                        <td class="px-4 py-3 text-sm">
+                            ${renderTradingPlan(r.trading_plan, r.current_price)}
+                        </td>
                         <td class="px-4 py-3 text-sm">${escapeHTML(r.risk_level) || '-'}</td>
                         <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title="${escapeHTML(r.reason)}">
                             ${escapeHTML(r.reason) ? escapeHTML(r.reason).substring(0, 20) + '...' : '-'}
@@ -564,7 +591,7 @@
                 // 詳細資訊行
                 const detailRow = `
                     <tr id="${rowId}" class="hidden bg-gray-50">
-                        <td colspan="9" class="px-6 py-5 border-b border-gray-200">
+                        <td colspan="10" class="px-6 py-5 border-b border-gray-200">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 
                                 <!-- 卡片 1：基本面數據 -->
