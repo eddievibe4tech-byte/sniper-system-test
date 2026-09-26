@@ -23,7 +23,7 @@
       "stop_loss": "跌破 MA50 或 -8% 停損",
       "take_profit": "MA50 移動停利，+25% 先減半",
       "holding_period": "1-3 個月",
-      "screened_at": "2026-09-26 01:51"
+      "screened_at": "2026-09-26 02:02"
     }
   ],
   "vix": null,
@@ -34,7 +34,7 @@
     "note": "市場層級象限（VIX + SPY RSI）"
   },
   "error": null,
-  "updated_at": "2026-09-26T01:51:26.270910",
+  "updated_at": "2026-09-26T02:02:56.427368",
   "rules_applied": {
     "vix_panic": 30.0,
     "vix_calm": 20.0,
