@@ -316,11 +316,11 @@
                 if (deep && deep.all_results) {
                     console.log("Deep analysis data:", deep);
                     
-                    // 儲存數據供排序使用
+                    // 儲存數據供統一表格管線（排序＋篩選）使用
                     window.analysisData = deep.all_results;
-                    
-                    // 渲染表格
-                    renderAnalysisTable(deep.all_results);
+
+                    // 渲染表格（統一管線：排序與篩選同時生效）
+                    applyTablePipeline();
                     // ❌ 已移除：calculateAccuracyStats(metricsData, telemetryData); - 移至變數宣告後
                 } else {
                     document.getElementById('analysis-table').innerHTML = '<tr><td colspan="10" class="px-4 py-4 text-center text-gray-500">暫無分析數據</td></tr>';
@@ -535,7 +535,12 @@
             const tableBody = document.getElementById('analysis-table');
             
             if (!data || data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="10" class="px-4 py-4 text-center text-gray-500">無數據</td></tr>';
+                // 改善空狀態提示：篩選為空是「正常訊號」，避免誤以為系統壞掉
+                const f = window.__tableState && window.__tableState.filter;
+                const msg = f
+                    ? `目前沒有「${escapeHTML(f)}」建議的股票（正常：代表系統今天未發出此訊號）`
+                    : '無數據';
+                tableBody.innerHTML = `<tr><td colspan="10" class="px-4 py-4 text-center text-gray-500">${msg}</td></tr>`;
                 return;
             }
 
@@ -589,6 +594,20 @@
                 `;
                 
                 // 詳細資訊行
+                // 🆕 交易計畫卡片：展開時顯示完整買賣點（進場區間／停損停利／R/R／行動說明）
+                const planCard = r.trading_plan && r.trading_plan.entry_type !== 'none' ? `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 md:col-span-3">
+                        <h4 class="font-bold text-gray-800 mb-3">🎯 交易計畫</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+                            <div><span class="text-gray-500">狀態：</span><b>${escapeHTML(r.trading_plan.status)}</b></div>
+                            <div><span class="text-gray-500">進場區間：</span><b>${r.trading_plan.entry_zone[0]} ~ ${r.trading_plan.entry_zone[1]}</b></div>
+                            <div><span class="text-gray-500">停損：</span><b class="text-red-600">${r.trading_plan.stop_loss}</b></div>
+                            <div><span class="text-gray-500">停利：</span><b class="text-green-600">${r.trading_plan.take_profit_1} / ${r.trading_plan.take_profit_2}</b></div>
+                            <div><span class="text-gray-500">R/R：</span><b>${r.trading_plan.risk_reward}</b></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">${escapeHTML(r.trading_plan.action_now)}</p>
+                    </div>` : '';
+
                 const detailRow = `
                     <tr id="${rowId}" class="hidden bg-gray-50">
                         <td colspan="10" class="px-6 py-5 border-b border-gray-200">
@@ -639,6 +658,8 @@
                                     </div>
                                 </div>
 
+                                ${planCard}
+
                             </div>
                         </td>
                     </tr>
@@ -685,40 +706,38 @@
             }
         }
 
-        // 排序功能
-        function sortTable() {
-            const sortBy = document.getElementById('sort-by').value;
+        // 🆕 統一表格狀態（排序 + 篩選同時生效，避免兩條管線互相覆蓋）
+        window.__tableState = { sortBy: 'ev_score', filter: '' };
+
+        // 🆕 統一渲染管線：先依目前篩選條件過濾，再依目前排序鍵排序，最後一次渲染
+        function applyTablePipeline() {
             if (!window.analysisData) return;
-            
-            let sorted = [...window.analysisData];
-            
-            if (sortBy === 'ev_score') {
-                sorted.sort((a, b) => (b.ev_score || 0) - (a.ev_score || 0));
-            } else if (sortBy === 'rsi') {
-                sorted.sort((a, b) => (a.rsi || 0) - (b.rsi || 0));
-            } else if (sortBy === 'change_5d') {
-                sorted.sort((a, b) => (b.change_5d || 0) - (a.change_5d || 0));
-            } else if (sortBy === 'volatility') {
-                sorted.sort((a, b) => (b.volatility || 0) - (a.volatility || 0));
-            }
-            
-            // 重新渲染
-            renderAnalysisTable(sorted);
+            let rows = [...window.analysisData];
+
+            // 1. 先篩選
+            const f = window.__tableState.filter;
+            if (f) rows = rows.filter(r => r.recommendation === f);
+
+            // 2. 再排序
+            const s = window.__tableState.sortBy;
+            if (s === 'ev_score')        rows.sort((a, b) => (b.ev_score || 0) - (a.ev_score || 0));
+            else if (s === 'rsi')        rows.sort((a, b) => (a.rsi || 0) - (b.rsi || 0));
+            else if (s === 'change_5d')  rows.sort((a, b) => (b.change_5d || 0) - (a.change_5d || 0));
+            else if (s === 'volatility') rows.sort((a, b) => (b.volatility || 0) - (a.volatility || 0));
+
+            renderAnalysisTable(rows);
         }
 
-        // 篩選功能
+        // 排序功能（僅更新狀態，交由統一管線渲染）
+        function sortTable() {
+            window.__tableState.sortBy = document.getElementById('sort-by').value;
+            applyTablePipeline();
+        }
+
+        // 篩選功能（僅更新狀態，交由統一管線渲染）
         function filterTable() {
-            const filter = document.getElementById('filter-recommendation').value;
-            if (!window.analysisData) return;
-            
-            let filtered = window.analysisData;
-            
-            if (filter && filter !== '') {
-                filtered = window.analysisData.filter(r => r.recommendation === filter);
-            }
-            
-            // 重新渲染
-            renderAnalysisTable(filtered);
+            window.__tableState.filter = document.getElementById('filter-recommendation').value;
+            applyTablePipeline();
         }
 
         // 渲染近期預測紀錄表格（在 loadDashboard 中呼叫）
