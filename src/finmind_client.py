@@ -35,7 +35,7 @@ class FinMindClient:
         
         Args:
             dataset: 數據集名稱
-            stock_id: 股票代號（v4 用 data_id）
+            stock_id: 股票代號（v4 用 data_id）；空字串表示批量查詢（不帶 data_id）
             days: 日期範圍天數（當 start_date/end_date 未提供時使用）
             start_date: 開始日期（格式：YYYY-MM-DD），優先於 days
             end_date: 結束日期（格式：YYYY-MM-DD），優先於 days
@@ -58,11 +58,17 @@ class FinMindClient:
         
         request_params = {
             'dataset': dataset,
-            'data_id': stock_id,
             'start_date': start_d,
             'end_date': end_d,
             'token': self.token,
         }
+        # 🔴 關鍵修正（#90）：FinMind 的批量查詢要求「完全不帶」data_id 參數。
+        # 送出 data_id=（空字串）會讓 TaiwanStockMonthRevenue /
+        # TaiwanStockInstitutionalInvestorsBuySell 等端點回 400，
+        # 導致海選抓不到任何資料卻被誤判為「市場太弱」。
+        # 只有個股查詢（stock_id 非空）才加入 data_id。
+        if stock_id:
+            request_params['data_id'] = stock_id
         
         try:
             response = self.session.get(self.base_url, params=request_params, timeout=10)

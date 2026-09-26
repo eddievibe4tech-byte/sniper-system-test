@@ -6,7 +6,7 @@ import json
 import os
 import time
 from datetime import datetime, timedelta
-from typing import List, Dict
+from typing import List, Dict, Optional
 from finmind_client import FinMindClient
 
 # 嚴格條件（多頭市場）
@@ -38,10 +38,16 @@ def _latest_rev_month(today):
 
 
 def fetch_month_revenue(finmind, y, m):
-    """取得指定月份的營收數據"""
+    """取得指定月份的營收數據
+
+    🔴 修正（#90）：抓取失敗回傳 None（不再用 `or []` 吞掉失敗），
+    讓上層能區分「FinMind 拒答」與「真的沒有資料」。
+    """
     data = finmind._make_request('TaiwanStockMonthRevenue', '',
                                  start_date=f"{y}-{m:02d}-01",
-                                 end_date=f"{y}-{m:02d}-31") or []
+                                 end_date=f"{y}-{m:02d}-31")
+    if data is None:
+        return None
     return {r['stock_id']: r['revenue'] for r in data if r.get('revenue')}
 
 
@@ -112,6 +118,9 @@ def _screen_with_rules(finmind: FinMindClient, rules: Dict, info: Dict) -> List[
     y, m = _latest_rev_month(today)
     rev_now = fetch_month_revenue(finmind, y, m)
     rev_past = fetch_month_revenue(finmind, y - 1, m)
+    # 🔴 修正（#90）：抓取失敗要大聲失敗，不要偽裝成「市場太弱」
+    if rev_now is None or rev_past is None:
+        raise RuntimeError("FinMind 批量營收抓取失敗（400？檢查 data_id 參數）")
     yoy = {c: (rev_now[c] - rev_past[c]) / rev_past[c] * 100
            for c in rev_now if rev_past.get(c)}
     pool = [c for c, v in yoy.items() if v >= rules["revenue_yoy_min"]]
@@ -158,46 +167,59 @@ def _screen_with_rules(finmind: FinMindClient, rules: Dict, info: Dict) -> List[
 
 
 def run_weekly_screener(finmind: FinMindClient) -> List[Dict]:
-    """方案 C 混合版：動態條件 + 空結果容錯"""
+    """方案 C 混合版：動態條件 + 空結果容錯
+
+    🔴 修正（#90）：抓取失敗（RuntimeError）時記錄 error 欄位並非零退出，
+    讓 workflow 紅燈、Actions 通知；不再把「FinMind 拒答」偽裝成「市場太弱」。
+    rules_applied 改為誠實標籤：STRICT / RELAXED (auto) / NONE (genuine zero)。
+    """
     info = {s['stock_id']: s for s in get_all_taiwan_stocks(finmind)}
-    
-    # 第一輪：嚴格條件
-    candidates = _screen_with_rules(finmind, STRICT_RULES, info)
-    rules_used = "STRICT"
-    
-    # 如果 0 檔，自動放寬條件重跑
+
+    try:
+        # 第一輪：嚴格條件
+        candidates = _screen_with_rules(finmind, STRICT_RULES, info)
+        rules_used = "STRICT"
+
+        # 如果 0 檔，自動放寬條件重跑
+        if not candidates:
+            print("⚠️ 嚴格條件無候選股，自動放寬條件重跑...")
+            candidates = _screen_with_rules(finmind, RELAXED_RULES, info)
+            rules_used = "RELAXED (auto)"
+
+            if candidates:
+                print(f"✅ 放寬條件後找到 {len(candidates)} 檔候選股")
+    except RuntimeError as e:
+        # 抓取失敗 → 誠實記錄錯誤並讓 workflow 紅燈
+        print(f"❌ 海選資料抓取失敗：{e}")
+        save_screener_results([], rules_used="ERROR", error=str(e))
+        raise SystemExit(1)
+
+    # 真的 0 檔（數據正常但無符合者）→ 接受空結果（不中斷 workflow）
     if not candidates:
-        print("⚠️ 嚴格條件無候選股，自動放寬條件重跑...")
-        candidates = _screen_with_rules(finmind, RELAXED_RULES, info)
-        rules_used = "RELAXED"
-        
-        if candidates:
-            print(f"✅ 放寬條件後找到 {len(candidates)} 檔候選股")
-    
-    # 如果還是 0 檔，接受空結果（不中斷 workflow）
-    if not candidates:
-        print("⚠️ 本週市場環境嚴峻，無符合條件的候選股")
-        save_screener_results([], "NONE (market too weak)")
+        print("⚠️ 本週真的無符合條件的候選股（數據正常，genuine zero）")
+        save_screener_results([], rules_used="NONE (genuine zero)")
         return []
-    
+
     top = candidates[:15]
-    save_screener_results(top, rules_used)
+    save_screener_results(top, rules_used=rules_used)
     print(f"✅ 海選完成：{len(top)} 檔候選")
     return top
 
 
-def save_screener_results(candidates: List[Dict], rules_applied: str = "STRICT") -> None:
+def save_screener_results(candidates: List[Dict], rules_used: str = "UNKNOWN",
+                          error: Optional[str] = None) -> None:
     data_dir = os.path.join(os.path.dirname(__file__), '..', 'data')
     os.makedirs(data_dir, exist_ok=True)
     output_path = os.path.join(data_dir, 'screener_candidates.json')
-    
+
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump({
             "candidates": candidates,
             "updated_at": datetime.now().isoformat(),
-            "rules_applied": rules_applied
+            "rules_applied": rules_used,
+            "error": error,
         }, f, ensure_ascii=False, indent=2)
-    
+
     print(f"📁 結果已儲存至：{output_path}")
 
 
