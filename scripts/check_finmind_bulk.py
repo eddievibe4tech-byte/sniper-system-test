@@ -20,6 +20,8 @@ from datetime import datetime, timedelta
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from finmind_client import FinMindClient  # noqa: E402
+# 🟢 #95：共用 screener 的批量能力快取（首次確認不可用後跳過探測，消除 400 log 噪音）
+from screener import bulk_supported, mark_bulk_unsupported  # noqa: E402
 
 
 def _dynamic_date_ranges():
@@ -50,18 +52,27 @@ def check_live(client):
       因此批量 UNSUPPORTED 只警告、不 fail——否則 CI 永久紅、擋死所有 PR。
     - 個股 = 「必要契約」：保底路徑依賴個股 MonthRevenue，失敗才 fail。
 
+    🟢 #95：接上 screener 的批量能力快取（data/finmind_capabilities.json）。
+    首次確認批量不可用後記檔並改印 INFO；之後 CI run 直接跳過批量探測，
+    log 回歸「只有真錯誤才紅／才吵」。升級付費 Token → 刪該檔即恢復探測。
+
     注意：check_contract()（mock 驗「批量不帶 data_id、個股必帶」）
     維持硬門檻不變——那才是 #90 要防的回歸。
     """
     ok = True
     # 批量：選配。400/None 只警告（screener 有個股保底），不 fail
-    for ds, sd, ed in _dynamic_date_ranges():
-        data = client._make_request(ds, "", start_date=sd, end_date=ed)
-        if data is not None:
-            print(f"[bulk-optional] {ds}: OK {len(data)} rows（快路可用）")
-        else:
-            print(f"[bulk-optional] {ds}: UNSUPPORTED(400) → "
-                  f"screener 自動降級個股模式（預期行為）")
+    if not bulk_supported():
+        print("[bulk-optional] 已知不可用（能力快取命中）→ 跳過探測，"
+              "screener 走個股模式（預期行為）")
+    else:
+        for ds, sd, ed in _dynamic_date_ranges():
+            data = client._make_request(ds, "", start_date=sd, end_date=ed)
+            if data is not None:
+                print(f"[bulk-optional] {ds}: OK {len(data)} rows（快路可用）")
+            else:
+                mark_bulk_unsupported()  # 🟢 #95：記檔，之後 run 不再探測
+                print(f"[bulk-optional] {ds}: UNSUPPORTED(400) → "
+                      f"screener 自動降級個股模式（已記錄能力快取）")
     # 個股：必要。失敗才 fail
     per = client._make_request("TaiwanStockMonthRevenue", "2330", days=400)
     if per is None or not per:
