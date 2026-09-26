@@ -81,7 +81,25 @@ class TestGetFinancialStatementsFixed:
         responses.add(responses.GET, API_URL,
                       json={'status': 200, 'msg': 'success', 'data': []}, status=200)
         client = FinMindClient(token='test_token')
-        assert client.get_financial_statements('2330') is None
+        with pytest.MonkeyPatch.context() as mp:
+            # 本測試聚焦 FinMind 主路徑；fallback 由 yfinance 系列測試覆蓋
+            mp.setattr(client, '_get_financial_from_yfinance', lambda code: None)
+            assert client.get_financial_statements('2330') is None
+
+    @responses.activate
+    def test_source_marked_finmind(self):
+        """FinMind 成功取得時，結果應標記 source='FinMind'（方案 C 雙源可追溯性）"""
+        responses.add(responses.GET, API_URL,
+                      json={'status': 200, 'msg': 'success',
+                            'data': _fs_rows('2026-06-30', revenue=1000.0,
+                                             gross_profit=500.0, income_after_taxes=200.0)},
+                      status=200)
+        client = FinMindClient(token='test_token')
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(client, '_get_eps', lambda code: None)
+            result = client.get_financial_statements('2330')
+        assert result is not None
+        assert result['source'] == 'FinMind'
 
     @responses.activate
     def test_eps_from_per_and_price(self):
@@ -115,6 +133,108 @@ class TestGetFinancialStatementsFixed:
                       status=200)
         client = FinMindClient(token='test_token')
         assert client._get_eps('2330') is None
+
+
+class TestYfinanceFallback:
+    """方案 C-1B：FinMind 財報拿不到時自動 fallback 到 yfinance"""
+
+    @responses.activate
+    def test_falls_back_to_yfinance_when_finmind_empty(self):
+        """FinMind 回空資料 → 應呼叫 _get_financial_from_yfinance 並回傳其結果"""
+        responses.add(responses.GET, API_URL,
+                      json={'status': 200, 'msg': 'success', 'data': []}, status=200)
+        client = FinMindClient(token='test_token')
+        called = {}
+
+        def fake_yf(code):
+            called['code'] = code
+            return {'revenue': None, 'gross_margin': 45.0, 'net_margin': 20.0,
+                    'eps': 3.2, 'fiscal_quarter': '2026-06-30', 'source': 'yfinance'}
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(client, '_get_financial_from_yfinance', fake_yf)
+            result = client.get_financial_statements('2882')
+
+        assert called.get('code') == '2882', "FinMind 空資料時必須觸發 yfinance fallback"
+        assert result is not None
+        assert result['source'] == 'yfinance'
+        assert result['gross_margin'] == 45.0
+
+    @responses.activate
+    def test_falls_back_when_finmind_raises(self):
+        """FinMind 擲例外（如 422）→ 不應崩潰，仍走 yfinance fallback"""
+        responses.add(responses.GET, API_URL, status=500)
+        client = FinMindClient(token='test_token')
+
+        with pytest.MonkeyPatch.context() as mp:
+            def boom(code, days=730):
+                raise RuntimeError("422 Unprocessable Entity")
+            mp.setattr(client, '_get_financial_from_finmind', boom)
+            mp.setattr(client, '_get_financial_from_yfinance',
+                       lambda code: {'gross_margin': 10.0, 'net_margin': 2.0,
+                                     'eps': None, 'source': 'yfinance'})
+            result = client.get_financial_statements('2882')
+
+        assert result is not None and result['source'] == 'yfinance'
+
+    @responses.activate
+    def test_returns_none_when_both_sources_fail(self):
+        """雙資料源都失敗 → 回傳 None，讓 main.py 前置攔截跳過 Groq"""
+        responses.add(responses.GET, API_URL,
+                      json={'status': 200, 'msg': 'success', 'data': []}, status=200)
+        client = FinMindClient(token='test_token')
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(client, '_get_financial_from_yfinance', lambda code: None)
+            assert client.get_financial_statements('2882') is None
+
+    def test_yfinance_helper_parses_income_stmt(self):
+        """_get_financial_from_yfinance：用假 yfinance 模組驗證 income_stmt 解析與 source 標記"""
+        import types
+        import pandas as pd
+
+        client = FinMindClient(token='test_token')
+
+        # 建立假的 yfinance 模組注入 sys.modules
+        # 真實 income_stmt 格式：index=財務項目、columns=期間 → iloc[:,0] 取最新一期
+        income_df = pd.DataFrame(
+            {'2026-06-30': [10000.0, 4000.0, 1500.0]},
+            index=['Total Revenue', 'Gross Profit', 'Net Income'])
+
+        class FakeTicker:
+            def __init__(self, symbol):
+                self.symbol = symbol
+                assert symbol == '2882.TW', "台股代號必須轉為 {code}.TW 格式"
+            income_stmt = income_df
+            info = {'trailingEps': 2.5}
+
+        fake_yf = types.ModuleType('yfinance')
+        fake_yf.Ticker = FakeTicker
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setitem(__import__('sys').modules, 'yfinance', fake_yf)
+            result = client._get_financial_from_yfinance('2882')
+
+        assert result is not None
+        assert result['source'] == 'yfinance'
+        assert result['gross_margin'] == pytest.approx(40.0)
+        assert result['net_margin'] == pytest.approx(15.0)
+        assert result['eps'] == 2.5
+        assert result['revenue'] == 10000.0
+
+    def test_yfinance_helper_returns_none_on_exception(self):
+        """yfinance 拋例外時必須回傳 None（不向上拋，避免中斷主流程）"""
+        import types
+
+        client = FinMindClient(token='test_token')
+
+        class ExplodingTicker:
+            def __init__(self, symbol):
+                raise RuntimeError("network down")
+
+        fake_yf = types.ModuleType('yfinance')
+        fake_yf.Ticker = ExplodingTicker
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setitem(__import__('sys').modules, 'yfinance', fake_yf)
+            assert client._get_financial_from_yfinance('2882') is None
 
 
 class TestSkipGroqWhenFinancialsMissing:

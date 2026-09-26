@@ -267,7 +267,7 @@ class FinMindClient:
     
     def get_financial_statements(self, code: str, days: int = 730) -> Optional[Dict]:
         """
-        抓取財報數據（營收、毛利率、淨利率）
+        抓取財報數據（營收、毛利率、淨利率）——雙資料源：FinMind 主 + yfinance fallback
 
         🔴 422 根因修正（方案 C）：
         1. dataset 名稱錯誤：FinMind v4 正確的個股財報端點是
@@ -280,13 +280,33 @@ class FinMindClient:
         3. 預設改為抓兩年，確保至少涵蓋四個完整季度
            （EPS 需要「最近四季」累计值，單季資料不足以計算）。
 
+        🔴 方案 C 強化（本 PR）：FinMind 財報端點仍可能因 token 權限/
+        服務異常回傳空資料或拋例外，此時自動 fallback 到 yfinance
+        （台股代號 → {code}.TW），確保「雙重資料源」；兩邊都拿不到
+        才回傳 None，讓 main.py 的前置攔截（方案 A）跳過 Groq。
+
         Args:
             code: 股票代號
             days: 日期範圍天數（預設 730，覆蓋最近四季財報）
 
         Returns:
-            包含最新財報數據的字典，取不到時回傳 None（而非 0.0）
+            包含最新財報數據的字典（附 source 標記），取不到時回傳 None（而非 0.0）
         """
+        try:
+            result = self._get_financial_from_finmind(code, days=days)
+        except Exception as e:
+            logger.warning(f"FinMind FinancialStatements {code} 失敗：{e}，嘗試 yfinance fallback")
+            result = None
+
+        if result:
+            return result
+
+        # 🔴 方案 C-1B：FinMind 無資料 → fallback 到 yfinance
+        logger.info(f"{code}: FinMind 財報無資料，改用 yfinance fallback")
+        return self._get_financial_from_yfinance(code)
+
+    def _get_financial_from_finmind(self, code: str, days: int = 730) -> Optional[Dict]:
+        """FinMind TaiwanStockFinancialStatements 長表解析（原方案 C 邏輯）"""
         data = self._make_request('TaiwanStockFinancialStatements', code, days=days)
         if not data:
             return None
@@ -345,7 +365,75 @@ class FinMindClient:
             'net_margin': round(net_margin, 2) if net_margin is not None else None,
             'eps': eps_val,
             'fiscal_quarter': latest_date,
+            'source': 'FinMind',
         }
+
+    def _get_financial_from_yfinance(self, code: str) -> Optional[Dict]:
+        """
+        🔴 方案 C-1B：yfinance fallback——台股代號轉 {code}.TW 抓取財報。
+
+        FinMind 財報端點因 token 權限／服務異常拿不到資料時的最後防線。
+        使用 income_stmt（損益表）最近一期計算毛利率/淨利率，
+        trailingEps 取得 EPS。任何例外一律回傳 None（不拋出），
+        讓上層 main.py 的前置攔截決定是否跳過 Groq。
+        """
+        try:
+            import yfinance as yf
+
+            yf_code = f"{code}.TW"
+            stock = yf.Ticker(yf_code)
+
+            income_stmt = stock.income_stmt
+            if income_stmt is None or income_stmt.empty:
+                logger.warning(f"yfinance {yf_code} 無財報數據")
+                return None
+
+            # 取最近一期（第一欄）
+            latest_col = income_stmt.iloc[:, 0]
+
+            def _num(key: str) -> float:
+                try:
+                    v = latest_col.get(key)
+                    if v is None or (isinstance(v, float) and v != v):  # NaN check
+                        return 0.0
+                    return float(v)
+                except (TypeError, ValueError):
+                    return 0.0
+
+            revenue = _num('Total Revenue')
+            gross_profit = _num('Gross Profit')
+            net_income = _num('Net Income')
+
+            gross_margin = (gross_profit / revenue * 100) if revenue > 0 else None
+            net_margin = (net_income / revenue * 100) if revenue > 0 else None
+
+            # EPS：trailingEps；虧損（負值）也視為有效資訊，但 0/缺漏回 None
+            eps_val = None
+            try:
+                raw_eps = (stock.info or {}).get('trailingEps')
+                if raw_eps not in (None, '', 0):
+                    eps_val = round(float(raw_eps), 2)
+            except (TypeError, ValueError, KeyError):
+                eps_val = None
+
+            has_any = any(v is not None for v in (gross_margin, net_margin, eps_val))
+            if not has_any:
+                logger.warning(f"yfinance {yf_code} 財報欄位全缺")
+                return None
+
+            logger.info(f"yfinance {yf_code} 成功抓取財報（來源：yfinance）")
+            return {
+                'revenue': revenue if revenue > 0 else None,
+                'gross_margin': round(gross_margin, 2) if gross_margin is not None else None,
+                'net_margin': round(net_margin, 2) if net_margin is not None else None,
+                'eps': eps_val,
+                'fiscal_quarter': str(income_stmt.columns[0].date()) if hasattr(income_stmt.columns[0], 'date') else str(income_stmt.columns[0]),
+                'source': 'yfinance',
+            }
+
+        except Exception as e:
+            logger.error(f"yfinance fallback {code} 失敗：{e}")
+            return None
 
     def _get_eps(self, code: str) -> Optional[float]:
         """
