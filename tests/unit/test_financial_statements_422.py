@@ -125,14 +125,18 @@ class TestGetFinancialStatementsFixed:
 
     @responses.activate
     def test_eps_none_when_per_invalid(self):
-        """PER <= 0 或缺失時 EPS 回傳 None（虧損股無本益比）"""
+        """PER <= 0 或缺失時 FinMind 反推回傳 None（虧損股無本益比）；整批 yfinance fallback 也失敗時最終為 None"""
         responses.add(responses.GET, API_URL,
                       json={'status': 200, 'msg': 'success',
                             'data': [{'date': '2026-09-24', 'stock_id': '2330',
                                       'PER': -3.2, 'PBR': 1.0}]},
                       status=200)
         client = FinMindClient(token='test_token')
-        assert client._get_eps('2330') is None
+        assert client._get_eps_from_finmind_per('2330') is None
+        # PER 無效時 _get_eps 會改走 yfinance trailingEps fallback（#103 多層防線）
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(client, '_get_eps_from_yfinance', lambda code: None)
+            assert client._get_eps('2330') is None
 
 
 class TestYfinanceFallback:
@@ -265,3 +269,175 @@ class TestSkipGroqWhenFinancialsMissing:
         assert guard_idx < call_idx, "攔截必须在 Groq 呼叫之前，否则无法节省 token"
         assert 'continue  # 直接跳過，不呼叫 Groq' in src or 'continue' in src[guard_idx:call_idx], \
             "攔截分支应包含 continue"
+
+
+class TestEpsYfinanceFallbackIssue103:
+    """方案 C 補齊（#103）：FinMind PER 反推 EPS 失敗 → yfinance trailingEps fallback"""
+
+    @responses.activate
+    def test_eps_falls_back_to_yfinance_when_per_empty(self):
+        """PER 端點回空資料時，應改用 yfinance trailingEps 而非直接 None"""
+        responses.add(responses.GET, API_URL,
+                      json={'status': 200, 'msg': 'success', 'data': []}, status=200)
+        client = FinMindClient(token='test_token')
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(client, '_get_eps_from_yfinance', lambda code: 3.14)
+            eps = client._get_eps('2330')
+
+        assert eps == 3.14, "PER 反推失敗時必須觸發 yfinance trailingEps fallback"
+
+    @responses.activate
+    def test_eps_falls_back_when_per_nonpositive(self):
+        """虧損股（PER<=0）→ FinMind 無法反推 → yfinance fallback（trailingEps 可為負值資訊）"""
+        responses.add(responses.GET, API_URL,
+                      json={'status': 200, 'msg': 'success',
+                            'data': [{'date': '2026-09-24', 'stock_id': '2330',
+                                      'PER': -3.2, 'PBR': 1.0}]},
+                      status=200)
+        client = FinMindClient(token='test_token')
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(client, '_get_eps_from_yfinance', lambda code: -0.85)
+            eps = client._get_eps('6139')
+        assert eps == -0.85
+
+    def test_eps_no_yfinance_call_when_finmind_ok(self):
+        """FinMind PER 成功反推時不應多打 yfinance（驗收標準：主源正常行為不變、不增加延遲）"""
+        client = FinMindClient(token='test_token')
+        called = {'yf': False}
+
+        def spy_yf_eps(code):
+            called['yf'] = True
+            return 9.99
+
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(client, '_get_eps_from_finmind_per', lambda code: 10.0)
+            mp.setattr(client, '_get_eps_from_yfinance', spy_yf_eps)
+            eps = client._get_eps('2330')
+
+        assert eps == 10.0
+        assert called['yf'] is False, "主源成功時不應觸發 fallback（避免多一次網路請求）"
+
+    def test_eps_yfinance_helper_parses_trailing_eps(self):
+        """_get_eps_from_yfinance：用假 yfinance 模組驗證 trailingEps 解析與例外安全性"""
+        import types
+
+        client = FinMindClient(token='test_token')
+
+        class FakeTicker:
+            def __init__(self, symbol):
+                self.symbol = symbol
+            info = {'trailingEps': 2.345}
+
+        fake_yf = types.ModuleType('yfinance')
+        fake_yf.Ticker = FakeTicker
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setitem(__import__('sys').modules, 'yfinance', fake_yf)
+            assert client._get_eps_from_yfinance('2330') == 2.35  # round(2.345, 2)
+
+        class ExplodingTicker:
+            def __init__(self, symbol):
+                raise RuntimeError("network down")
+
+        fake_yf2 = types.ModuleType('yfinance')
+        fake_yf2.Ticker = ExplodingTicker
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setitem(__import__('sys').modules, 'yfinance', fake_yf2)
+            assert client._get_eps_from_yfinance('2330') is None, "例外必須吞掉回 None，不中斷主流程"
+
+
+class TestYfinanceTtmCaliberIssue103:
+    """方案 C 補齊（#103）：yfinance fallback 優先用 ttm_income_stmt，與 FinMind TTM 口徑一致"""
+
+    def _make_fake_yf(self, ttm_df=None, income_df=None, include_ttm_attr=True):
+        import types
+
+        class FakeTicker:
+            def __init__(self, symbol):
+                self.symbol = symbol
+
+        if include_ttm_attr:
+            FakeTicker.ttm_income_stmt = ttm_df
+        FakeTicker.income_stmt = income_df
+
+        fake_yf = types.ModuleType('yfinance')
+        fake_yf.Ticker = FakeTicker
+        return fake_yf
+
+    def test_prefers_ttm_income_stmt(self):
+        """TTM 損益表可用時，毛利率/淨利率必須以 TTM 口徑計算並記錄 statement_kind"""
+        import pandas as pd
+
+        client = FinMindClient(token='test_token')
+        ttm_df = pd.DataFrame(
+            {'TTM': [20000.0, 8000.0, 3000.0]},
+            index=['Total Revenue', 'Gross Profit', 'Net Income'])
+        quarterly_df = pd.DataFrame(
+            {'2026-06-30': [5000.0, 1000.0, 250.0]},  # 單季口徑（毛利率會錯判為 20%）
+            index=['Total Revenue', 'Gross Profit', 'Net Income'])
+
+        fake_yf = self._make_fake_yf(ttm_df=ttm_df, income_df=quarterly_df)
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setitem(__import__('sys').modules, 'yfinance', fake_yf)
+            result = client._get_financial_from_yfinance('2330')
+
+        assert result is not None
+        assert result['gross_margin'] == pytest.approx(40.0), "應使用 TTM 加總口徑（8000/20000），而非單季 20%"
+        assert result['net_margin'] == pytest.approx(15.0)
+        assert result.get('statement_kind') == 'ttm_income_stmt'
+
+    def test_degrades_to_income_stmt_when_ttm_missing(self):
+        """TTM 端取不到（屬性不存在）時降級回 income_stmt 最近一期，維持可用性"""
+        import pandas as pd
+
+        client = FinMindClient(token='test_token')
+        quarterly_df = pd.DataFrame(
+            {'2026-06-30': [5000.0, 1000.0, 250.0]},
+            index=['Total Revenue', 'Gross Profit', 'Net Income'])
+
+        fake_yf = self._make_fake_yf(income_df=quarterly_df, include_ttm_attr=False)
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setitem(__import__('sys').modules, 'yfinance', fake_yf)
+            result = client._get_financial_from_yfinance('2330')
+
+        assert result is not None
+        assert result['gross_margin'] == pytest.approx(20.0)
+        assert result.get('statement_kind') == 'income_stmt', "降級路徑必須如實標記口徑"
+
+    def test_degrades_when_ttm_raises_exception(self):
+        """ttm_income_stmt 拋例外（端點異常）→ 吞掉並降級 income_stmt，不向上拋"""
+        import types
+        import pandas as pd
+
+        client = FinMindClient(token='test_token')
+        quarterly_df = pd.DataFrame(
+            {'2026-06-30': [5000.0, 1000.0, 250.0]},
+            index=['Total Revenue', 'Gross Profit', 'Net Income'])
+
+        class RaisingTtmTicker:
+            def __init__(self, symbol):
+                pass
+
+            @property
+            def ttm_income_stmt(self):
+                raise RuntimeError("404 endpoint not found")
+
+            income_stmt = quarterly_df
+
+        fake_yf = types.ModuleType('yfinance')
+        fake_yf.Ticker = RaisingTtmTicker
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setitem(__import__('sys').modules, 'yfinance', fake_yf)
+            result = client._get_financial_from_yfinance('2330')
+
+        assert result is not None and result.get('statement_kind') == 'income_stmt'
+
+
+class TestDaysRangeAnchoredIssue103:
+    """方案 C 補齊（#103）：錨定 days=730 預設值（TTM 四季必要條件，勿被誤改回 180/365）"""
+
+    def test_default_days_is_730_for_ttm(self):
+        import inspect
+        sig = inspect.signature(FinMindClient.get_financial_statements)
+        assert sig.parameters['days'].default == 730, \
+            "days 預設必須維持 730（涵蓋最近四季 TTM）；若改成 180/365 將導致樣本季度不足"
