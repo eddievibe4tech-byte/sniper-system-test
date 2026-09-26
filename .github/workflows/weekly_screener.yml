@@ -55,6 +55,11 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add data/screener_candidates.json data/ai_dd_reports.json
+          # 🔴 P0 修正：0 候選時 news_sentiment.py 會被跳過，ai_dd_reports.json 不存在，
+          # 直接 git add 不存在的 pathspec 會 exit 128 → commit/push 全滅 → 網站永遠收不到資料。
+          # 改為條件式 add（與 #87 的 rebase＋重試模式一致）。
+          [ -f data/screener_candidates.json ] && git add data/screener_candidates.json || echo "⚠️ 無 screener_candidates.json"
+          [ -f data/ai_dd_reports.json ] && git add data/ai_dd_reports.json || echo "⚠️ 無 ai_dd_reports.json（0 候選屬正常）"
+          git pull --rebase origin main || true
           git commit -m "🎯 Weekly Alpha Screener: $(date +'%Y-%m-%d')" || echo "No new candidates"
-          git push
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main

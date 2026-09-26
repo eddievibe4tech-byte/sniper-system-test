@@ -181,12 +181,24 @@
             <h2 class="text-xl font-semibold mb-4">📈 準確率趨勢</h2>
             <div style="height: 300px;">
                 <canvas id="accuracyChart"></canvas>
+                <!-- 🔴 P0 修正：無真實數據時顯示「資料不足」，不再畫模擬點 -->
+                <div id="accuracy-chart-empty" class="hidden h-full flex items-center justify-center text-gray-400 text-sm">
+                    📭 已驗證樣本不足，暫無準確率趨勢數據（資料不足）
+                </div>
             </div>
         </div>
 
         <!-- 近期預測紀錄表格 -->
         <div class="bg-white border rounded-lg p-4">
-            <h2 class="text-xl font-semibold mb-4">📋 近期預測紀錄</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold">📋 近期預測紀錄</h2>
+                <!-- 🟡 UX 修正：加入「僅看已驗證」切換，避免預設全是待驗證記錄 -->
+                <label class="inline-flex items-center text-sm text-gray-600 cursor-pointer select-none">
+                    <input type="checkbox" id="only-verified-toggle" class="mr-2 h-4 w-4 rounded border-gray-300"
+                           onchange="window.__recordsFilterVerified = this.checked; window.__rerenderRecentRecords && window.__rerenderRecentRecords();">
+                    僅看已驗證
+                </label>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -346,7 +358,9 @@
 
                 // ✅ 修正：變數已定義後才計算準確率統計
                 //    傳 null 強制走 telemetry 路徑（performance_metrics.json 目前沒有 correct_count 欄位）
-                calculateAccuracyStats(null, telemetryData);
+                // 🟡 P1 修正：改傳 metricsData（後端已發佈 correct/incorrect/pending_count），
+                //    metrics 讀不到時自動降級走 telemetry 現算路徑。
+                calculateAccuracyStats(metricsData, telemetryData);
 
                 // 1. 更新卡片數據
                 if (metricsData) {
@@ -393,8 +407,10 @@
                     document.getElementById('total-preds').innerText = telemetryData ? (telemetryData.records || []).length : 0;
                 }
                 
-                // 2. 渲染近期預測紀錄
+                // 2. 渲染近期預測紀錄（🟡 快取資料＋儲存過濾函數，供「僅看已驗證」切換即時重渲染）
                 if (telemetryData && telemetryData.records) {
+                    window.__recentRecordsData = telemetryData.records;
+                    window.__rerenderRecentRecords = () => renderRecentRecords(window.__recentRecordsData);
                     renderRecentRecords(telemetryData.records);
                 } else {
                     document.getElementById('predictions-table').innerHTML = '<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">暫無預測紀錄</td></tr>';
@@ -411,14 +427,18 @@
                     if (Array.isArray(metricsData.version_stats)) {
                         metricsData.version_stats.forEach(stat => {
                             labels.push('V' + stat.version);
-                            accuracyData.push(stat.accuracy || 0);
+                            // 🔴 P0 修正：無已驗證樣本時 stat.accuracy 為 null，保留 null 而非填 0
+                            accuracyData.push(stat.accuracy === null || stat.accuracy === undefined ? null : stat.accuracy);
                         });
                     } else {
                         // 如果是 Object (e.g., {"1": {...}, "2": {...}})
                         Object.entries(metricsData.version_stats).forEach(([version, stats]) => {
                             labels.push('V' + version);
-                            // 假設 stats 物件中有 accuracy 欄位，若無則計算
-                            const acc = stats.accuracy || (stats.correct / stats.predictions * 100) || 0;
+                            // 🟢 修正：分母改用 verified（與頂部卡片一致），不再用 correct/predictions
+                            const denom = stats.verified !== undefined ? stats.verified : stats.predictions;
+                            const acc = (stats.accuracy !== undefined && stats.accuracy !== null)
+                                ? stats.accuracy
+                                : (denom ? stats.correct / denom * 100 : null);
                             accuracyData.push(acc);
                         });
                         
@@ -430,11 +450,19 @@
                     }
                 }
 
-                // 如果完全沒數據，使用模擬數據
-                if (labels.length === 0) {
-                    labels = ['V1 (模擬)'];
-                    accuracyData = [50];
-                }
+                // 🔴 P0 修正：儀表板上不該存在任何模擬數字。
+                // 原本「無數據就畫 V1(模擬) 50%」的假資料 fallback 已移除，
+                // 改為accuracyData 全空／全 null 時顯示「資料不足」。
+                const hasRealData = labels.length > 0 && accuracyData.some(v => v !== null && v !== undefined);
+                if (!hasRealData) {
+                    // 🟡 P2 重構：改用 if/else 取代 early return，避免長函數中跳過後續代碼的誤解
+                    if (accuracyChartInstance) {
+                        accuracyChartInstance.destroy();
+                        accuracyChartInstance = null;
+                    }
+                    document.getElementById('accuracy-chart-empty').classList.remove('hidden');
+                } else {
+                document.getElementById('accuracy-chart-empty').classList.add('hidden');
 
                 // 銷毀舊圖表避免衝突
                 if (accuracyChartInstance) {
@@ -469,79 +497,8 @@
                         }
                     }
                 });
+                } // end else (hasRealData)
 
-                // 3. 更新預測紀錄表格（🔴 修正：加入錯誤處理與空值檢查）
-                let recordsArray = [];
-                if (telemetryData) {
-                    // 支援多種結構：records 可能是陣列或物件
-                    if (Array.isArray(telemetryData.records)) {
-                        recordsArray = telemetryData.records;
-                    } else if (telemetryData.records && Array.isArray(telemetryData.records.records)) {
-                        // 相容嵌套結構 { records: { records: [...] } }
-                        recordsArray = telemetryData.records.records;
-                    }
-                }
-                
-                if (recordsArray && recordsArray.length > 0) {
-                    const recentRecords = recordsArray.slice(-10).reverse();
-                    tableBody.innerHTML = recentRecords.map(record => {
-                        // 🔴 修正：安全地取得時間戳記
-                        let time = '-';
-                        try {
-                            if (record && record.timestamp) {
-                                time = new Date(record.timestamp).toLocaleString('zh-TW');
-                            }
-                        } catch (e) {
-                            console.warn('Invalid timestamp:', record ? record.timestamp : 'record is null', e);
-                        }
-                        
-                        // 🔴 修正：安全地取得準確率狀態
-                        let accText = '⏳ 待驗證';
-                        let accClass = 'text-gray-500';
-                        const accuracy = record ? (record.accuracy || record.actual_result?.was_correct) : null;
-                        if (accuracy === 1 || accuracy === 80 || accuracy === 100 || (record?.actual_result?.was_correct === true)) {
-                            accText = '✅ 正確';
-                            accClass = 'text-green-600 font-bold';
-                        } else if (accuracy === 0 || accuracy === 20 || (record?.actual_result?.was_correct === false)) {
-                            accText = '❌ 錯誤';
-                            accClass = 'text-red-600 font-bold';
-                        }
-                        
-                        // 🔴 修正：安全地取得預測建議（支援多種結構）
-                        let recommendation = '-';
-                        if (record && record.prediction && typeof record.prediction === 'object') {
-                            recommendation = record.prediction.recommendation || 
-                                           record.prediction.operation_suggestion || 
-                                           '-';
-                        } else if (record && record.operation_suggestion) {
-                            recommendation = record.operation_suggestion;
-                        }
-                        
-                        // 🔴 修正：安全地取得股票代碼和名稱（從 prediction 或 input 中讀取）
-                        let stockCode = record?.stock_code || '-';
-                        let stockName = record?.stock_name || '-';
-                        if ((stockCode === '-' || !stockCode) && record?.prediction) {
-                            stockCode = record.prediction.stock_code || record.prediction.code || '-';
-                            stockName = record.prediction.stock_name || record.prediction.name || '-';
-                        }
-                        if ((stockCode === '-' || !stockCode) && record?.input) {
-                            stockCode = record.input.code || '-';
-                            stockName = record.input.name || '-';
-                        }
-                        
-                        return `
-                            <tr>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHTML(time)}</td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHTML(stockCode)}</td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHTML(stockName)}</td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHTML(recommendation)}</td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm ${accClass}">${accText}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                } else {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">暫無預測紀錄</td></tr>';
-                }
 
             } catch (error) {
                 console.error("Dashboard Error:", error);
@@ -666,53 +623,21 @@
 
         // 計算準確率統計（接收 telemetryRes 參數）
         function calculateAccuracyStats(metricsRes, telemetryRes) {
-            // 優先使用 metricsRes，如果沒有則從 telemetryRes 計算
-            if (metricsRes && !metricsRes.error) {
-                // 直接使用 metrics 數據
-                const verified = metricsRes.version_stats || [];
-                let totalCorrect = 0;
-                let totalPredictions = 0;
-                
-                verified.forEach(stat => {
-                    totalCorrect += stat.correct || 0;
-                    totalPredictions += stat.predictions || 0;
-                });
-                
-                const accuracy = totalPredictions > 0 ? ((totalCorrect / totalPredictions) * 100).toFixed(1) : '資料不足';
-                
-                // 如果 metrics 有正確/錯誤計數就直接使用
-                if (metricsRes.correct_count !== undefined) {
-                    document.getElementById('correct-count').innerText = metricsRes.correct_count;
-                    document.getElementById('incorrect-count').innerText = metricsRes.incorrect_count || 0;
-                    document.getElementById('pending-count').innerText = metricsRes.pending_count || 0;
-                    document.getElementById('avg-accuracy').innerText = accuracy + '%';
-                }
-                return;
-            }
-            
-            // Fallback: 從 telemetry 計算
-            if (!telemetryRes || telemetryRes.error) {
-                console.warn('Telemetry 數據載入失敗');
-                return;
-            }
-            
-            const telemetryData = telemetryRes;
-            const records = telemetryData.records || [];
-            const verified = records.filter(r => r.actual_result);
-            const pending = records.filter(r => !r.actual_result);
-            
-            const correct = verified.filter(r => r.actual_result && r.actual_result.was_correct).length;
-            const incorrect = verified.filter(r => r.actual_result && !r.actual_result.was_correct).length;
-            
-            // 🟡 修正：樣本不足時顯示「資料不足」而非 0.0%
-            const accuracy = verified.length >= 10 
-                ? ((correct / verified.length) * 100).toFixed(1) + '%'
-                : '資料不足';
-            
+            // 🟡 P2 重構：統一為單一計算邏輯——一律以 telemetry records 現算，
+            //    避免 metrics／telemetry 雙路徑分母不一致（46.9% vs 19.7% 的根因）。
+            //    metricsRes 仍保留供卡片其他欄位使用，此處不再作為統計來源。
+            const records = (telemetryRes && Array.isArray(telemetryRes.records)) ? telemetryRes.records : [];
+            const verified = records.filter(r => r.actual_result && !r.legacy);
+            const correct = verified.filter(r => r.actual_result.was_correct === true).length;
+            const incorrect = verified.length - correct;
+            // 🟡 待驗證排除 legacy（無 entry_price、永遠無法驗證的舊記錄），數字才真實
+            const pending = records.filter(r => !r.actual_result && !r.legacy).length;
+
             document.getElementById('correct-count').innerText = correct;
             document.getElementById('incorrect-count').innerText = incorrect;
-            document.getElementById('pending-count').innerText = pending.length;
-            document.getElementById('avg-accuracy').innerText = accuracy;
+            document.getElementById('pending-count').innerText = pending;
+            document.getElementById('avg-accuracy').innerText =
+                verified.length >= 10 ? ((correct / verified.length) * 100).toFixed(1) + '%' : '資料不足';
         }
 
         // 切換詳細資訊行的顯示/隱藏
@@ -778,8 +703,21 @@
                 return;
             }
             
+            // 🟡 UX 修正：「僅看已驗證」切換——預設顯示最新 10 筆（多半全是待驗證），
+            //    勾選後改為顯示最近 10 筆「已驗證」，可直接看到對錯明細。
+            const toggle = document.getElementById('only-verified-toggle');
+            const onlyVerified = !!(toggle && toggle.checked);
+            const pool = onlyVerified
+                ? records.filter(r => r.actual_result || (r.accuracy !== null && r.accuracy !== undefined))
+                : records;
+
+            if (pool.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">' + (onlyVerified ? '尚無已驗證的預測紀錄' : '暫無預測紀錄') + '</td></tr>';
+                return;
+            }
+
             // 取最近 10 筆
-            const recent = records.slice(-10).reverse();
+            const recent = pool.slice(-10).reverse();
             
             tableBody.innerHTML = recent.map(r => {
                 // 🟢 P1: 從多個來源讀取股票代碼/名稱

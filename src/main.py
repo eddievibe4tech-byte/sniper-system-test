@@ -44,6 +44,10 @@ def auto_verify_predictions(telemetry_data: Dict, finmind: FinMindClient, horizo
         if rec.get("actual_result"):
             continue
         
+        # 跳過 legacy 記錄（舊格式無 entry_price，永遠無法驗證）
+        if rec.get("legacy"):
+            continue
+
         entry_price = rec.get("entry_price")
         if not entry_price:
             continue
@@ -160,40 +164,53 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
     # 計算已驗證的準確率
     verified_records = [r for r in records if r.get('accuracy') is not None]
     verified_count = len(verified_records)
+
+    # P0 修正：權威計數欄位（前端卡片直接讀取，免現算）
+    #   - correct_count / incorrect_count：以已驗證記錄為準
+    #   - pending_count：待驗證但排除 legacy（無 entry_price、永遠無法驗證的舊記錄），
+    #     否則「待驗證」數字會虛高。
+    correct_count = sum(1 for r in verified_records if r.get('accuracy') == 1)
+    incorrect_count = verified_count - correct_count
+    pending_count = sum(1 for r in records
+                        if r.get('actual_result') is None and not r.get('legacy'))
     
     # 🟡 P0 修正：驗證數 < 10 時顯示「資料不足」，不顯示 0.0%
     accuracy_rate = None
     accuracy_display = "資料不足"
     if verified_count >= 10:
-        correct_count = sum(1 for r in verified_records if r.get('accuracy') == 1)
         accuracy_rate = (correct_count / verified_count) * 100
         accuracy_display = round(accuracy_rate, 1)
     elif verified_count > 0:
         accuracy_display = f"已驗證 {verified_count}/{total_predictions}"
     
     # 計算各版本統計
+    # 🔴 P0 修正：準確率分母必須是「已驗證筆數」而非「全部預測筆數（含待驗證）」，
+    # 否則趨勢圖會把 46/234≈19.7% 畫出來，與卡片的 46/98≈46.9% 不一致。
     version_stats: Dict[str, Dict] = {}
     for record in records:
-        version = str(record.get('prompt_version', 1))
-        if version not in version_stats:
-            version_stats[version] = {'version': int(version), 'predictions': 0, 'correct': 0}
-        version_stats[version]['predictions'] += 1
-        if record.get('accuracy') == 1:
-            version_stats[version]['correct'] += 1
-    
-    # 計算各版本準確率
+        v = str(record.get('prompt_version', 1))
+        st = version_stats.setdefault(v, {'version': int(v), 'predictions': 0, 'verified': 0, 'correct': 0})
+        st['predictions'] += 1
+        if record.get('accuracy') is not None:
+            st['verified'] += 1
+            if record.get('accuracy') == 1:
+                st['correct'] += 1
+
+    # 計算各版本準確率（以已驗證為分母；無已驗證樣本時保持 None → 前端顯示「資料不足」）
     version_stats_list = []
-    for version, stats in version_stats.items():
-        if stats['predictions'] > 0:
-            stats['accuracy'] = round((stats['correct'] / stats['predictions']) * 100, 1)
-        else:
-            stats['accuracy'] = None
-        version_stats_list.append(stats)
+    for st in version_stats.values():
+        st['accuracy'] = round(st['correct'] / st['verified'] * 100, 1) if st['verified'] else None
+        version_stats_list.append(st)
+    # 🟡 顯式依版本排序，確保趨勢線 V1 -> V2 -> V3...
+    version_stats_list.sort(key=lambda s: s['version'])
     
     now = datetime.now(TZ_TAIPEI)
     metrics = {
         'total_predictions': total_predictions,
         'verified_count': verified_count,
+        'correct_count': correct_count,
+        'incorrect_count': incorrect_count,
+        'pending_count': pending_count,
         'accuracy_rate': accuracy_display,
         'current_version': max(int(v) for v in version_stats.keys()) if version_stats else 1,
         'last_updated': now.isoformat(),
