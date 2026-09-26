@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 from src.finmind_client import FinMindClient
 from src.groq_client import GroqClient
 from src.risk_calculator import calculate_volatility, assess_risk_level
+from src.trading_plan import generate_trading_plan
 from src.yahoo_client import YahooFinanceClient
 
 
@@ -426,6 +427,10 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
                         }
                     
                     record = {**stock_data, **analysis, 'risk_level': assess_risk_level(volatility)}
+
+                    # 🆕 加入交易計畫（買點/賣點：進場區間、停損、停利、R/R）
+                    record['trading_plan'] = generate_trading_plan(record)
+
                     all_results.append(record)
 
                     # ✅ 7. 記憶體中 Append
