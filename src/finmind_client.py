@@ -265,43 +265,122 @@ class FinMindClient:
             'price_trend': price_trend
         }
     
-    def get_financial_statements(self, code: str, days: int = 365) -> Optional[Dict]:
+    def get_financial_statements(self, code: str, days: int = 730) -> Optional[Dict]:
         """
         抓取財報數據（營收、毛利率、淨利率）
-        
+
+        🔴 422 根因修正（方案 C）：
+        1. dataset 名稱錯誤：FinMind v4 正確的個股財報端點是
+           「TaiwanStockFinancialStatements」，舊程式碼寫「FinancialStatements」
+           （不存在的 dataset），API 直接回 422 Unprocessable Entity。
+        2. 回傳格式誤判：該端點回傳的是「長表」格式
+           [{date, stock_id, type, value, origin_name}, ...]，
+           並非每季一筆的寬表。舊程式碼用 data[-1].get('Revenue')
+           永遠取不到欄位，即使 200 也會全 None。
+        3. 預設改為抓兩年，確保至少涵蓋四個完整季度
+           （EPS 需要「最近四季」累计值，單季資料不足以計算）。
+
         Args:
             code: 股票代號
-            days: 日期範圍天數
-            
+            days: 日期範圍天數（預設 730，覆蓋最近四季財報）
+
         Returns:
             包含最新財報數據的字典，取不到時回傳 None（而非 0.0）
         """
-        data = self._make_request('FinancialStatements', code, days=days)
+        data = self._make_request('TaiwanStockFinancialStatements', code, days=days)
         if not data:
             return None
-        
-        # 取最近一季財報
-        latest = data[-1]
-        revenue = latest.get('Revenue', 0) or 0
-        gross_profit = latest.get('GrossProfit', 0) or 0
-        net_income = latest.get('NetIncome', 0) or 0
-        eps = latest.get('BasicEarningsPerShare', 0) or 0
-        
-        # 🔴 P0-1 修正：取不到數據時回傳 None，讓前端/prompt 顯示 '-'
-        # 毛利率/淨利率：營收為 0 或負時無法計算，設為 None
-        gross_margin = (gross_profit / revenue * 100) if revenue > 0 else None
-        net_margin = (net_income / revenue * 100) if revenue > 0 else None
-        # EPS：保留負值（虧損是真實訊號），只有取不到時才設為 None
-        raw_eps = latest.get('BasicEarningsPerShare')
-        # 只有「欄位不存在 / 空字串」才算缺失；0.0 與負值都保留真實訊號
-        eps_val = round(float(raw_eps), 2) if raw_eps not in (None, '') else None
-        
+
+        # ── 長表 → 依季度分組 ──
+        # structure: {date_str: {type: value}}
+        by_date: Dict[str, Dict[str, float]] = {}
+        for row in data:
+            d = row.get('date')
+            t = row.get('type')
+            v = row.get('value')
+            if not d or not t or v in (None, ''):
+                continue
+            try:
+                by_date.setdefault(d, {})[t] = float(v)
+            except (TypeError, ValueError):
+                continue
+
+        if not by_date:
+            return None
+
+        quarter_dates = sorted(by_date.keys())
+        latest_date = quarter_dates[-1]
+        latest = by_date[latest_date]
+
+        # ── TTM（最近四季）加總：財報為累計制，需差分或直接加總可用季度 ──
+        # 取最後 4 個季度的資料做 TTM 近似（不足 4 季時用現有季度）
+        recent_quarters = [by_date[d] for d in quarter_dates[-4:]]
+
+        def _sum_type(type_name: str) -> Optional[float]:
+            vals = [q[type_name] for q in recent_quarters if type_name in q]
+            return sum(vals) if vals else None
+
+        # Revenue 欄位在不同公司可能為 'Revenue' 或其他別名
+        revenue_ttm = _sum_type('Revenue')
+        gross_profit_ttm = _sum_type('GrossProfit')
+        # 稅後純益：FinMind 常見 type 為 IncomeAfterTaxes / NetIncomeAfterTax
+        net_income_ttm = (_sum_type('IncomeAfterTaxes')
+                          or _sum_type('NetIncomeAfterTax')
+                          or _sum_type('NetIncome'))
+
+        # 🔴 P0-1 修正精神延續：取不到數據時回傳 None，讓前端/prompt 顯示 '-'
+        gross_margin = (gross_profit_ttm / revenue_ttm * 100) if (gross_profit_ttm is not None and revenue_ttm and revenue_ttm > 0) else None
+        net_margin = (net_income_ttm / revenue_ttm * 100) if (net_income_ttm is not None and revenue_ttm and revenue_ttm > 0) else None
+
+        # ── EPS：改用獨立的 TaiwanStockTax dataset（含每股盈餘欄位）──
+        eps_val = self._get_eps(code)
+
+        has_any = any(v is not None for v in (revenue_ttm, gross_margin, net_margin, eps_val))
+        if not has_any:
+            return None
+
         return {
-            'revenue': revenue if revenue > 0 else None,
+            'revenue': revenue_ttm if (revenue_ttm is not None and revenue_ttm > 0) else None,
             'gross_margin': round(gross_margin, 2) if gross_margin is not None else None,
             'net_margin': round(net_margin, 2) if net_margin is not None else None,
             'eps': eps_val,
+            'fiscal_quarter': latest_date,
         }
+
+    def _get_eps(self, code: str) -> Optional[float]:
+        """
+        取得每股盈餘（EPS，元/股）。
+
+        🔴 免費版可用資料源：FinMind v4 沒有公开的 TaiwanStockTax dataset
+        （會回 422），改用「TaiwanStockPER」端點——它提供每日 PER/PBR/殖利率，
+        搭配最新收盤价即可反推 EPS = 股價 / PER。
+        PER <= 0（虧損股無本益比）或資料缺失時回傳 None。
+        """
+        data = self._make_request('TaiwanStockPER', code, days=60) or []
+        if not data:
+            return None
+
+        # 取最新一筆有效 PER
+        per_val = None
+        for row in reversed(data):
+            raw = row.get('PER')
+            if raw in (None, ''):
+                continue
+            try:
+                per_val = float(raw)
+            except (TypeError, ValueError):
+                continue
+            break
+
+        if not per_val or per_val <= 0:
+            return None
+
+        prices = self._get_raw_prices(code, days=30) or []
+        if not prices:
+            return None
+
+        eps = prices[-1] / per_val
+        return round(eps, 2)
     
     def get_technical_indicators(self, code: str) -> Dict:
         """
