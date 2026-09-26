@@ -15,17 +15,37 @@ _make_request 永遠附帶 data_id=（空字串）而讓海選全部抓失敗，
 """
 import os
 import sys
+from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from finmind_client import FinMindClient  # noqa: E402
 
 
+def _dynamic_date_ranges():
+    """動態計算測試日期區間，避免硬編碼日期隨時間過期（PR#91 review 建議 1）。
+
+    - TaiwanStockMonthRevenue：上一個完整月份（月初～月底）
+    - TaiwanStockInstitutionalInvestorsBuySell：最近一個工作日（今天往前找）
+    """
+    today = datetime.now()
+    last_month_end = today.replace(day=1) - timedelta(days=1)
+    last_month_start = last_month_end.replace(day=1)
+    prev_workday = today - timedelta(days=1)
+    while prev_workday.weekday() >= 5:  # 5=周六, 6=周日
+        prev_workday -= timedelta(days=1)
+    return [
+        ("TaiwanStockMonthRevenue",
+         last_month_start.strftime("%Y-%m-%d"), last_month_end.strftime("%Y-%m-%d")),
+        ("TaiwanStockInstitutionalInvestorsBuySell",
+         prev_workday.strftime("%Y-%m-%d"), prev_workday.strftime("%Y-%m-%d")),
+    ]
+
+
 def check_live(client):
     """直接打 FinMind：批量端點不得因缺少 data_id 而回 400/None"""
     ok = True
-    for ds, sd, ed in [("TaiwanStockMonthRevenue", "2026-08-01", "2026-08-31"),
-                       ("TaiwanStockInstitutionalInvestorsBuySell", "2026-09-24", "2026-09-24")]:
+    for ds, sd, ed in _dynamic_date_ranges():
         data = client._make_request(ds, "", start_date=sd, end_date=ed)
         print(f"{ds}: {'OK ' + str(len(data)) + ' rows' if data is not None else 'FAIL'}")
         ok &= data is not None
@@ -51,20 +71,30 @@ def check_contract():
 
     client.session.get = fake_get
 
-    # 批量查詢：request_params 不得出現 data_id
+    # 批量查詢：request_params 不得出現 data_id，且其餘參數需完整正確
+    # （PR#91 review 建議 3：加強整個請求參數結構的斷言）
+    _, bulk_sd, bulk_ed = _dynamic_date_ranges()[0]
     client._make_request("TaiwanStockMonthRevenue", "",
-                         start_date="2026-08-01", end_date="2026-08-31")
-    bulk_ok = "data_id" not in captured
+                         start_date=bulk_sd, end_date=bulk_ed)
+    bulk_ok = ("data_id" not in captured
+               and captured.get("dataset") == "TaiwanStockMonthRevenue"
+               and captured.get("start_date") == bulk_sd
+               and captured.get("end_date") == bulk_ed
+               and captured.get("token") == "dummy_token_for_contract_check")
     print(f"bulk request params: {sorted(captured.keys())} -> "
-          f"{'OK (no data_id)' if bulk_ok else 'FAIL (data_id leaked)'}")
+          f"{'OK (full contract, no data_id)' if bulk_ok else 'FAIL: ' + str(captured)}")
 
-    # 個股查詢：必須帶 data_id=<stock_id>
+    # 個股查詢：必須帶 data_id=<stock_id>，且 dataset/日期/token 完整
     captured.clear()
     client._make_request("TaiwanStockPrice", "2330",
                          start_date="2026-09-01", end_date="2026-09-25")
-    single_ok = captured.get("data_id") == "2330"
+    single_ok = (captured.get("data_id") == "2330"
+                 and captured.get("dataset") == "TaiwanStockPrice"
+                 and captured.get("start_date") == "2026-09-01"
+                 and captured.get("end_date") == "2026-09-25"
+                 and captured.get("token") == "dummy_token_for_contract_check")
     print(f"single-stock request params: {sorted(captured.keys())} -> "
-          f"{'OK (data_id=2330)' if single_ok else 'FAIL (data_id missing/wrong)'}")
+          f"{'OK (data_id=2330, full contract)' if single_ok else 'FAIL: ' + str(captured)}")
 
     return bulk_ok and single_ok
 

@@ -319,6 +319,14 @@ class TestBulkQueryDataIdContract:
         assert result is not None
         url = responses.calls[0].request.url
         assert 'data_id' not in url, f"批量查詢不應帶 data_id 參數：{url}"
+        # PR#91 review 建議 3：加強整個 URL 參數結構斷言
+        from urllib.parse import parse_qs
+        params = parse_qs(url.split('?', 1)[1])
+        assert params.get('dataset') == ['TaiwanStockMonthRevenue']
+        assert params.get('start_date') == ['2026-08-01']
+        assert params.get('end_date') == ['2026-08-31']
+        assert params.get('token') == ['test_token']
+        assert 'data_id' not in params
 
     @responses.activate
     def test_single_stock_query_includes_data_id(self):
@@ -336,3 +344,11 @@ class TestBulkQueryDataIdContract:
                              start_date='2026-09-01', end_date='2026-09-25')
         url = responses.calls[0].request.url
         assert 'data_id=2330' in url, f"個股查詢應帶 data_id=2330：{url}"
+        # PR#91 review 建議 3：加強整個 URL 參數結構斷言
+        from urllib.parse import parse_qs
+        params = parse_qs(url.split('?', 1)[1])
+        assert params.get('data_id') == ['2330']
+        assert params.get('dataset') == ['TaiwanStockPrice']
+        assert params.get('start_date') == ['2026-09-01']
+        assert params.get('end_date') == ['2026-09-25']
+        assert params.get('token') == ['test_token']
