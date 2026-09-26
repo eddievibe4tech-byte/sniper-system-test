@@ -1,0 +1,37 @@
+{
+  "reports": [
+    {
+      "sentiment": "Neutral",
+      "risk_factor": "無近期重大新聞",
+      "conclusion": "奇鋐 近期無重大消息，建議參考技術面與籌碼面",
+      "code": "3017",
+      "name": "奇鋐",
+      "analyzed_at": "2026-09-26T05:24:12.985549"
+    },
+    {
+      "sentiment": "Neutral",
+      "risk_factor": "無近期重大新聞",
+      "conclusion": "永豐金 近期無重大消息，建議參考技術面與籌碼面",
+      "code": "2890",
+      "name": "永豐金",
+      "analyzed_at": "2026-09-26T05:24:13.981713"
+    },
+    {
+      "sentiment": "Neutral",
+      "risk_factor": "無近期重大新聞",
+      "conclusion": "和碩 近期無重大消息，建議參考技術面與籌碼面",
+      "code": "4938",
+      "name": "和碩",
+      "analyzed_at": "2026-09-26T05:24:14.960925"
+    },
+    {
+      "sentiment": "Neutral",
+      "risk_factor": "無近期重大新聞",
+      "conclusion": "玉山金 近期無重大消息，建議參考技術面與籌碼面",
+      "code": "2884",
+      "name": "玉山金",
+      "analyzed_at": "2026-09-26T05:24:15.959062"
+    }
+  ],
+  "updated_at": "2026-09-26T05:24:15.959278"
+}
