@@ -1,30 +1,34 @@
 {
-  "updated_at": "2026-09-25T14:14:09.841123",
+  "updated_at": "2026-09-26T01:51:26.386392",
   "capital": 5000,
   "tw_regime": "震盪",
-  "crypto": {
-    "status": "ok",
-    "fng": 71,
-    "market_scenario": null,
-    "right_side": [],
-    "golden": [],
-    "action": "無符合情境標的：預算持穩定幣等待",
-    "alloc": 0
-  },
-  "tw_stock": {
-    "status": "ok",
-    "buy_level": [],
-    "setups": [],
-    "action": "台股無買入級標的：預算保留",
-    "alloc": 0
-  },
+  "vix": null,
+  "fng": 74,
+  "plan": [
+    {
+      "prio": 1,
+      "market": "美股",
+      "label": "動量突破 AAPL",
+      "detail": "VIX=None；RSI=65.71；跌破 MA50 或 -8% 停損",
+      "alloc": 2500
+    },
+    {
+      "prio": 3,
+      "market": "台股",
+      "label": "買入級 富邦金",
+      "detail": "EV=64；回踩 MA20(148.28) 不破再進場",
+      "alloc": 2500
+    }
+  ],
   "cash": {
-    "alloc": 5000,
+    "alloc": 0,
     "note": "未配置預算持現金/穩定幣，等待下一個情境訊號"
   },
+  "warnings": [],
   "rules": [
-    "單筆 ≤ 5,000 元、同時 ≤ 3 部位",
+    "總預算 5000 台幣、單筆 ≤ 2500、最多 3 部位",
     "不符合情境就不進場",
-    "停損紀律優先於一切訊號"
+    "停損紀律優先於一切訊號",
+    "美股用零股；財報前 3 日不進新倉"
   ]
 }
