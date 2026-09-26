@@ -8,6 +8,11 @@
 - 個股查詢為「保底」（daily analysis 證明穩定）；
 - 海選宇宙縮小為「監控池 ∪ 精選活躍股」（~34 檔 × 0.3s ≈ 10 秒可行），
   3,629 檔個股呼叫不現實。真·全市場海選見 follow-up issue #93。
+
+🟢 改進（#95）：批量能力快取——每次 run 都打批量端點探測必然吃 400，
+久了會麻痺「真正的錯誤」。首次確認批量不可用後記錄至
+data/finmind_capabilities.json，之後直接跳過探測、走個股模式。
+未來升級付費 Token 只要刪除該檔即恢復探測。
 """
 import json
 import os
@@ -49,6 +54,37 @@ def _latest_rev_month(today):
         m += 12
         y -= 1
     return y, m
+
+
+# ---------------------------------------------------------------------------
+# 🟢 批量能力快取（#95）
+# 每次 run 都打批量端點探測必然吃 400，log 噪音久了會麻痺「真正的錯誤」。
+# 首次確認批量不可用後記到 data/finmind_capabilities.json，之後直接跳過探測。
+# 未來升級付費 Token：刪除該檔即恢復探測。
+# ---------------------------------------------------------------------------
+CAP_FILE = os.path.join(os.path.dirname(__file__), "..", "data",
+                        "finmind_capabilities.json")
+
+
+def bulk_supported() -> bool:
+    """批量快路是否已知可用（無快取檔 → 預設可用，維持原探測行為）"""
+    try:
+        with open(CAP_FILE, encoding="utf-8") as f:
+            return bool(json.load(f).get("bulk", True))
+    except Exception:
+        return True
+
+
+def mark_bulk_unsupported():
+    """記錄「批量不可用」；寫檔失敗不影響主流程（下次 run 再探一次）"""
+    try:
+        os.makedirs(os.path.dirname(CAP_FILE), exist_ok=True)
+        with open(CAP_FILE, "w", encoding="utf-8") as f:
+            json.dump({"bulk": False,
+                       "detected_at": datetime.now().isoformat()}, f)
+    except Exception as e:
+        print(f"⚠️ 能力快取寫入失敗（下次 run 會重新探測）：{e}")
+
 
 
 def load_pool_codes() -> List[str]:
@@ -98,16 +134,25 @@ def fetch_revenue_yoy_map(finmind, codes: List[str]) -> Dict[str, float]:
 
     快路：批量抓最近兩個同名月份比較（支援批量的 Token 可用）；
     保底：逐檔個股查詢（daily analysis 證明穩定），雙路都失敗才 raise。
+    🟢 #95：能力快取命中「批量不可用」時直接跳過探測，消除每次 run 的 400 噪音。
     """
-    # 快路：批量（免費版可能 400 → None）
-    y, m = _latest_rev_month(datetime.now())
-    rev_now = fetch_month_revenue(finmind, y, m)
-    rev_past = fetch_month_revenue(finmind, y - 1, m)
-    if rev_now and rev_past:
-        return {c: (rev_now[c] - rev_past[c]) / rev_past[c] * 100
-                for c in rev_now if rev_past.get(c)}
+    bulk_ok = True
+    if not bulk_supported():
+        # 已知批量不可用（免費 Token）→ 不再打端點產生 400 log 噪音
+        print("ℹ️ 批量已知不可用（免費 Token），直接個股模式")
+        bulk_ok = False
+    else:
+        # 快路：批量（免費版可能 400 → None）
+        y, m = _latest_rev_month(datetime.now())
+        rev_now = fetch_month_revenue(finmind, y, m)
+        rev_past = fetch_month_revenue(finmind, y - 1, m)
+        if rev_now and rev_past:
+            return {c: (rev_now[c] - rev_past[c]) / rev_past[c] * 100
+                    for c in rev_now if rev_past.get(c)}
+        mark_bulk_unsupported()  # 🟢 #95：首次確認不可用 → 記檔，之後跳過探測
     # 保底：個股（daily analysis 證明穩定）
-    print("⚠️ 批量營收不可用（FinMind 400），降級為個股模式...")
+    if bulk_ok:
+        print("⚠️ 批量營收不可用（FinMind 400），降級為個股模式...")
     yoy = {}
     for c in codes:
         v = _per_stock_yoy(finmind, c)
@@ -124,7 +169,10 @@ def fetch_inst_streak(finmind, codes, lookback) -> Optional[Dict[str, int]]:
 
     🔴 修正（#92）：任一日批量回傳 None（免費版必然 400）→ 整個回傳 None
     觸發上層個股保底，不再把「FinMind 拒答」誤算成「全市場連買 0 天」。
+    🟢 #95：能力快取命中時完全跳過探測（一次端點都不打），直接回 None。
     """
+    if not bulk_supported():
+        return None
     days, d = [], datetime.now()
     while len(days) < lookback:
         d -= timedelta(days=1)
@@ -137,6 +185,7 @@ def fetch_inst_streak(finmind, codes, lookback) -> Optional[Dict[str, int]]:
                                      start_date=day, end_date=day)
         if data is None:
             ok = False
+            mark_bulk_unsupported()  # 🟢 #95：首次確認不可用 → 記檔，之後跳過探測
             break
         net = {r["stock_id"]: r.get("Investment_Trust_net", 0) for r in data}
         for c in codes:
@@ -151,11 +200,18 @@ def fetch_inst_streak(finmind, codes, lookback) -> Optional[Dict[str, int]]:
 
 
 def fetch_inst_streak_map(finmind, codes) -> Dict[str, int]:
-    """關卡 2 投信連買：批量為快路、個股為保底（#92）"""
+    """關卡 2 投信連買：批量為快路、個股為保底（#92）
+
+    🟢 #95：快取命中時 fetch_inst_streak 直接回 None（零端點探測），
+    此處只印一行資訊性提示，不再重複降級警告。
+    """
     bulk = fetch_inst_streak(finmind, codes, 10)
     if bulk is not None:
         return bulk
-    print("⚠️ 批量投信不可用，降級為個股模式...")
+    if not bulk_supported():
+        print("ℹ️ 批量已知不可用（免費 Token），直接個股模式")
+    else:
+        print("⚠️ 批量投信不可用，降級為個股模式...")
     out = {}
     for c in codes:
         out[c] = finmind.get_institutional_buy(c, days=10) or 0

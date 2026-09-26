@@ -60,6 +60,8 @@ jobs:
           # 改為條件式 add（與 #87 的 rebase＋重試模式一致）。
           [ -f data/screener_candidates.json ] && git add data/screener_candidates.json || echo "⚠️ 無 screener_candidates.json"
           [ -f data/ai_dd_reports.json ] && git add data/ai_dd_reports.json || echo "⚠️ 無 ai_dd_reports.json（0 候選屬正常）"
+          # 🟢 #95：批量能力快取檔需持久化到 main，CI job 與下次 run 才能共享、跳過 400 探測
+          [ -f data/finmind_capabilities.json ] && git add data/finmind_capabilities.json || true
           git pull --rebase origin main || true
           git commit -m "🎯 Weekly Alpha Screener: $(date +'%Y-%m-%d')" || echo "No new candidates"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
