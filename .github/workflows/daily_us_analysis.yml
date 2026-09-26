@@ -43,10 +43,35 @@ jobs:
           python market_advisor.py || echo "⚠️ advisor 失敗（不阻斷）"
 
       - name: Commit and Push results
+        env:
+          PUSH_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
         run: |
+          set -euo pipefail
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           [ -f data/us_candidates.json ] && git add data/us_candidates.json || echo "⚠️ 無 us_candidates.json"
           [ -f data/advice.json ] && git add data/advice.json || echo "⚠️ 無 advice.json"
           git commit -m "🇺🇸 Daily US Analysis: $(date +'%Y-%m-%d')" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+
+          # ⚠️ 防競態：其他 workflow（如 Daily Crypto）可能在跑此步驟前推了 main，
+          # 直接 push 會被拒絕（fetch first）。先 rebase 同步遠端最新再推送，並帶重試。
+          for i in 1 2 3; do
+            if git pull --rebase "$PUSH_URL" main; then
+              if git push "$PUSH_URL" HEAD:main; then
+                echo "✅ Push 成功（第 $i 次嘗試）"
+                exit 0
+              fi
+            else
+              # rebase 衝突（雙方都改了同一個 JSON）：以本次分析結果為準重新提交
+              echo "⚠️ rebase 衝突（第 $i 次），改用 ours 策略保留本次分析結果..."
+              git rebase --abort || true
+              git fetch "$PUSH_URL" main
+              git reset --hard FETCH_HEAD
+              git checkout ORIG_HEAD -- data/us_candidates.json data/advice.json 2>/dev/null || true
+              git add data/us_candidates.json data/advice.json 2>/dev/null || true
+              git diff --cached --quiet || git commit -m "🇺🇸 Daily US Analysis (rebase-ours): $(date +'%Y-%m-%d')"
+            fi
+            sleep $((i * 5))
+          done
+          echo "❌ 多次重試後仍無法推送"
+          exit 1
