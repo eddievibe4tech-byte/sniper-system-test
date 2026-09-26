@@ -287,7 +287,11 @@ class FinMindClient:
 
         Args:
             code: 股票代號
-            days: 日期範圍天數（預設 730，覆蓋最近四季財報）
+            days: 日期範圍天數（預設 730，覆蓋最近四季財報）。
+                🔴 #103 註記：review 規格原建議 180 天（最近兩季），此處
+                刻意放大至 730 是 TTM（最近四季加總）的必要條件——
+                FinMind 財報為累計制長表，少于四季無法計算 TTM 口徑。
+                請勿随意改回 365/180，否則毛利率/淨利率將因樣本季度不足而失真。
 
         Returns:
             包含最新財報數據的字典（附 source 標記），取不到時回傳 None（而非 0.0）
@@ -373,7 +377,10 @@ class FinMindClient:
         🔴 方案 C-1B：yfinance fallback——台股代號轉 {code}.TW 抓取財報。
 
         FinMind 財報端點因 token 權限／服務異常拿不到資料時的最後防線。
-        使用 income_stmt（損益表）最近一期計算毛利率/淨利率，
+        🔴 方案 C 補齊（#103）：口徑統一——優先用 ttm_income_stmt（Yahoo
+        提供之最近四季 TTM 損益表）計算毛利率/淨利率，與 FinMind 主源的
+        TTM 加總口徑一致；取不到 TTM 時才降級回 income_stmt 最近一期
+        （避免年報 vs 單季期間長度不一致導致 EV 評分基本面權重失真）。
         trailingEps 取得 EPS。任何例外一律回傳 None（不拋出），
         讓上層 main.py 的前置攔截決定是否跳過 Groq。
         """
@@ -383,7 +390,20 @@ class FinMindClient:
             yf_code = f"{code}.TW"
             stock = yf.Ticker(yf_code)
 
-            income_stmt = stock.income_stmt
+            # 🔴 #103：優先 TTM 口徑，降級單期
+            income_stmt = None
+            stmt_kind = 'income_stmt'
+            try:
+                ttm_stmt = stock.ttm_income_stmt
+                if ttm_stmt is not None and not ttm_stmt.empty:
+                    income_stmt = ttm_stmt
+                    stmt_kind = 'ttm_income_stmt'
+            except Exception:
+                pass  # 部分 yfinance 版本無此屬性／端點異常 → 走降級路徑
+
+            if income_stmt is None:
+                income_stmt = stock.income_stmt
+
             if income_stmt is None or income_stmt.empty:
                 logger.warning(f"yfinance {yf_code} 無財報數據")
                 return None
@@ -410,10 +430,11 @@ class FinMindClient:
             # EPS：trailingEps；虧損（負值）也視為有效資訊，但 0/缺漏回 None
             eps_val = None
             try:
-                raw_eps = (stock.info or {}).get('trailingEps')
+                raw_eps = getattr(stock, 'info', None) or {}
+                raw_eps = raw_eps.get('trailingEps')
                 if raw_eps not in (None, '', 0):
                     eps_val = round(float(raw_eps), 2)
-            except (TypeError, ValueError, KeyError):
+            except (TypeError, ValueError, KeyError, AttributeError):
                 eps_val = None
 
             has_any = any(v is not None for v in (gross_margin, net_margin, eps_val))
@@ -421,7 +442,7 @@ class FinMindClient:
                 logger.warning(f"yfinance {yf_code} 財報欄位全缺")
                 return None
 
-            logger.info(f"yfinance {yf_code} 成功抓取財報（來源：yfinance）")
+            logger.info(f"yfinance {yf_code} 成功抓取財報（來源：yfinance，口徑：{stmt_kind}）")
             return {
                 'revenue': revenue if revenue > 0 else None,
                 'gross_margin': round(gross_margin, 2) if gross_margin is not None else None,
@@ -429,6 +450,7 @@ class FinMindClient:
                 'eps': eps_val,
                 'fiscal_quarter': str(income_stmt.columns[0].date()) if hasattr(income_stmt.columns[0], 'date') else str(income_stmt.columns[0]),
                 'source': 'yfinance',
+                'statement_kind': stmt_kind,  # 🔴 #103：記錄 TTM／單期口徑供除錯與資料健康檢查
             }
 
         except Exception as e:
@@ -443,7 +465,22 @@ class FinMindClient:
         （會回 422），改用「TaiwanStockPER」端點——它提供每日 PER/PBR/殖利率，
         搭配最新收盤价即可反推 EPS = 股價 / PER。
         PER <= 0（虧損股無本益比）或資料缺失時回傳 None。
+
+        🔴 方案 C 補齊（#103）：多層防線——FinMind PER 端點異常／虧損股
+        拿不到 EPS 時，fallback 到 yfinance trailingEps，避免「毛利率/淨利率
+        成功、唯 EPS 缺漏」時 Groq prompt 中 EPS 永遠是 '-'
+        （此情境 has_any=True 不會觸發整批 yfinance fallback）。
         """
+        eps = self._get_eps_from_finmind_per(code)
+        if eps is not None:
+            return eps
+
+        # Fallback：yfinance trailingEps
+        logger.info(f"{code}: FinMind PER 反推 EPS 失敗，改用 yfinance trailingEps")
+        return self._get_eps_from_yfinance(code)
+
+    def _get_eps_from_finmind_per(self, code: str) -> Optional[float]:
+        """FinMind TaiwanStockPER 端點反推 EPS = 股價 / PER"""
         data = self._make_request('TaiwanStockPER', code, days=60) or []
         if not data:
             return None
@@ -469,6 +506,26 @@ class FinMindClient:
 
         eps = prices[-1] / per_val
         return round(eps, 2)
+
+    def _get_eps_from_yfinance(self, code: str) -> Optional[float]:
+        """
+        🔴 方案 C 補齊（#103）：yfinance trailingEps fallback。
+
+        任何例外一律回傳 None（不拋出），維持「財報抓取絕不中斷主流程」的契約。
+        虧損（負 EPS）也視為有效資訊回傳；0／缺漏回 None。
+        """
+        try:
+            import yfinance as yf
+
+            raw_eps = (yf.Ticker(f"{code}.TW").info or {}).get('trailingEps')
+            if raw_eps in (None, '', 0):
+                return None
+            eps_val = round(float(raw_eps), 2)
+            logger.info(f"yfinance {code}.TW trailingEps 成功取得 EPS={eps_val}")
+            return eps_val
+        except Exception as e:
+            logger.warning(f"yfinance trailingEps fallback {code} 失敗：{e}")
+            return None
     
     def get_technical_indicators(self, code: str) -> Dict:
         """
