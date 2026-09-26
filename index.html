@@ -1005,7 +1005,7 @@
             }
         }
 
-        // 💰 載入今日 5,000 元配置建議 v2（data/advice.json：統一資金分配器）
+        // 💰 載入今日 5,000 元配置建議 v3（data/advice.json：統一資金分配器，含 Alpha 候選與權證載具）
         async function loadAdvice() {
             const el = document.getElementById('advice-box');
             try {
@@ -1019,7 +1019,9 @@
                 } else {
                     a.plan.forEach(p => {
                         html += `<p>• <b>[${escapeHTML(p.market)}] ${escapeHTML(p.label)}</b> → ${p.alloc} 元<br>` +
-                                `<span class="ml-4 text-gray-500">${escapeHTML(p.detail)}</span></p>`;
+                                `<span class="ml-4 text-gray-500">${escapeHTML(p.detail)}</span>`;
+                        if (p.warrant_option) html += `<br><span class="ml-4 text-purple-600">🎟️ ${escapeHTML(p.warrant_option)}</span>`;
+                        html += '</p>';
                     });
                 }
                 html += `<p>💵 <b>現金保留</b>：${a.cash?.alloc ?? 0} 元</p>`;
