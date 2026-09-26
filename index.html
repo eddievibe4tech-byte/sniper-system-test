@@ -455,13 +455,13 @@
                 // 改為accuracyData 全空／全 null 時顯示「資料不足」。
                 const hasRealData = labels.length > 0 && accuracyData.some(v => v !== null && v !== undefined);
                 if (!hasRealData) {
+                    // 🟡 P2 重構：改用 if/else 取代 early return，避免長函數中跳過後續代碼的誤解
                     if (accuracyChartInstance) {
                         accuracyChartInstance.destroy();
                         accuracyChartInstance = null;
                     }
                     document.getElementById('accuracy-chart-empty').classList.remove('hidden');
-                    return;  // 跳過繪圖（後續表格渲染已在上方完成）
-                }
+                } else {
                 document.getElementById('accuracy-chart-empty').classList.add('hidden');
 
                 // 銷毀舊圖表避免衝突
@@ -497,79 +497,8 @@
                         }
                     }
                 });
+                } // end else (hasRealData)
 
-                // 3. 更新預測紀錄表格（🔴 修正：加入錯誤處理與空值檢查）
-                let recordsArray = [];
-                if (telemetryData) {
-                    // 支援多種結構：records 可能是陣列或物件
-                    if (Array.isArray(telemetryData.records)) {
-                        recordsArray = telemetryData.records;
-                    } else if (telemetryData.records && Array.isArray(telemetryData.records.records)) {
-                        // 相容嵌套結構 { records: { records: [...] } }
-                        recordsArray = telemetryData.records.records;
-                    }
-                }
-                
-                if (recordsArray && recordsArray.length > 0) {
-                    const recentRecords = recordsArray.slice(-10).reverse();
-                    tableBody.innerHTML = recentRecords.map(record => {
-                        // 🔴 修正：安全地取得時間戳記
-                        let time = '-';
-                        try {
-                            if (record && record.timestamp) {
-                                time = new Date(record.timestamp).toLocaleString('zh-TW');
-                            }
-                        } catch (e) {
-                            console.warn('Invalid timestamp:', record ? record.timestamp : 'record is null', e);
-                        }
-                        
-                        // 🔴 修正：安全地取得準確率狀態
-                        let accText = '⏳ 待驗證';
-                        let accClass = 'text-gray-500';
-                        const accuracy = record ? (record.accuracy || record.actual_result?.was_correct) : null;
-                        if (accuracy === 1 || accuracy === 80 || accuracy === 100 || (record?.actual_result?.was_correct === true)) {
-                            accText = '✅ 正確';
-                            accClass = 'text-green-600 font-bold';
-                        } else if (accuracy === 0 || accuracy === 20 || (record?.actual_result?.was_correct === false)) {
-                            accText = '❌ 錯誤';
-                            accClass = 'text-red-600 font-bold';
-                        }
-                        
-                        // 🔴 修正：安全地取得預測建議（支援多種結構）
-                        let recommendation = '-';
-                        if (record && record.prediction && typeof record.prediction === 'object') {
-                            recommendation = record.prediction.recommendation || 
-                                           record.prediction.operation_suggestion || 
-                                           '-';
-                        } else if (record && record.operation_suggestion) {
-                            recommendation = record.operation_suggestion;
-                        }
-                        
-                        // 🔴 修正：安全地取得股票代碼和名稱（從 prediction 或 input 中讀取）
-                        let stockCode = record?.stock_code || '-';
-                        let stockName = record?.stock_name || '-';
-                        if ((stockCode === '-' || !stockCode) && record?.prediction) {
-                            stockCode = record.prediction.stock_code || record.prediction.code || '-';
-                            stockName = record.prediction.stock_name || record.prediction.name || '-';
-                        }
-                        if ((stockCode === '-' || !stockCode) && record?.input) {
-                            stockCode = record.input.code || '-';
-                            stockName = record.input.name || '-';
-                        }
-                        
-                        return `
-                            <tr>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHTML(time)}</td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHTML(stockCode)}</td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHTML(stockName)}</td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${escapeHTML(recommendation)}</td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm ${accClass}">${accText}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                } else {
-                    tableBody.innerHTML = '<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">暫無預測紀錄</td></tr>';
-                }
 
             } catch (error) {
                 console.error("Dashboard Error:", error);
@@ -694,59 +623,21 @@
 
         // 計算準確率統計（接收 telemetryRes 參數）
         function calculateAccuracyStats(metricsRes, telemetryRes) {
-            // 優先使用 metricsRes，如果沒有則從 telemetryRes 計算
-            if (metricsRes && !metricsRes.error) {
-                // 直接使用 metrics 數據
-                const vstats = metricsRes.version_stats || [];
-                let totalCorrect = 0;
-                let totalVerified = 0;   // 🔴 P0 修正：分母改用「已驗證」而非「全部預測（含待驗證）」
+            // 🟡 P2 重構：統一為單一計算邏輯——一律以 telemetry records 現算，
+            //    避免 metrics／telemetry 雙路徑分母不一致（46.9% vs 19.7% 的根因）。
+            //    metricsRes 仍保留供卡片其他欄位使用，此處不再作為統計來源。
+            const records = (telemetryRes && Array.isArray(telemetryRes.records)) ? telemetryRes.records : [];
+            const verified = records.filter(r => r.actual_result && !r.legacy);
+            const correct = verified.filter(r => r.actual_result.was_correct === true).length;
+            const incorrect = verified.length - correct;
+            // 🟡 待驗證排除 legacy（無 entry_price、永遠無法驗證的舊記錄），數字才真實
+            const pending = records.filter(r => !r.actual_result && !r.legacy).length;
 
-                vstats.forEach(stat => {
-                    totalCorrect += stat.correct || 0;
-                    totalVerified += (stat.verified !== undefined ? stat.verified : 0);
-                });
-
-                const accuracy = totalVerified >= 10 ? ((totalCorrect / totalVerified) * 100).toFixed(1) : null;
-
-                // 如果 metrics 有權威計數就直接使用；缺權威計數時交給下方 telemetry fallback
-                if (metricsRes.correct_count !== undefined) {
-                    const recs = (telemetryRes && !telemetryRes.error && Array.isArray(telemetryRes.records)) ? telemetryRes.records : [];
-                    document.getElementById('correct-count').innerText = metricsRes.correct_count;
-                    document.getElementById('incorrect-count').innerText = metricsRes.incorrect_count || 0;
-                    // 🟡 待驗證以 telemetry 即時計算（排除 legacy），比 metrics 快照更真實
-                    document.getElementById('pending-count').innerText =
-                        recs.length ? recs.filter(r => !r.actual_result && !r.legacy).length : (metricsRes.pending_count || 0);
-                    document.getElementById('avg-accuracy').innerText = accuracy !== null ? accuracy + '%' : '資料不足';
-                    return;
-                }
-                // metrics 缺少 correct_count → fallback 到 telemetry 現算
-            }
-            
-            // Fallback: 從 telemetry 計算
-            if (!telemetryRes || telemetryRes.error) {
-                console.warn('Telemetry 數據載入失敗');
-                return;
-            }
-            
-            const telemetryData = telemetryRes;
-            const records = telemetryData.records || [];
-            const verified = records.filter(r => r.actual_result);
-            // 🟡 修正：待驗證需排除 legacy（無 entry_price、永遠無法驗證的舊記錄），
-            //    否則「待驗證」數字會虛高（136 → 實際可驗證的筆數）。
-            const pending = records.filter(r => !r.actual_result && !r.legacy);
-            
-            const correct = verified.filter(r => r.actual_result && r.actual_result.was_correct).length;
-            const incorrect = verified.filter(r => r.actual_result && !r.actual_result.was_correct).length;
-            
-            // 🟡 修正：樣本不足時顯示「資料不足」而非 0.0%
-            const accuracy = verified.length >= 10 
-                ? ((correct / verified.length) * 100).toFixed(1) + '%'
-                : '資料不足';
-            
             document.getElementById('correct-count').innerText = correct;
             document.getElementById('incorrect-count').innerText = incorrect;
-            document.getElementById('pending-count').innerText = pending.length;
-            document.getElementById('avg-accuracy').innerText = accuracy;
+            document.getElementById('pending-count').innerText = pending;
+            document.getElementById('avg-accuracy').innerText =
+                verified.length >= 10 ? ((correct / verified.length) * 100).toFixed(1) + '%' : '資料不足';
         }
 
         // 切換詳細資訊行的顯示/隱藏
