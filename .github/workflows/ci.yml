@@ -72,3 +72,20 @@ jobs:
       - name: Run unit tests
         run: |
           pytest tests/unit/ -v
+
+  # #90 guard: FinMind bulk-query data_id parameter contract check
+  finmind-bulk-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install requests
+      - name: Check FinMind bulk endpoint data_id contract
+        env:
+          FINMIND_TOKEN: ${{ secrets.FINMIND_TOKEN }}
+        run: |
+          python scripts/check_finmind_bulk.py

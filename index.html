@@ -796,7 +796,14 @@
                 const res = await fetch(BASE + 'data/screener_candidates.json?v=' + Date.now());
                 if (!res.ok) throw new Error('No data');
                 const data = await res.json();
-                
+
+                // 🔴 修正（#90）：抓取失敗要誠實顯示紅字，不要偽裝成「市場太弱」
+                if (data.error) {
+                    document.getElementById('screener-table').innerHTML =
+                        `<p class="text-red-500 text-center py-4">❌ 海選數據抓取失敗：${escapeHTML(data.error)}（請查 Actions log）</p>`;
+                    return;
+                }
+
                 if (!data.candidates || data.candidates.length === 0) {
                     document.getElementById('screener-table').innerHTML = '<p class="text-gray-500 text-center py-4">本週無符合條件的候選股。</p>';
                     return;

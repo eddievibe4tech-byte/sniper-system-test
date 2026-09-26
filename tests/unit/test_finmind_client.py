@@ -291,3 +291,64 @@ class TestGetStockPrice:
 
         assert features == {'latest_price': 0, 'ma5': 0,
                             'ma20': 0, 'price_trend': 'unknown'}
+
+
+class TestBulkQueryDataIdContract:
+    """#90 回歸測試：批量查詢（stock_id 空字串）必須完全不帶 data_id 參數。
+
+    回歸背景：_make_request 曾永遠附帶 'data_id': stock_id，空字串時送出
+    data_id= → FinMind TaiwanStockMonthRevenue /
+    TaiwanStockInstitutionalInvestorsBuySell 回 400，海選資料全失。
+    """
+
+    @responses.activate
+    def test_bulk_query_omits_data_id(self):
+        """批量查詢：請求 URL query 中不得出現 data_id"""
+        responses.add(
+            responses.GET,
+            'https://api.finmindtrade.com/api/v4/data',
+            json={'status': 200, 'msg': 'success',
+                  'data': [{'stock_id': '2330', 'revenue': 100}]},
+            status=200
+        )
+
+        client = FinMindClient(token='test_token')
+        result = client._make_request('TaiwanStockMonthRevenue', '',
+                                      start_date='2026-08-01',
+                                      end_date='2026-08-31')
+        assert result is not None
+        url = responses.calls[0].request.url
+        assert 'data_id' not in url, f"批量查詢不應帶 data_id 參數：{url}"
+        # PR#91 review 建議 3：加強整個 URL 參數結構斷言
+        from urllib.parse import parse_qs
+        params = parse_qs(url.split('?', 1)[1])
+        assert params.get('dataset') == ['TaiwanStockMonthRevenue']
+        assert params.get('start_date') == ['2026-08-01']
+        assert params.get('end_date') == ['2026-08-31']
+        assert params.get('token') == ['test_token']
+        assert 'data_id' not in params
+
+    @responses.activate
+    def test_single_stock_query_includes_data_id(self):
+        """個股查詢：請求必須帶 data_id=<stock_id>"""
+        responses.add(
+            responses.GET,
+            'https://api.finmindtrade.com/api/v4/data',
+            json={'status': 200, 'msg': 'success',
+                  'data': [{'date': '2026-09-01', 'close_price': 100}]},
+            status=200
+        )
+
+        client = FinMindClient(token='test_token')
+        client._make_request('TaiwanStockPrice', '2330',
+                             start_date='2026-09-01', end_date='2026-09-25')
+        url = responses.calls[0].request.url
+        assert 'data_id=2330' in url, f"個股查詢應帶 data_id=2330：{url}"
+        # PR#91 review 建議 3：加強整個 URL 參數結構斷言
+        from urllib.parse import parse_qs
+        params = parse_qs(url.split('?', 1)[1])
+        assert params.get('data_id') == ['2330']
+        assert params.get('dataset') == ['TaiwanStockPrice']
+        assert params.get('start_date') == ['2026-09-01']
+        assert params.get('end_date') == ['2026-09-25']
+        assert params.get('token') == ['test_token']
