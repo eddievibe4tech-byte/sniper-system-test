@@ -1,0 +1,12 @@
+分析 {name}（{code}），產業：{industry}，市場：{regime}。
+
+基本面：營收YoY {revenue_yoy}%、毛利率 {gross_margin}%、淨利率 {net_margin}%、EPS {eps}
+技術面：現價 {current_price}、MA20 {ma20}（站上:{price_above_ma20}）、RSI {rsi}、MACD {macd}、5日漲幅 {change_5d}%、波動率 {volatility}%
+籌碼面：投信連買 {inst_buy_days} 天、融資變化 {margin_change} 張
+
+規則：
+1. 欄位為「數據缺失」時不得視為 0 或負面證據，僅用有值欄位評分，理由末尾標註（缺失欄位：xx）；金融股忽略營收/EPS 改看股價位置與籌碼。
+2. 評分 0-100：基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）｜技術面30%（價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10）｜籌碼面20%（投信連買>3天 +15、融資減少 +5）｜風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）
+
+僅輸出 JSON，無其他內容：
+{"ev_score": 0-100, "recommendation": "積極買入/謹慎買入/觀望/避開", "reason": "≤30字"}

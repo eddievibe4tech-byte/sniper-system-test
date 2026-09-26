@@ -21,6 +21,96 @@ from src.trading_plan import generate_trading_plan
 from src.yahoo_client import YahooFinanceClient
 
 
+def generate_rule_based_analysis(stock_data: Dict) -> Dict:
+    """
+    🆕 方案 1+2：規則引擎 — 當財報不完整時，用技術面＋籌碼面規則產生預設評分。
+    完全不呼叫 Groq，節省 token（0 input / 0 output）。
+
+    Args:
+        stock_data: 已組裝的股票數據字典
+
+    Returns:
+        與 Groq 輸出同格式的 analysis 字典（ev_score / recommendation / reason）
+    """
+    score = 50  # 基礎分
+    reasons = []
+
+    # 技術面評分
+    rsi = stock_data.get('rsi') or 50
+    change_5d = stock_data.get('change_5d') or 0
+    ma20 = stock_data.get('ma20') or 0
+    current_price = stock_data.get('current_price') or 0
+    macd = stock_data.get('macd') or 0
+    volatility = stock_data.get('volatility') or 0
+
+    if 30 < rsi < 70:
+        score += 10
+        reasons.append("RSI 中性")
+    elif rsi <= 30:
+        score += 15
+        reasons.append("RSI 超賣")
+    else:
+        score -= 10
+        reasons.append("RSI 超買")
+
+    if change_5d > 5:
+        score += 10
+        reasons.append("短期強勢")
+    elif change_5d < -5:
+        score -= 10
+        reasons.append("短期弱勢")
+
+    # MA20 乖離
+    if ma20 > 0 and current_price > 0:
+        gap_pct = (current_price - ma20) / ma20 * 100
+        if gap_pct > 5:
+            score -= 5
+            reasons.append("乖離過大")
+
+    # MACD
+    if macd > 0:
+        score += 5
+        reasons.append("MACD 多頭")
+
+    # 風險控管
+    if volatility > 40:
+        score -= 10
+        reasons.append("波動過高")
+    elif 0 < volatility < 20:
+        score += 5
+        reasons.append("波動低")
+
+    # 籌碼面
+    inst_buy_days = stock_data.get('inst_buy_days') or 0
+    if inst_buy_days >= 3:
+        score += 15
+        reasons.append("投信連買")
+    elif inst_buy_days >= 1:
+        score += 5
+        reasons.append("投信小幅買超")
+
+    # 限制分數範圍
+    score = max(0, min(100, score))
+
+    # 建議
+    if score >= 70:
+        recommendation = "積極買入"
+    elif score >= 60:
+        recommendation = "謹慎買入"
+    elif score >= 40:
+        recommendation = "觀望"
+    else:
+        recommendation = "避開"
+
+    reason_str = "、".join(reasons[:3]) if reasons else "規則引擎判定"
+
+    return {
+        'ev_score': score,
+        'recommendation': recommendation,
+        'reason': f"（無 AI 分析）{reason_str}",
+    }
+
+
 def auto_verify_predictions(telemetry_data: Dict, finmind: FinMindClient, horizon: int = 5) -> int:
     """
     🔴 P0 修正：自動回填驗證
@@ -279,7 +369,14 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
             finmind = FinMindClient()
             groq = GroqClient()
             yahoo = YahooFinanceClient()  # ✅ 初始化備援客戶端
-            prompt_tpl = (BASE_DIR / 'prompts' / 'main_analysis.txt').read_text(encoding='utf-8')
+            # 🆕 方案 2：Prompt 壓縮 — 優先使用 v2（~400 tokens，原 ~1000 tokens）
+            prompt_v2_path = BASE_DIR / 'prompts' / 'main_analysis_v2.txt'
+            if prompt_v2_path.exists():
+                prompt_tpl = prompt_v2_path.read_text(encoding='utf-8')
+                logger.info("使用壓縮版 Prompt：prompts/main_analysis_v2.txt")
+            else:
+                prompt_tpl = (BASE_DIR / 'prompts' / 'main_analysis.txt').read_text(encoding='utf-8')
+                logger.warning("找不到 main_analysis_v2.txt，退回完整版 Prompt")
             regime = '震盪'  # 進階可改呼叫 groq.judge_regime(market_data)
             
             for stock in stocks:
@@ -412,9 +509,41 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
                         skipped_stocks.append({
                             "code": code,
                             "name": stock.get('name', ''),
-                            "error": f"財報數據不完整（來源：{financial_source}）：跳過 AI 分析（避免浪費 Groq token）"
+                            "error": f"財報數據不完整（來源：{financial_source}）：跳過 AI 分析（改用規則引擎，避免浪費 Groq token）"
                         })
-                        continue  # 直接跳過，不呼叫 Groq
+
+                        # 🆕 方案 1：不呼叫 Groq，改用規則引擎預設評分，仍完整產出 record
+                        analysis = generate_rule_based_analysis(stock_data)
+                        record = {**stock_data, **analysis, 'risk_level': assess_risk_level(volatility)}
+                        record['trading_plan'] = generate_trading_plan(record)
+                        all_results.append(record)
+
+                        # 規則引擎結果也寫入 telemetry，供儀表板顯示「（無 AI 分析）」標記
+                        telemetry_data['records'].append({
+                            'id': f"{now.strftime('%Y%m%d')}-{code}",
+                            'timestamp': now.isoformat(),
+                            'stock_code': code,
+                            'stock_name': stock['name'],
+                            'prompt_version': current_prompt_version,
+                            'model': 'rule-based-engine',  # 🆕 標記非 AI 來源
+                            'regime': regime,
+                            'input': stock_data,
+                            'prediction': {
+                                'ev_score': analysis['ev_score'],
+                                'recommendation': analysis['recommendation'],
+                                'reason': analysis['reason'],
+                                'stock_code': code,
+                                'stock_name': stock['name'],
+                                'close_price': prices[-1] if prices else None,
+                                'change_5d': stock_data.get('change_5d'),
+                                'volatility': stock_data.get('volatility'),
+                                'rsi': stock_data.get('rsi'),
+                            },
+                            'actual_result': None,
+                            'accuracy': None,
+                            'entry_price': prices[-1] if prices else None,
+                        })
+                        continue  # 跳過 Groq 呼叫
 
                     # ✅ 6. 呼叫 Groq 分析 (加入容錯)
                     analysis = groq.analyze_stock(prompt_tpl, stock_data)
@@ -428,7 +557,7 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
                     
                     record = {**stock_data, **analysis, 'risk_level': assess_risk_level(volatility)}
 
-                    # 🆕 加入交易計畫（買點/賣點：進場區間、停損、停利、R/R）
+                    # 🆕 加入交易計畫（買點/賣點：進場區間、停損、停利、R/R），與規則引擎分支保持一致
                     record['trading_plan'] = generate_trading_plan(record)
 
                     all_results.append(record)
