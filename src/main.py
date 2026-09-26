@@ -297,6 +297,7 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
                     change_5d = 0.0
                     volatility = 0.0
                     use_yahoo_fallback = False
+                    financial_source = 'finmind'  # 財報資料源標記（FinMind / yfinance）
                     
                     # ✅ 2. 嘗試使用 FinMind (主力)
                     try:
@@ -304,18 +305,14 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
                         revenue = finmind.get_revenue(code) or {}
                         revenue_yoy = revenue.get('yoy_growth', 0.0)
                         
-                        # 財報數據
+                        # 🔴 P0-1 修正精神延續：取不到財報時設為 None，讓 prompt 顯示 '-'
+                        financial_source = 'finmind'
                         try:
-                            financials = finmind.get_financial_statements(code)
-                            if financials:
-                                gross_margin = financials.get('gross_margin')
-                                net_margin = financials.get('net_margin')
-                                eps = financials.get('eps')
-                            else:
-                                # 🔴 P0-1 修正：取不到財報時設為 None，讓 prompt 顯示 '-'
-                                gross_margin = None
-                                net_margin = None
-                                eps = None
+                            financials = finmind.get_financial_statements(code) or {}
+                            gross_margin = financials.get('gross_margin')
+                            net_margin = financials.get('net_margin')
+                            eps = financials.get('eps')
+                            financial_source = financials.get('source', 'finmind')
                         except Exception as e:
                             logger.warning(f"{code} 財報數據抓取失敗，使用預設值：{e}")
                             gross_margin = None
@@ -402,16 +399,19 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
                     # ✅ 5.5 🔴 方案 A：財報全缺時在呼叫 Groq「之前」攔截，節省 token
                     # 原問題：FinancialStatements 全面 422 時，14 檔股票仍各消耗一次
                     # Groq API call（~4-5 秒/次），且 EV 評分基於殘缺數據（無基本面）。
+                    # 🔴 方案 C 強化後：FinMind 失敗會自動 fallback yfinance，
+                    #    只有「雙資料源都拿不到」才會觸發此攔截。
                     financial_complete = not (gross_margin is None and net_margin is None and eps is None)
                     if not financial_complete:
                         logger.warning(
-                            f"{code}: 財報全缺（毛利率/淨利率/EPS 皆為 None），"
+                            f"{code}: 財報數據不完整（毛利率/淨利率/EPS 皆為 None，"
+                            f"來源：{financial_source}，FinMind+yfinance 雙源皆失敗），"
                             f"跳過 AI 分析以節省 Groq token"
                         )
                         skipped_stocks.append({
                             "code": code,
                             "name": stock.get('name', ''),
-                            "error": "財報全缺：跳過 AI 分析（避免浪費 Groq token）"
+                            "error": f"財報數據不完整（來源：{financial_source}）：跳過 AI 分析（避免浪費 Groq token）"
                         })
                         continue  # 直接跳過，不呼叫 Groq
 
