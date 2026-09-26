@@ -81,10 +81,10 @@ def collect_opportunities(crypto, deep, setup, us, alpha=None, warrants=None) ->
                 continue
             if c.get("scenario") == "黃金買點":
                 opps.append({"prio": 0, "market": "美股", "label": f"黃金買點 {c.get('symbol')}",
-                             "detail": f"VIX={vix}；{c.get('stop_loss')}；{c.get('take_profit')}"})
+                             "detail": f"VIX={vix if vix is not None else '-'}；{c.get('stop_loss')}；{c.get('take_profit')}"})
             elif c.get("scenario") == "動量突破" and c.get("recommendation") == "謹慎買入":
                 opps.append({"prio": 1, "market": "美股", "label": f"動量突破 {c.get('symbol')}",
-                             "detail": f"VIX={vix}；RSI={c.get('rsi')}；{c.get('stop_loss')}"})
+                             "detail": f"VIX={vix if vix is not None else '-'}；RSI={c.get('rsi')}；{c.get('stop_loss')}"})
 
     # 台股：突破 Setup 優先於買入級
     if setup:

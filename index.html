@@ -123,11 +123,9 @@
                     <option value="change_5d">依 5 日漲幅排序</option>
                     <option value="volatility">依波動率排序</option>
                 </select>
+                <!-- 🟡 P2：選項改由 rebuildFilterOptions() 依實際資料動態產生，避免建議詞彙表漂移 -->
                 <select id="filter-recommendation" class="px-3 py-2 border rounded-lg text-sm" onchange="filterTable()">
                     <option value="">全部建議</option>
-                    <option value="積極買入">積極買入</option>
-                    <option value="觀望">觀望</option>
-                    <option value="避開">避開</option>
                 </select>
             </div>
             
@@ -270,6 +268,9 @@
         }
 
         async function loadDashboard() {
+            // 🟢 P3 防護：確保統一表格狀態已初始化（DOMContentLoaded 順序上本已成立，此處加強健壯性）
+            window.__tableState = window.__tableState || { sortBy: 'ev_score', filter: '' };
+
             const tableBody = document.getElementById('predictions-table');
             tableBody.innerHTML = getLoadingHtml('載入數據中...');
 
@@ -318,6 +319,9 @@
                     
                     // 儲存數據供統一表格管線（排序＋篩選）使用
                     window.analysisData = deep.all_results;
+
+                    // 🟡 P2：依實際資料動態產生篩選選項（謹慎買入／回檔觀察等不再缺項、不漂移）
+                    rebuildFilterOptions();
 
                     // 渲染表格（統一管線：排序與篩選同時生效）
                     applyTablePipeline();
@@ -514,7 +518,15 @@
                 return '<span class="text-gray-400 text-xs">—</span>';
             }
 
-            const [low, high] = plan.entry_zone || [0, 0];
+            const zone = Array.isArray(plan.entry_zone) ? plan.entry_zone : [null, null];
+            const low = zone[0] != null ? zone[0] : '-';
+            const high = zone[1] != null ? zone[1] : '-';
+
+            // 🟢 P3：實作 currentPrice——現價落在進場區間時加綠色底線＝「就是現在」的視覺訊號
+            const inZone = plan.entry_type !== 'none' &&
+                           currentPrice != null &&
+                           typeof low === 'number' && typeof high === 'number' &&
+                           currentPrice >= low && currentPrice <= high;
 
             // 狀態顏色
             const statusColor = plan.entry_type === 'now' ? 'text-green-600 font-bold'
@@ -523,10 +535,10 @@
             return `
                 <div class="text-xs space-y-0.5">
                     <div class="${statusColor}">${escapeHTML(plan.status)}</div>
-                    <div class="text-gray-600">買：<b>${low}~${high}</b></div>
-                    <div class="text-red-500">停損：${plan.stop_loss}</div>
-                    <div class="text-green-600">停利：${plan.take_profit_1}/${plan.take_profit_2}</div>
-                    <div class="text-gray-500">R/R：${plan.risk_reward || '-'}</div>
+                    <div class="text-gray-600 ${inZone ? 'underline decoration-green-500' : ''}">買：<b>${low}~${high}</b>${inZone ? ' 🎯' : ''}</div>
+                    <div class="text-red-500">停損：${plan.stop_loss ?? '-'}</div>
+                    <div class="text-green-600">停利：${plan.take_profit_1 ?? '-'}/${plan.take_profit_2 ?? '-'}</div>
+                    <div class="text-gray-500">R/R：${plan.risk_reward ?? '-'}</div>
                 </div>
             `;
         }
@@ -595,17 +607,19 @@
                 
                 // 詳細資訊行
                 // 🆕 交易計畫卡片：展開時顯示完整買賣點（進場區間／停損停利／R/R／行動說明）
-                const planCard = r.trading_plan && r.trading_plan.entry_type !== 'none' ? `
+                // 🟢 P3：entry_zone／risk_reward null 防呆——資料層異常時顯示 '-' 而非崩潰／顯示 null
+                const tp = r.trading_plan;
+                const planCard = (tp && tp.entry_type !== 'none') ? `
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 md:col-span-3">
                         <h4 class="font-bold text-gray-800 mb-3">🎯 交易計畫</h4>
                         <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
-                            <div><span class="text-gray-500">狀態：</span><b>${escapeHTML(r.trading_plan.status)}</b></div>
-                            <div><span class="text-gray-500">進場區間：</span><b>${r.trading_plan.entry_zone[0]} ~ ${r.trading_plan.entry_zone[1]}</b></div>
-                            <div><span class="text-gray-500">停損：</span><b class="text-red-600">${r.trading_plan.stop_loss}</b></div>
-                            <div><span class="text-gray-500">停利：</span><b class="text-green-600">${r.trading_plan.take_profit_1} / ${r.trading_plan.take_profit_2}</b></div>
-                            <div><span class="text-gray-500">R/R：</span><b>${r.trading_plan.risk_reward}</b></div>
+                            <div><span class="text-gray-500">狀態：</span><b>${escapeHTML(tp.status ?? '-')}</b></div>
+                            <div><span class="text-gray-500">進場區間：</span><b>${Array.isArray(tp.entry_zone) ? `${tp.entry_zone[0] ?? '-'} ~ ${tp.entry_zone[1] ?? '-'}` : '-'}</b></div>
+                            <div><span class="text-gray-500">停損：</span><b class="text-red-600">${tp.stop_loss ?? '-'}</b></div>
+                            <div><span class="text-gray-500">停利：</span><b class="text-green-600">${tp.take_profit_1 ?? '-'} / ${tp.take_profit_2 ?? '-'}</b></div>
+                            <div><span class="text-gray-500">R/R：</span><b>${tp.risk_reward ?? '-'}</b></div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">${escapeHTML(r.trading_plan.action_now)}</p>
+                        <p class="text-xs text-gray-500 mt-2">${escapeHTML(tp.action_now ?? '')}</p>
                     </div>` : '';
 
                 const detailRow = `
@@ -738,6 +752,20 @@
         function filterTable() {
             window.__tableState.filter = document.getElementById('filter-recommendation').value;
             applyTablePipeline();
+        }
+
+        // 🟡 P2：依實際資料動態產生篩選選項（避免建議詞彙表漂移：
+        // v2/規則引擎有「謹慎買入」、v1 舊記錄有「回檔觀察」，寫死選項會缺項且隨 prompt 改動漂移）
+        function rebuildFilterOptions() {
+            const sel = document.getElementById('filter-recommendation');
+            if (!sel) return;
+            const current = window.__tableState.filter;
+            const values = [...new Set((window.analysisData || [])
+                .map(r => r.recommendation).filter(Boolean))];
+            sel.innerHTML = '<option value="">全部建議</option>' +
+                values.map(v => `<option value="${escapeHTML(v)}">${escapeHTML(v)}</option>`).join('');
+            sel.value = values.includes(current) ? current : '';
+            window.__tableState.filter = sel.value;
         }
 
         // 渲染近期預測紀錄表格（在 loadDashboard 中呼叫）
