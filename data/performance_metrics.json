@@ -6,7 +6,7 @@
   "pending_count": 170,
   "accuracy_rate": 46.9,
   "current_version": 1,
-  "last_updated": "2026-09-26T21:48:41.837424+08:00",
+  "last_updated": "2026-09-27T09:10:48.629433+08:00",
   "version_stats": [
     {
       "version": 1,
@@ -15,5 +15,19 @@
       "correct": 46,
       "accuracy": 46.9
     }
-  ]
+  ],
+  "model_stats": {
+    "rule-based-engine": {
+      "predictions": 0,
+      "verified": 0,
+      "correct": 0,
+      "accuracy": null
+    },
+    "groq": {
+      "predictions": 304,
+      "verified": 98,
+      "correct": 46,
+      "accuracy": 46.9
+    }
+  }
 }

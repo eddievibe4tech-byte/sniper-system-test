@@ -191,6 +191,15 @@
             </div>
         </div>
 
+        <!-- 🆕 P2-2（Issue #110）：規則引擎 vs Groq 勝率追蹤 -->
+        <div class="bg-white border rounded-lg p-4 mb-6">
+            <h2 class="text-xl font-semibold mb-4">⚖️ 規則引擎 vs AI（Groq）勝率</h2>
+            <p class="text-xs text-gray-500 mb-3">長期觀察規則引擎是否比 AI 更穩定，作為後續是否擴大跳過 Groq 範圍的依據。分母＝已驗證筆數。</p>
+            <div id="model-stats-panel" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="text-sm text-gray-400">載入中…</div>
+            </div>
+        </div>
+
         <!-- 近期預測紀錄表格 -->
         <div class="bg-white border rounded-lg p-4">
             <div class="flex items-center justify-between mb-4">
@@ -269,6 +278,30 @@
         // 🟡 Loading Spinner HTML 模板 (統一 UI)
         function getLoadingHtml(message) {
             return `<tr><td colspan="5" class="px-4 py-4 text-center"><div class="loading-spinner"></div> ${message}</td></tr>`;
+        }
+
+        // 🆕 P2-2（Issue #110）：渲染「規則引擎 vs Groq」勝率面板。
+        // 資料來源：performance_metrics.json 的 model_stats（後端 update_performance_metrics 產生）。
+        // 分母＝已驗證筆數；無已驗證樣本時 accuracy 為 null → 顯示「資料不足」。
+        function renderModelStats(metricsData) {
+            const panel = document.getElementById('model-stats-panel');
+            if (!panel) return;
+            const ms = metricsData && metricsData.model_stats;
+            if (!ms || Object.keys(ms).length === 0) {
+                panel.innerHTML = '<div class="text-sm text-gray-400">📭 尚無模型統計資料（需至少一筆含 model 欄位的預測紀錄）</div>';
+                return;
+            }
+            const labels = { 'rule-based-engine': '🤖 規則引擎（免 AI）', 'groq': '🧠 AI（Groq）' };
+            panel.innerHTML = Object.entries(ms).map(([key, st]) => {
+                const accText = (st.accuracy === null || st.accuracy === undefined)
+                    ? '資料不足' : st.accuracy + '%';
+                return `
+                <div class="bg-gray-50 border rounded-lg p-4">
+                    <p class="text-sm font-medium text-gray-700">${escapeHTML(labels[key] || key)}</p>
+                    <p class="text-2xl font-bold ${st.accuracy !== null && st.accuracy >= 50 ? 'text-green-600' : 'text-orange-500'}">${escapeHTML(accText)}</p>
+                    <p class="text-xs text-gray-500 mt-1">預測 ${st.predictions} 筆｜已驗證 ${st.verified} 筆｜正確 ${st.correct} 筆</p>
+                </div>`;
+            }).join('');
         }
 
         async function loadDashboard() {
@@ -424,6 +457,9 @@
                 } else {
                     document.getElementById('predictions-table').innerHTML = '<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">暫無預測紀錄</td></tr>';
                 }
+
+                // 2.5 🆕 P2-2（Issue #110）：渲染「規則引擎 vs Groq」勝率面板
+                renderModelStats(metricsData);
 
                 // 3. 繪製圖表
                 const ctx = document.getElementById('accuracyChart').getContext('2d');
