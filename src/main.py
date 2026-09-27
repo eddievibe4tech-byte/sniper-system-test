@@ -21,10 +21,25 @@ from src.trading_plan import generate_trading_plan
 from src.yahoo_client import YahooFinanceClient
 
 
+# 🆕 P2-1（Issue #110）：金融產業關鍵字——與 prompt v2「金融股忽略營收/EPS，
+# 改看股價位置與籌碼」的規則保持一致。
+FINANCIAL_INDUSTRY_KEYWORDS = ('金融', '銀行', '保險', '證券', '金控')
+
+
+def is_financial_industry(industry: str) -> bool:
+    """判斷產業是否屬金融類（與 prompt v2 口徑一致）。"""
+    ind = industry or ''
+    return any(kw in ind for kw in FINANCIAL_INDUSTRY_KEYWORDS)
+
+
 def generate_rule_based_analysis(stock_data: Dict) -> Dict:
     """
     🆕 方案 1+2：規則引擎 — 當財報不完整時，用技術面＋籌碼面規則產生預設評分。
     完全不呼叫 Groq，節省 token（0 input / 0 output）。
+
+    🆕 P2-1（Issue #110）產業調整：金融股（金控/銀行/保險/證券）不適用
+    「短期漲勢加分」邏輯——金融股波動特性為長年盤整、短線暴衝多為事件驅動，
+    改以「股價位置（MA20 之上）」＋「籌碼面」為主，與 prompt v2 一致。
 
     Args:
         stock_data: 已組裝的股票數據字典
@@ -34,6 +49,9 @@ def generate_rule_based_analysis(stock_data: Dict) -> Dict:
     """
     score = 50  # 基礎分
     reasons = []
+
+    # 🆕 P2-1：判定是否金融股
+    financial = is_financial_industry(stock_data.get('industry', ''))
 
     # 技術面評分
     rsi = stock_data.get('rsi') or 50
@@ -53,12 +71,19 @@ def generate_rule_based_analysis(stock_data: Dict) -> Dict:
         score -= 10
         reasons.append("RSI 超買")
 
-    if change_5d > 5:
-        score += 10
-        reasons.append("短期強勢")
-    elif change_5d < -5:
-        score -= 10
-        reasons.append("短期弱勢")
+    if financial:
+        # 🔴 P2-1：金融股忽略 short-term momentum（change_5d），
+        # 改以「股價位於 MA20 之上」加 10 分（趨勢位置取代動能）
+        if ma20 > 0 and current_price > ma20:
+            score += 10
+            reasons.append("股價於 MA20 上（金融股位置加分）")
+    else:
+        if change_5d > 5:
+            score += 10
+            reasons.append("短期強勢")
+        elif change_5d < -5:
+            score -= 10
+            reasons.append("短期弱勢")
 
     # MA20 乖離
     if ma20 > 0 and current_price > 0:
@@ -80,7 +105,7 @@ def generate_rule_based_analysis(stock_data: Dict) -> Dict:
         score += 5
         reasons.append("波動低")
 
-    # 籌碼面
+    # 籌碼面（金融股与非金融股皆納入；金融股以此為主要正面證據）
     inst_buy_days = stock_data.get('inst_buy_days') or 0
     if inst_buy_days >= 3:
         score += 15
@@ -294,7 +319,48 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
         version_stats_list.append(st)
     # 🟡 顯式依版本排序，確保趨勢線 V1 -> V2 -> V3...
     version_stats_list.sort(key=lambda s: s['version'])
-    
+
+    # 🆕 P2-2（Issue #110）：規則引擎 vs Groq（AI 模型）分開的勝率追蹤。
+    # telemetry record 已帶 model 欄位（'rule-based-engine' 或 Groq 模型名），
+    # 此處彙整成 model_stats，長期觀察規則引擎是否比 AI 更穩定，
+    # 作為後續是否擴大「跳過 Groq」範圍的依據。
+    RULE_BASED_MODEL = 'rule-based-engine'
+    model_agg: Dict[str, Dict] = {}
+    for record in records:
+        m = record.get('model') or 'unknown'
+        st = model_agg.setdefault(m, {'model': m, 'predictions': 0, 'verified': 0, 'correct': 0})
+        st['predictions'] += 1
+        if record.get('accuracy') is not None:
+            st['verified'] += 1
+            if record.get('accuracy') == 1:
+                st['correct'] += 1
+
+    model_stats: Dict[str, Dict] = {}
+    # 規則引擎固定以 'rule-based-engine' 為鍵；AI 模型合併到 'groq' 鍵下
+    # （即使換模型名，也能與規則引擎直接比較）。
+    rule_st = model_agg.pop(RULE_BASED_MODEL, None)
+    groq_predictions = sum(st['predictions'] for st in model_agg.values())
+    groq_verified = sum(st['verified'] for st in model_agg.values())
+    groq_correct = sum(st['correct'] for st in model_agg.values())
+    if rule_st or groq_predictions:
+        def _mk(preds: int, ver: int, corr: int) -> Dict:
+            return {
+                'predictions': preds,
+                'verified': ver,
+                'correct': corr,
+                # 分母一律用「已驗證筆數」（與 version_stats 口徑一致）；
+                # 無已驗證樣本時保持 None → 前端顯示「資料不足」。
+                'accuracy': round(corr / ver * 100, 1) if ver else None,
+            }
+        model_stats = {
+            RULE_BASED_MODEL: _mk(
+                rule_st['predictions'] if rule_st else 0,
+                rule_st['verified'] if rule_st else 0,
+                rule_st['correct'] if rule_st else 0,
+            ),
+            'groq': _mk(groq_predictions, groq_verified, groq_correct),
+        }
+
     now = datetime.now(TZ_TAIPEI)
     metrics = {
         'total_predictions': total_predictions,
@@ -305,7 +371,8 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
         'accuracy_rate': accuracy_display,
         'current_version': max(int(v) for v in version_stats.keys()) if version_stats else 1,
         'last_updated': now.isoformat(),
-        'version_stats': version_stats_list
+        'version_stats': version_stats_list,
+        'model_stats': model_stats,  # 🆕 P2-2：rule-based-engine vs groq 勝率
     }
     
     path.write_text(json.dumps(metrics, ensure_ascii=False, indent=2), encoding='utf-8')
