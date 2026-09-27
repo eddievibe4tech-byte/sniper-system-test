@@ -127,6 +127,10 @@
                 <select id="filter-recommendation" class="px-3 py-2 border rounded-lg text-sm" onchange="filterTable()">
                     <option value="">全部建議</option>
                 </select>
+                <!-- 🆕 #115：複製決策報告（純文字，方便貼到 LINE/Notion） -->
+                <button onclick="copyDecisionReport()" class="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 whitespace-nowrap">
+                    📋 複製決策報告
+                </button>
             </div>
             
             <div class="overflow-x-auto">
@@ -766,6 +770,66 @@
                 values.map(v => `<option value="${escapeHTML(v)}">${escapeHTML(v)}</option>`).join('');
             sel.value = values.includes(current) ? current : '';
             window.__tableState.filter = sel.value;
+        }
+
+        // 🆕 #115：複製決策報告（純文字格式，方便貼到 LINE/Notion）
+        // 依當前篩選條件（無篩選則全部）輸出前 10 檔：EV/建議/現價/MA20/交易計畫/理由
+        function copyDecisionReport() {
+            if (!window.analysisData || window.analysisData.length === 0) {
+                alert('尚無分析數據');
+                return;
+            }
+
+            const f = (window.__tableState && window.__tableState.filter) || '';
+            const pool = f
+                ? window.analysisData.filter(r => r.recommendation === f)
+                : window.analysisData;
+
+            let report = `🎯 狙擊手系統決策報告\n`;
+            report += `生成時間：${new Date().toLocaleString('zh-TW')}\n`;
+            report += `篩選條件：${f || '全部建議'}\n`;
+            report += `共 ${pool.length} 檔\n\n`;
+
+            pool.slice(0, 10).forEach((r, i) => {
+                report += `${i + 1}. ${r.name ?? '-'} (${r.code ?? '-'})\n`;
+                report += `   EV Score: ${r.ev_score ?? '-'} | 建議: ${r.recommendation ?? '-'}\n`;
+                report += `   現價: ${r.current_price ?? '-'} | MA20: ${r.ma20 ?? '-'}\n`;
+                const tp = r.trading_plan;
+                if (tp && tp.entry_type !== 'none') {
+                    const zone = Array.isArray(tp.entry_zone)
+                        ? `${tp.entry_zone[0] ?? '-'}~${tp.entry_zone[1] ?? '-'}`
+                        : '-';
+                    report += `   狀態: ${tp.status ?? '-'}\n`;
+                    report += `   買點: ${zone}\n`;
+                    report += `   停損: ${tp.stop_loss ?? '-'} | 停利: ${tp.take_profit_1 ?? '-'}/${tp.take_profit_2 ?? '-'}\n`;
+                    report += `   R/R: ${tp.risk_reward ?? '-'}\n`;
+                }
+                report += `   理由: ${r.reason ?? '-'}\n\n`;
+            });
+
+            const done = () => alert('✅ 已複製決策報告到剪貼簿');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(report).then(done).catch(() => fallbackCopy(report, done));
+            } else {
+                fallbackCopy(report, done);
+            }
+        }
+
+        // Fallback：非 HTTPS／舊瀏覽器無 clipboard API 時用 textarea + execCommand
+        function fallbackCopy(text, done) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                done();
+            } catch (e) {
+                alert('❌ 複製失敗，請手動複製');
+            }
+            document.body.removeChild(textarea);
         }
 
         // 渲染近期預測紀錄表格（在 loadDashboard 中呼叫）

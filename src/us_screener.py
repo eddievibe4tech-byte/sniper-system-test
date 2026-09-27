@@ -56,13 +56,23 @@ SCENARIO_META = {
         "take_profit": "不適用",
         "holding_period": "不適用",
     },
+    "資料不足": {
+        "recommendation": "觀望（資料不足）",
+        "win_rate": "-",
+        "position_size": "0%（VIX 缺失，禁止進場）",
+        "stop_loss": "不適用",
+        "take_profit": "不適用",
+        "holding_period": "不適用",
+    },
 }
 
 
 def get_us_scenario(vix: Optional[float], rsi: float,
                     price_above_ma50: bool, dist_to_high_pct: float) -> str:
+    # 🔴 P0 修正（#115）：VIX 缺失時不做任何象限判定——四象限規則全部以 VIX 為環境門檻，
+    # 舊版預設 20.0 會在無資料時仍誤判「動量突破」→ 產生不該有的買入推薦。
     if vix is None:
-        vix = 20.0  # VIX 缺失時採保守中性假設
+        return "資料不足"
     # 象限 4：極度自滿 + 極度超買
     if vix < US_RULES["vix_complacent"] and rsi > US_RULES["rsi_extreme"]:
         return "極度危險"
@@ -102,8 +112,10 @@ def run_us_screener() -> List[Dict]:
     candidates = []
     for sym, t in scanned.items():
         scenario = get_us_scenario(vix, t["rsi"], t["price_above_ma50"], t["dist_to_52w_high_pct"])
+        # 🔴 P0 修正（#115）：VIX 缺失 → scenario="資料不足"，一律不收集為候選，
+        # 確保無 VIX 資料當日不會產生任何買入推薦（舊版因預設 VIX=20 仍會誤出「動量突破」）。
         if scenario not in ("黃金買點", "動量突破", "極度危險"):
-            continue  # 中性不收集；極度危險保留作為持倉警告
+            continue  # 中性／資料不足不收集；極度危險保留作為持倉警告
 
         meta = SCENARIO_META[scenario]
         rec = meta["recommendation"]
