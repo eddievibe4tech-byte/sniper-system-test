@@ -583,6 +583,200 @@
             `;
         }
 
+        // 🆕 視覺化價格圖表（Canvas 繪製）：進場區間綠底、現價藍點、停損紅虛線、TP1 黃線、TP2 綠線
+        function renderPriceChart(canvas, plan, currentPrice) {
+            if (!plan || plan.entry_type === 'none' || !canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = 120 * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = '120px';
+            ctx.scale(dpr, dpr);
+
+            const width = rect.width;
+            const height = 120;
+            const zone = Array.isArray(plan.entry_zone) ? plan.entry_zone : [];
+            const low = zone[0] != null ? zone[0] : null;
+            const high = zone[1] != null ? zone[1] : null;
+            if (low == null || high == null) return;
+
+            const prices = [
+                plan.stop_loss, low, high,
+                plan.take_profit_1, plan.take_profit_2, currentPrice
+            ].filter(p => p != null && p > 0);
+
+            if (prices.length === 0) return;
+
+            const minP = Math.min(...prices) * 0.98;
+            const maxP = Math.max(...prices) * 1.02;
+            const range = maxP - minP;
+            if (range <= 0) return; // 防呆：所有價格相同時不繪製（避免除零）
+
+            const toX = (price) => ((price - minP) / range) * (width - 60) + 30;
+
+            // 背景
+            ctx.fillStyle = '#f9fafb';
+            ctx.fillRect(0, 0, width, height);
+
+            // 進場區間（綠色背景）
+            ctx.fillStyle = 'rgba(34, 197, 94, 0.15)';
+            ctx.fillRect(toX(low), 15, Math.max(toX(high) - toX(low), 2), height - 30);
+
+            // 現價標記（藍點 + 標籤）
+            if (currentPrice != null && currentPrice > 0) {
+                const x = toX(currentPrice);
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.arc(x, height / 2, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#1e40af';
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`現價 ${currentPrice}`, x, height / 2 - 10);
+            }
+
+            // 停損（紅虛線）
+            if (plan.stop_loss != null) {
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                ctx.beginPath();
+                ctx.moveTo(toX(plan.stop_loss), 15);
+                ctx.lineTo(toX(plan.stop_loss), height - 15);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = '#dc2626';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`停損 ${plan.stop_loss}`, toX(plan.stop_loss), height - 5);
+            }
+
+            // 停利 1（黃實線）
+            if (plan.take_profit_1 != null) {
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(toX(plan.take_profit_1), 15);
+                ctx.lineTo(toX(plan.take_profit_1), height - 15);
+                ctx.stroke();
+                ctx.fillStyle = '#d97706';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`+10% ${plan.take_profit_1}`, toX(plan.take_profit_1), 12);
+            }
+
+            // 停利 2（綠實線）
+            if (plan.take_profit_2 != null) {
+                ctx.strokeStyle = '#22c55e';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(toX(plan.take_profit_2), 15);
+                ctx.lineTo(toX(plan.take_profit_2), height - 15);
+                ctx.stroke();
+                ctx.fillStyle = '#16a34a';
+                ctx.font = 'bold 9px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`+20% ${plan.take_profit_2}`, toX(plan.take_profit_2), 12);
+            }
+
+            ctx.setLineDash([]);
+        }
+
+        // 🆕 情境化操作指引（買入決策樹：如果...就...）
+        function renderActionGuide(r) {
+            if (!r.trading_plan || r.trading_plan.entry_type === 'none') {
+                return '<p class="text-gray-400 text-sm">無操作指引（避開或觀望）</p>';
+            }
+
+            const tp = r.trading_plan;
+            const gap = r.current_price && r.ma20 ? ((r.current_price - r.ma20) / r.ma20 * 100) : 0;
+            const zoneLow = Array.isArray(tp.entry_zone) ? (tp.entry_zone[0] ?? '-') : '-';
+            const zoneHigh = Array.isArray(tp.entry_zone) ? (tp.entry_zone[1] ?? '-') : '-';
+
+            let guide = '<div class="text-sm space-y-2">';
+
+            if (tp.entry_type === 'pullback' && gap > 3) {
+                guide += `<p class="font-semibold text-blue-700">📌 情境 A：價格回踩到 ${zoneLow}~${zoneHigh}</p>`;
+                guide += `<p class="ml-4 text-gray-700">→ 掛限價單買入，設停損 ${tp.stop_loss ?? '-'}，停利 ${tp.take_profit_1 ?? '-'}/${tp.take_profit_2 ?? '-'}</p>`;
+                guide += `<p class="font-semibold text-blue-700 mt-2">📌 情境 B：價格突破前高（需手動確認）</p>`;
+                guide += `<p class="ml-4 text-gray-700">→ 市價追入半倉，設停損 突破價-4%</p>`;
+                guide += `<p class="font-semibold text-blue-700 mt-2">📌 情境 C：價格跌破 MA20（${r.ma20 ? r.ma20.toFixed(2) : '-'}）</p>`;
+                guide += `<p class="ml-4 text-gray-700">→ 不買入，等站回 MA20 再說</p>`;
+            } else if (tp.entry_type === 'now') {
+                guide += `<p class="font-semibold text-green-700">📌 現在可進場（現價 ${r.current_price ?? '-'} 在進場區間內）</p>`;
+                guide += `<p class="ml-4 text-gray-700">→ 限價單 ${zoneLow}~${zoneHigh}，設停損 ${tp.stop_loss ?? '-'}</p>`;
+            } else if (tp.entry_type === 'reclaim') {
+                guide += `<p class="font-semibold text-yellow-700">📌 等價格站回 MA20（${r.ma20 ? r.ma20.toFixed(2) : '-'}）</p>`;
+                guide += `<p class="ml-4 text-gray-700">→ 確認收盤站穩後再進場，設停損 MA20-3%</p>`;
+            }
+
+            guide += '</div>';
+            return guide;
+        }
+
+        // 🆕 賣的策略（持倉管理：分階段出場＋移動停利＋時間停利＋技術面出場）
+        function renderExitStrategy(r) {
+            if (!r.trading_plan || !r.trading_plan.exit_strategy) {
+                return '<p class="text-gray-400 text-sm">無出場策略</p>';
+            }
+
+            const es = r.trading_plan.exit_strategy;
+
+            let html = '<div class="text-sm space-y-3">';
+
+            // 初始停損
+            html += `<div class="border-l-4 border-red-500 pl-3">`;
+            html += `<p class="font-semibold text-red-700">🛑 初始停損：${es.initial_stop ?? '-'}</p>`;
+            html += `<p class="text-gray-600 text-xs">跌破此價無條件出場，控制最大虧損</p>`;
+            html += `</div>`;
+
+            // 階段 1：+10%
+            if (es.stage_1) {
+                html += `<div class="border-l-4 border-yellow-500 pl-3">`;
+                html += `<p class="font-semibold text-yellow-700">📈 階段 1：${escapeHTML(es.stage_1.trigger ?? '')}</p>`;
+                html += `<p class="text-gray-600 text-xs">→ ${escapeHTML(es.stage_1.action ?? '')}</p>`;
+                html += `</div>`;
+            }
+
+            // 階段 2：+20%
+            if (es.stage_2) {
+                html += `<div class="border-l-4 border-green-500 pl-3">`;
+                html += `<p class="font-semibold text-green-700">🚀 階段 2：${escapeHTML(es.stage_2.trigger ?? '')}</p>`;
+                html += `<p class="text-gray-600 text-xs">→ ${escapeHTML(es.stage_2.action ?? '')}</p>`;
+                html += `</div>`;
+            }
+
+            // 階段 3：移動停利
+            if (es.stage_3) {
+                html += `<div class="border-l-4 border-blue-500 pl-3">`;
+                html += `<p class="font-semibold text-blue-700">🎯 階段 3：${escapeHTML(es.stage_3.action ?? '')}</p>`;
+                html += `<p class="text-gray-600 text-xs">→ 當前 MA20：${es.stage_3.moving_stop ?? '-'}（每日更新）｜${escapeHTML(es.stage_3.trigger ?? '')}</p>`;
+                html += `</div>`;
+            }
+
+            // 時間停利
+            if (es.time_stop) {
+                html += `<div class="border-l-4 border-gray-400 pl-3">`;
+                html += `<p class="font-semibold text-gray-700">⏰ 時間停利：${escapeHTML(es.time_stop.action ?? '')}</p>`;
+                html += `<p class="text-gray-600 text-xs">→ ${escapeHTML(es.time_stop.reason ?? '')}</p>`;
+                html += `</div>`;
+            }
+
+            // 技術面出場
+            if (es.technical_exit) {
+                html += `<div class="border-l-4 border-purple-500 pl-3">`;
+                html += `<p class="font-semibold text-purple-700">⚡ 技術面出場：${escapeHTML(es.technical_exit.action ?? '')}</p>`;
+                html += `<p class="text-gray-600 text-xs">→ ${escapeHTML(es.technical_exit.reason ?? '')}</p>`;
+                html += `</div>`;
+            }
+
+            html += '</div>';
+            return html;
+        }
+
         function renderAnalysisTable(data) {
             const tableBody = document.getElementById('analysis-table');
             
@@ -646,20 +840,34 @@
                 `;
                 
                 // 詳細資訊行
-                // 🆕 交易計畫卡片：展開時顯示完整買賣點（進場區間／停損停利／R/R／行動說明）
-                // 🟢 P3：entry_zone／risk_reward null 防呆——資料層異常時顯示 '-' 而非崩潰／顯示 null
+                // 🆕 (#120) 以三張新卡片取代原純文字 planCard：
+                //   1. 📊 價格地圖（Canvas 視覺化買點/停損/停利相對位置）
+                //   2. 📌 買入操作指引（情境化決策樹）
+                //   3. 💰 賣的策略（持倉管理：分階段出場＋移動停利）
                 const tp = r.trading_plan;
-                const planCard = (tp && tp.entry_type !== 'none') ? `
+                const priceChartCard = (tp && tp.entry_type !== 'none' && Array.isArray(tp.entry_zone)) ? `
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 md:col-span-3">
-                        <h4 class="font-bold text-gray-800 mb-3">🎯 交易計畫</h4>
-                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
-                            <div><span class="text-gray-500">狀態：</span><b>${escapeHTML(tp.status ?? '-')}</b></div>
-                            <div><span class="text-gray-500">進場區間：</span><b>${Array.isArray(tp.entry_zone) ? `${tp.entry_zone[0] ?? '-'} ~ ${tp.entry_zone[1] ?? '-'}` : '-'}</b></div>
-                            <div><span class="text-gray-500">停損：</span><b class="text-red-600">${tp.stop_loss ?? '-'}</b></div>
-                            <div><span class="text-gray-500">停利：</span><b class="text-green-600">${tp.take_profit_1 ?? '-'} / ${tp.take_profit_2 ?? '-'}</b></div>
-                            <div><span class="text-gray-500">R/R：</span><b>${tp.risk_reward ?? '-'}</b></div>
+                        <h4 class="font-bold text-gray-800 mb-3">📊 價格地圖</h4>
+                        <canvas id="price-chart-${r.code}" class="w-full" style="height: 120px;"></canvas>
+                        <div class="mt-2 flex flex-wrap gap-3 text-xs text-gray-600">
+                            <span>🔵 現價 ${r.current_price ?? '-'}</span>
+                            <span>🟢 買點 ${tp.entry_zone[0] ?? '-'}~${tp.entry_zone[1] ?? '-'}</span>
+                            <span>🔴 停損 ${tp.stop_loss ?? '-'}</span>
+                            <span>🟡 +10% ${tp.take_profit_1 ?? '-'}</span>
+                            <span>🟢 +20% ${tp.take_profit_2 ?? '-'}</span>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">${escapeHTML(tp.action_now ?? '')}</p>
+                    </div>` : '';
+
+                const actionGuideCard = `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 md:col-span-3">
+                        <h4 class="font-bold text-gray-800 mb-3">📌 買入操作指引</h4>
+                        ${renderActionGuide(r)}
+                    </div>`;
+
+                const exitStrategyCard = (tp && tp.exit_strategy) ? `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 md:col-span-3">
+                        <h4 class="font-bold text-gray-800 mb-3">💰 賣的策略（持倉管理）</h4>
+                        ${renderExitStrategy(r)}
                     </div>` : '';
 
                 const detailRow = `
@@ -712,7 +920,9 @@
                                     </div>
                                 </div>
 
-                                ${planCard}
+                                ${priceChartCard}
+                                ${actionGuideCard}
+                                ${exitStrategyCard}
 
                             </div>
                         </td>
@@ -721,6 +931,16 @@
                 
                 return summaryRow + detailRow;
             }).join('');
+
+            // 🆕 繪製價格圖表（延遲執行確保 DOM 已渲染；避開類無 canvas 自動跳過）
+            setTimeout(() => {
+                data.forEach(r => {
+                    const canvas = document.getElementById(`price-chart-${r.code}`);
+                    if (canvas && r.trading_plan) {
+                        renderPriceChart(canvas, r.trading_plan, r.current_price);
+                    }
+                });
+            }, 100);
         }
 
         // 計算準確率統計（接收 telemetryRes 參數）
