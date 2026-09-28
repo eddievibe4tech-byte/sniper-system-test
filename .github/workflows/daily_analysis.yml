@@ -69,7 +69,11 @@ jobs:
           [ -f docs/latest_report.html ] && git add docs/latest_report.html || echo "⚠️ 無 latest_report.html"
           [ -f docs/latest_review.md ] && git add docs/latest_review.md || echo "⚠️ 無 latest_review.md"
           [ -f data/advice.json ] && git add data/advice.json || echo "⚠️ 無 advice.json"
-          
+          # 🔴 P0 修正：deep_analysis.json（含 trading_plan 買賣點）與 setup_watchlist.json 必須一併發布，
+          #    否則前端 renderActionGuide 收到 undefined → 價格地圖／賣的策略卡片消失
+          [ -f data/deep_analysis.json ] && git add data/deep_analysis.json || echo "⚠️ 無 deep_analysis.json"
+          [ -f data/setup_watchlist.json ] && git add data/setup_watchlist.json || echo "⚠️ 無 setup_watchlist.json"
+
           git commit -m "🎯 Auto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
 
