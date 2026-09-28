@@ -617,6 +617,30 @@
 
             const toX = (price) => ((price - minP) / range) * (width - 60) + 30;
 
+            // 🆕 (PR#121 review P1) 智慧標籤位移：同一 y 層若兩標籤 x 距離 < 35px，
+            //    左右交替偏移 20px（最多 3 次嘗試），避免價格接近時文字互相遮擋。
+            const labelPositions = [];
+            const addLabel = (price, text, y, color, font = 'bold 9px sans-serif') => {
+                const x = toX(price);
+                let adjustedX = x;
+                let attempts = 0;
+                while (attempts < 3) {
+                    const conflict = labelPositions.some(pos =>
+                        Math.abs(pos.x - adjustedX) < 35 && pos.y === y
+                    );
+                    if (!conflict) break;
+                    adjustedX += (attempts % 2 === 0 ? 20 : -20); // 左右交替位移
+                    attempts++;
+                }
+                adjustedX = Math.max(4, Math.min(adjustedX, width - 4)); // 防出界
+                labelPositions.push({ x: adjustedX, y });
+
+                ctx.fillStyle = color;
+                ctx.font = font;
+                ctx.textAlign = 'center';
+                ctx.fillText(text, adjustedX, y);
+            };
+
             // 背景
             ctx.fillStyle = '#f9fafb';
             ctx.fillRect(0, 0, width, height);
@@ -632,10 +656,7 @@
                 ctx.beginPath();
                 ctx.arc(x, height / 2, 5, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = '#1e40af';
-                ctx.font = 'bold 11px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`現價 ${currentPrice}`, x, height / 2 - 10);
+                addLabel(currentPrice, `現價 ${currentPrice}`, height / 2 - 10, '#1e40af', 'bold 11px sans-serif');
             }
 
             // 停損（紅虛線）
@@ -648,10 +669,7 @@
                 ctx.lineTo(toX(plan.stop_loss), height - 15);
                 ctx.stroke();
                 ctx.setLineDash([]);
-                ctx.fillStyle = '#dc2626';
-                ctx.font = 'bold 9px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`停損 ${plan.stop_loss}`, toX(plan.stop_loss), height - 5);
+                addLabel(plan.stop_loss, `停損 ${plan.stop_loss}`, height - 5, '#dc2626');
             }
 
             // 停利 1（黃實線）
@@ -662,10 +680,7 @@
                 ctx.moveTo(toX(plan.take_profit_1), 15);
                 ctx.lineTo(toX(plan.take_profit_1), height - 15);
                 ctx.stroke();
-                ctx.fillStyle = '#d97706';
-                ctx.font = 'bold 9px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`+10% ${plan.take_profit_1}`, toX(plan.take_profit_1), 12);
+                addLabel(plan.take_profit_1, `+10% ${plan.take_profit_1}`, 12, '#d97706');
             }
 
             // 停利 2（綠實線）
@@ -676,13 +691,14 @@
                 ctx.moveTo(toX(plan.take_profit_2), 15);
                 ctx.lineTo(toX(plan.take_profit_2), height - 15);
                 ctx.stroke();
-                ctx.fillStyle = '#16a34a';
-                ctx.font = 'bold 9px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.fillText(`+20% ${plan.take_profit_2}`, toX(plan.take_profit_2), 12);
+                addLabel(plan.take_profit_2, `+20% ${plan.take_profit_2}`, 12, '#16a34a');
             }
 
+            // 🆕 (PR#121 review P2) 重置 Canvas 繪圖狀態（良好實踐，避免汙染後續繪圖）
+            ctx.textAlign = 'start';
+            ctx.textBaseline = 'alphabetic';
             ctx.setLineDash([]);
+            ctx.globalAlpha = 1.0;
         }
 
         // 🆕 情境化操作指引（買入決策樹：如果...就...）
@@ -711,6 +727,10 @@
             } else if (tp.entry_type === 'reclaim') {
                 guide += `<p class="font-semibold text-yellow-700">📌 等價格站回 MA20（${r.ma20 ? r.ma20.toFixed(2) : '-'}）</p>`;
                 guide += `<p class="ml-4 text-gray-700">→ 確認收盤站穩後再進場，設停損 MA20-3%</p>`;
+            } else {
+                // 🆕 (PR#121 review P1) Fallback：資料異常（如 pullback 但 gap<=3）時顯示通用提示，避免空白卡片
+                guide += `<p class="font-semibold text-gray-700">📌 操作建議</p>`;
+                guide += `<p class="ml-4 text-gray-700">→ ${escapeHTML(tp.action_now ?? '觀望')}</p>`;
             }
 
             guide += '</div>';
@@ -777,9 +797,17 @@
             return html;
         }
 
+        // 🆕 (PR#121 review P0) 全域渲染世代計數器：
+        //    每次 renderAnalysisTable 遞增；舊的 setTimeout 排程觸發時若世代已過期則跳過，
+        //    避免快速切換排序/篩選時用舊資料繪製新 Canvas 的競態條件。
+        let __tableRenderGeneration = 0;
+
         function renderAnalysisTable(data) {
             const tableBody = document.getElementById('analysis-table');
-            
+
+            // 🆕 遞增世代：即使空資料也作廢所有舊排程（其 canvas 將被 innerHTML 清空銷毀）
+            const thisGeneration = ++__tableRenderGeneration;
+
             if (!data || data.length === 0) {
                 // 改善空狀態提示：篩選為空是「正常訊號」，避免誤以為系統壞掉
                 const f = window.__tableState && window.__tableState.filter;
@@ -933,7 +961,13 @@
             }).join('');
 
             // 🆕 繪製價格圖表（延遲執行確保 DOM 已渲染；避開類無 canvas 自動跳過）
+            // 🆕 (PR#121 review P0) generation check：若期間又觸發了新的渲染，舊排程直接作廢，
+            //    避免用過期的 data 繪製已被替換的 Canvas。
             setTimeout(() => {
+                if (thisGeneration !== __tableRenderGeneration) {
+                    console.log(`Skipping canvas draw: generation ${thisGeneration} < current ${__tableRenderGeneration}`);
+                    return;
+                }
                 data.forEach(r => {
                     const canvas = document.getElementById(`price-chart-${r.code}`);
                     if (canvas && r.trading_plan) {

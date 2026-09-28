@@ -14,6 +14,12 @@ def generate_trading_plan(stock: Dict) -> Dict:
 
     Returns:
         交易計畫字典（含 entry + exit strategy）
+
+    Note:
+        契約限制（PR#121 review P2）：``exit_strategy`` 的所有欄位僅為數字
+        （價格/天數/RSI 閾值）或模組內硬編碼字串，絕不含外部輸入文字。
+        前端 renderExitStrategy() 據此直接渲染數值；若未來新增任何來自
+        資料源的文字欄位，必須改用 escapeHTML 處理後才可輸出。
     """
     price = stock.get('current_price') or 0
     ma20 = stock.get('ma20') or 0
