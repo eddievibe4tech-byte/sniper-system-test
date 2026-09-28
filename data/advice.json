@@ -1,23 +1,24 @@
 {
-  "updated_at": "2026-09-28T14:14:29.123886",
+  "updated_at": "2026-09-28T22:01:32.502891",
   "capital": 5000,
   "tw_regime": "震盪",
   "vix": null,
   "fng": 74,
   "plan": [
     {
-      "prio": 1,
-      "market": "美股",
-      "label": "動量突破 AAPL",
-      "detail": "VIX=-；RSI=65.71；跌破 MA50 或 -8% 停損",
-      "alloc": 2500
-    },
-    {
       "prio": 2,
       "market": "台股",
       "code": "3017",
       "label": "Alpha 候選 奇鋐",
       "detail": "YoY=54.34%、投信連買3天；乖離+5.6%>3%：不追價，等回踩 MA20(3366.75) 止穩限價",
+      "alloc": 2500
+    },
+    {
+      "prio": 2,
+      "market": "台股",
+      "code": "2890",
+      "label": "Alpha 候選 永豐金",
+      "detail": "YoY=49.48%、投信連買3天；乖離+3.4%>3%：不追價，等回踩 MA20(43.65) 止穩限價",
       "alloc": 2500
     }
   ],
