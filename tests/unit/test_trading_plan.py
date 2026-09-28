@@ -88,3 +88,55 @@ def test_risk_reward_positive():
     })
     assert plan['risk_reward'] is not None
     assert plan['risk_reward'] > 0
+
+
+# ============ #120 賣的策略（exit_strategy 持倉管理）============
+
+def test_exit_strategy_structure_for_valid_plan():
+    """有交易計畫時應輸出完整 exit_strategy（六段式持倉管理）"""
+    plan = generate_trading_plan({
+        'current_price': 100, 'ma20': 99,
+        'volatility': 30, 'recommendation': '觀望'
+    })
+    es = plan['exit_strategy']
+    assert es is not None
+    # 初始停損＝與 stop_loss 一致
+    assert es['initial_stop'] == plan['stop_loss']
+    # 三段出場
+    assert es['stage_1']['target'] == plan['take_profit_1']
+    assert '+10%' in es['stage_1']['trigger']
+    assert '1/3' in es['stage_1']['action']
+    assert es['stage_2']['target'] == plan['take_profit_2']
+    assert '+20%' in es['stage_2']['trigger']
+    assert es['stage_3']['moving_stop'] == round(99, 2)  # MA20 移動停利
+    assert 'MA20' in es['stage_3']['action']
+    # 時間停利與技術面出場
+    assert es['time_stop']['days'] == 20
+    assert es['technical_exit']['rsi_overbought'] == 75
+
+
+def test_avoid_has_no_exit_strategy():
+    """避開 → exit_strategy 為 None（無持倉可管理）"""
+    plan = generate_trading_plan({
+        'current_price': 100, 'ma20': 95,
+        'volatility': 30, 'recommendation': '避開'
+    })
+    assert plan['entry_type'] == 'none'
+    assert plan['exit_strategy'] is None
+
+
+def test_missing_data_has_no_exit_strategy():
+    """缺資料 → exit_strategy 為 None，不可崩潰"""
+    assert generate_trading_plan({})['exit_strategy'] is None
+
+
+def test_exit_strategy_targets_ordered():
+    """出場目標順序：initial_stop < entry < stage_1 < stage_2"""
+    plan = generate_trading_plan({
+        'current_price': 154.5, 'ma20': 148.28,
+        'volatility': 30, 'recommendation': '積極買入'
+    })
+    es = plan['exit_strategy']
+    entry_mid = sum(plan['entry_zone']) / 2
+    assert es['initial_stop'] < entry_mid
+    assert entry_mid < es['stage_1']['target'] < es['stage_2']['target']

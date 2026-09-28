@@ -1,19 +1,25 @@
 """
 交易計畫產生器：為每檔股票計算具體買點與賣點
-輸出：進場區間、停損價、停利價、風險報酬比、即時進場狀態
+輸出：進場區間、停損價、停利價、風險報酬比、即時進場狀態、出場策略
 """
 from typing import Dict, Optional
 
 
 def generate_trading_plan(stock: Dict) -> Dict:
     """
-    根據技術面數據產生交易計畫
+    根據技術面數據產生交易計畫（含買點＋賣點＋持倉管理）
 
     Args:
         stock: 包含 current_price, ma20, ma5, volatility, recommendation 的字典
 
     Returns:
-        交易計畫字典
+        交易計畫字典（含 entry + exit strategy）
+
+    Note:
+        契約限制（PR#121 review P2）：``exit_strategy`` 的所有欄位僅為數字
+        （價格/天數/RSI 閾值）或模組內硬編碼字串，絕不含外部輸入文字。
+        前端 renderExitStrategy() 據此直接渲染數值；若未來新增任何來自
+        資料源的文字欄位，必須改用 escapeHTML 處理後才可輸出。
     """
     price = stock.get('current_price') or 0
     ma20 = stock.get('ma20') or 0
@@ -31,6 +37,7 @@ def generate_trading_plan(stock: Dict) -> Dict:
             'risk_reward': None,
             'action_now': '不進場',
             'status': '🔴 無交易計畫',
+            'exit_strategy': None,
         }
 
     # 停損幅度：依波動率調整（6%~12%）
@@ -75,6 +82,36 @@ def generate_trading_plan(stock: Dict) -> Dict:
     reward = tp1 - entry_mid
     rr = round(reward / risk, 2) if risk > 0 else None
 
+    # 🆕 出場策略（持倉管理：分階段出場＋移動停利＋時間停利＋技術面出場）
+    exit_strategy = {
+        'initial_stop': round(stop_loss, 2),
+        'stage_1': {
+            'target': round(tp1, 2),
+            'action': '賣 1/3，停損上移至成本價',
+            'trigger': f'漲幅達 +10%（{round(tp1, 2)}）',
+        },
+        'stage_2': {
+            'target': round(tp2, 2),
+            'action': '再賣 1/3，停損上移至 +10%',
+            'trigger': f'漲幅達 +20%（{round(tp2, 2)}）',
+        },
+        'stage_3': {
+            'action': '剩餘 1/3 設 MA20 移動停利',
+            'trigger': '跌破 MA20 全數出場',
+            'moving_stop': round(ma20, 2),
+        },
+        'time_stop': {
+            'days': 20,
+            'action': '持有 20 天未達 +10% 則出場',
+            'reason': '避免機會成本',
+        },
+        'technical_exit': {
+            'rsi_overbought': 75,
+            'action': 'RSI > 75 或跌破 MA50 出場',
+            'reason': '技術面轉弱',
+        },
+    }
+
     return {
         'entry_type': entry_type,
         'entry_zone': [round(entry_low, 2), round(entry_high, 2)],
@@ -85,4 +122,5 @@ def generate_trading_plan(stock: Dict) -> Dict:
         'action_now': action_now,
         'status': status,
         'stop_pct': round(stop_pct, 1),
+        'exit_strategy': exit_strategy,
     }
