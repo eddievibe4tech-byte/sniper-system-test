@@ -1,5 +1,5 @@
 {
-  "analyzed_at": "2026-09-22T22:10:34.149877+08:00",
+  "analyzed_at": "2026-09-28T21:29:35.432015+08:00",
   "regime": "震盪",
   "high_score_targets": [],
   "all_results": [
@@ -9,25 +9,67 @@
       "industry": "半導體",
       "regime": "震盪",
       "revenue_yoy": 10.1,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
+      "gross_margin": 64.23,
+      "net_margin": 50.37,
+      "eps": 86.27,
       "inst_buy_days": 0,
-      "margin_change": 783,
-      "change_5d": 3.14,
-      "volatility": 18.51,
-      "ma5": 2441.0,
-      "ma20": 2425.0,
-      "rsi": 62.3,
-      "macd": 14.07,
+      "margin_change": 874,
+      "change_5d": 2.06,
+      "volatility": 19.73,
+      "ma5": 2475.0,
+      "ma20": 2432.5,
+      "rsi": 59.42,
+      "macd": 15.96,
       "price_above_ma20": true,
-      "current_price": 2460.0,
+      "current_price": 2475.0,
       "data_source": "finmind",
-      "ev_score": 45,
-      "recommendation": "回檔觀察",
-      "reason": "技術面偏多、波動率低，但法人未進場且營收成長溫和，建議回檔觀察（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze TSMC (2330) based on the provided data.\n\n**Industry:** Semiconductor (半導體)\n**Market Regime:** 震盪 (Range-bound)\n\n**Fundamental Analysis (Weight 30%):**\n- 月營收年增率：10.1% → Not > 20%, so no +20. But it's positive growth. Let me think about how to score this. The rule says >20% gets +20. 10.1% is positive but below 20%. I'll give partial credit, maybe +10.\n- 毛利率：數據缺失 → Cannot use as evidence. Note as missing.\n- 淨利率：數據缺失 → Cannot use as evidence. Note as missing.\n- EPS：數據缺失 → Cannot use as evidence. Note as missing.\n\nFundamental score: 10.1% YoY is positive but modest. I'll give about 10/30 for fundamentals.\n\n**Technical Analysis (Weight 30%):**\n- 股價 2460 > MA20 2425：True → +15\n- MACD 14.07 > 0：True → +10\n- RSI(14)：62.3 → Between 40-60? No, it's 62.3, slightly above 60. Not in 40-60 range, not <30, not >70. So no bonus/penalty. Actually, 62.3 is just above 60, so it's neutral-to-slightly-bullish but doesn't hit any specific criterion. I'll give 0 for RSI.\n- 近5日漲跌幅：3.14% → Not > 10%, so no penalty.\n\nTechnical score: 15 + 10 + 0 = 25/30\n\n**Chip/Position Analysis (Weight 20%):**\n- 投信連續買超：0天 → No bonus\n- 融資增減：783張 → This is positive (increase), meaning retail investors are adding. The rule says \"融資減少（散戶出清）：+5 分\". Since it's an increase, no bonus. Actually, for semiconductor stocks, 融資增加 could mean retail is chasing. Not a negative per se, but no bonus.\n\nChip score: 0/20\n\n**Risk Management (Weight 20%):**\n- 波動率 18.51% < 20%：+10\n- 5日漲跌幅 3.14% < 10%：No penalty\n\nRisk score: 10/20\n\n**Total Score Calculation:**\n- Fundamental: 10/30\n- Technical: 25/30\n- Chip: 0/20\n- Risk: 10/20\n\nTotal: 10 + 25 + 0 + 10 = 45/100\n\nWait, let me reconsider. The weights are 30%, 30%, 20%, 20%. Let me recalculate:\n\nActually, looking at the scoring examples more carefully:\n\nExample 1: Score 85\n- 營收 YoY +35% (>20%): +20\n- 毛利率 42% (>30%): +10\n- EPS: not mentioned but likely >5: +10\n- 股價 > MA20: +15\n- RSI 55 (40-60): +5\n- 投信連買 5天 (>3): +15\n- 波動率 18% (<20%): +10\nTotal: 20+10+10+15+5+15+10 = 85 ✓\n\nExample 2: Score 25\n- 營收 YoY -15%: 0 (negative)\n- 毛利率 18%: 0\n- EPS: not mentioned\n- 股價 > MA20: No: 0\n- RSI 75 (>70): -10\n- 投信連買 0天: 0\n- 波動率 45% (>40%): -10\nTotal: 0+0+0+0+(-10)+0+(-10) = -20... but score is 25.\n\nHmm, that doesn't add up. Let me reconsider. Maybe there's a base score or the scoring is more nuanced.\n\nActually, looking again at Example 2:\n- 營收 YoY -15%: 0\n- 毛利率 18%: 0\n- 股價 > MA20: No: 0\n- RSI 75: -10\n- 投信連買 0天: 0\n- 波動率 45%: -10\nTotal raw: -20, but score is 25.\n\nMaybe there's a base of 50 and then adjustments? Or maybe the scoring is more qualitative.\n\nLet me try another approach. Maybe the scores are:\n- Base: 50\n- Then add/subtract based on criteria\n\nExample 1: 50 + 20 + 10 + 10 + 15 + 5 + 15 + 10 = 135... no that's too high.\n\nLet me just use the additive approach and cap at 0-100:\n\nFor 2330:\n- 營收 YoY 10.1% (positive but <20%): Let's say +8 (partial credit)\n- 毛利率：缺失 → 0 (cannot score)\n- EPS：缺失 → 0 (cannot score)\n- 股價 > MA20: +15\n- MACD > 0: +10\n- RSI 62.3: Not in any specific range (40-60 is +5, but 62.3 is just above). I'll give 0.\n- 投信連買 0天: 0\n- 融資增加 783張: 0 (not a decrease)\n- 波動率 18.51% < 20%: +10\n- 5日漲幅 3.14% < 10%: 0\n\nTotal: 8 + 0 + 0 + 15 + 10 + 0 + 0 + 0 + 10 + 0 = 43\n\nHmm, but considering TSMC is a major semiconductor stock with positive momentum, and the market is in range-bound mode...\n\nLet me reconsider. The scoring criteria are specific:\n- 營收年增率 > 20%：+20 分 → 10.1% doesn't qualify, so 0\n- 毛利率 > 30%：+10 分 → 缺失, cannot score\n- EPS > 5：+10 分 → 缺失, cannot score\n- 股價 > MA20：+15 分 → Yes, +15\n- MACD > 0：+10 分 → Yes, +10\n- RSI 40-60：+5 分 → 62.3, no\n- RSI < 30：+10 分 → No\n- RSI > 70：-10 分 → No\n- 投信連續買超 > 3 天：+15 分 → 0天, no\n- 融資減少：+5 分 → 增加, no\n- 波動率 < 20%：+10 分 → 18.51%, yes +10\n- 波動率 > 40%：-10 分 → No\n- 5日漲跌幅 > 10%：-5 分 → 3.14%, no\n\nTotal: 0 + 0 + 0 + 15 + 10 + 0 + 0 + 0 + 0 + 0 + 10 + 0 + 0 = 35\n\nBut wait, I need to consider the missing data rule. Missing fields should not be treated as negative. So I should only score based on available data.\n\nAvailable positive signals:\n- 股價 > MA20: +15\n- MACD > 0: +10\n- 波動率 < 20%: +10\n- 營收 YoY positive (10.1%): while not >20%, it's still positive growth\n\nTotal from criteria: 35\n\nBut I think the scoring should also account for the overall picture. 35 seems low for TSMC with positive momentum. However, the criteria are strict.\n\nActually, let me reconsider. The 營收 YoY is 10.1% which is positive. The rule says >20% gets +20. But 10.1% is still positive growth. In a range-bound market, this is decent. I'll give partial credit of maybe +8.\n\nLet me settle on:\n- Fundamental: 營收 10.1% positive → +8 (partial, not meeting 20% threshold). 毛利率 and EPS missing → 0. Subtotal: 8\n- Technical: MA20 +15, MACD +10, RSI 62.3 (neutral, no bonus) → 25\n- Chip: 投信 0天 → 0, 融資增加 → 0. Subtotal: 0\n- Risk: 波動率 18.51% < 20% → +10, 5日漲幅 3.14% < 10% → 0. Subtotal: 10\n\nTotal: 8 + 25 + 0 + 10 = 43\n\nHmm, but I feel this is a bit low. Let me think about whether 10.1% YoY deserves any points. The strict rule says >20% gets +20. 10.1% doesn't meet that. But it's still positive. I'll give a small bonus of +5 for positive growth.\n\nRevised: 5 + 25 + 0 + 10 = 40\n\nActually, I'll stick with the strict criteria. The rule is clear: >20% gets +20. 10.1% doesn't qualify. So 0 for that criterion.\n\nBut wait - I should also consider that in a 震盪 (range-bound) market, the technical signals are more important. The stock is above MA20, MACD is positive, volatility is low. These are all good signs.\n\nLet me finalize:\n- Strict criteria score: 0 + 0 + 0 + 15 + 10 + 0 + 0 + 0 + 0 + 0 + 10 + 0 + 0 = 35\n\nI'll round to about 40-45 considering the overall positive picture (positive revenue growth, above MA20, positive MACD, low volatility).\n\nActually, I'll go with 45. The stock shows:\n- Positive but modest revenue growth\n- Strong technical setup (above MA20, positive MACD)\n- Low volatility (good for risk management)\n- No institutional buying signal\n- Retail adding (融資增加) - neutral to slightly negative in range-bound market\n\nRecommendation: 回檔觀察 (Wait for pullback) - The technicals are good but there's no institutional conviction (投信 0天), and revenue growth is modest. In a range-bound market, waiting for a pullback to MA20 or a catalyst makes sense.\n\nLet me set the score at 45.\n\nReason (within 50 characters): \"技術面偏多但法人未進場，營收成長溫和，震盪市回檔再佈局（缺失欄位：毛利率、淨利率、EPS）\"\n\nLet me count: 技術面偏多但法人未進場，營收成長溫和，震盪市回檔再佈局 = about 28 chars + missing note\nThat's within 50 characters for the main reason.\n\nWait, the requirement says \"50 字內\" for the reason. Let me keep it concise.\n\n\"技術面偏多、波動率低，但法人未進場且營收成長溫和，建議回檔觀察（缺失欄位：毛利率、淨利率、EPS）\"\n\nLet me count: 技術面偏多、波動率低，但法人未進場且營收成長溫和，建議回檔觀察 = 30 chars\nPlus （缺失欄位：毛利率、淨利率、EPS）= about 18 chars\nTotal: ~48 chars. Should be fine.\n\nActually let me recount more carefully:\n技(1)術(2)面(3)偏(4)多(5)、(6)波(7)動(8)率(9)低(10)，(11)但(12)法(13)人(14)未(15)進(16)場(17)且(18)營(19)收(20)成(21)長(22)溫(23)和(24)，(25)建(26)議(27)回(28)檔(29)觀(30)察(31)（(32)缺(33)失(34)欄(35)位(36)：(37)毛(38)利(39)率(40)、(41)淨(42)利(43)率(44)、(45)E(46)P(47)S(48)）(49)\n\nThat's 49 characters. Good, within 50.\n\nFinal answer:\n- ev_score: 45\n- recommendation: 回檔觀察\n- reason: as above\n</think>\n\n{\n  \"ev_score\": 45,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"技術面偏多、波動率低，但法人未進場且營收成長溫和，建議回檔觀察（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🟡 中風險"
+      "ev_score": 65,
+      "recommendation": "謹慎買入",
+      "reason": "技術面全面偏多但籌碼面缺乏投信支撐，營收增速平",
+      "raw_response": "\n<think>\nLet me analyze TSMC (2330) based on the given rules.\n\n**基本面 (30%):**\n- 營收YoY 10.1%: >20%? No, so +0\n- 毛利率 64.23%: >30%? Yes, +10\n- EPS 86.27: >5? Yes, +10\n- 基本面得分: 0 + 10 + 10 = 20/30\n\n**技術面 (30%):**\n- 現價 2475.0 > MA20 2432.5: Yes, +15\n- MACD 15.96 > 0: Yes, +10\n- RSI 59.42: 40-60? Yes (59.42 is within 40-60), +5\n- RSI < 30? No\n- RSI > 70? No\n- 技術面得分: 15 + 10 + 5 = 30/30\n\n**籌碼面 (20%):**\n- 投信連買 0 天: >3天? No, +0\n- 融資變化 874 張: 這是增加還是減少？874張是正數，表示融資增加，不是減少，所以 +0\n- 籌碼面得分: 0 + 0 = 0/20\n\n**風險 (20%):**\n- 波動率 19.73%: <20%? Yes, +10\n- 波動率 >40%? No\n- 5日漲幅 2.06%: >10%? No\n- 風險得分: 10/20\n\n**總分:**\n- 基本面: 20 × 30% = 6\n- 技術面: 30 × 30% = 9\n- 籌碼面: 0 × 20% = 0\n- 風險: 10 × 20% = 2\n- 總分: 6 + 9 + 0 + 2 = 17\n\nWait, let me reconsider. The scoring system says 評分 0-100. Let me re-read the rules.\n\n\"評分 0-100：基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）｜技術面30%（價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10）｜籌碼面20%（投信連買>3天 +15、融資減少 +5）｜風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\"\n\nSo the max scores are:\n- 基本面 max: 20+10+10 = 40, weighted 30% → max 12\n- 技術面 max: 15+10+5 = 30 (or 15+10+10=35 if RSI<30), weighted 30% → max 9 or 10.5\n- 籌碼面 max: 15+5 = 20, weighted 20% → max 4\n- 風險 max: 10, weighted 20% → max 2\n\nWait, I think the scoring is:\n- Each category has points, then multiplied by weight to get the final score out of 100.\n\nLet me recalculate:\n- 基本面: 0 + 10 + 10 = 20 points. Weighted: 20 × 0.30 = 6\n- 技術面: 15 + 10 + 5 = 30 points. Weighted: 30 × 0.30 = 9\n- 籌碼面: 0 + 0 = 0 points. Weighted: 0 × 0.20 = 0\n- 風險: 10 points. Weighted: 10 × 0.20 = 2\n\nTotal: 6 + 9 + 0 + 2 = 17\n\nHmm, that seems low. Let me reconsider whether the scoring is meant to be out of 100 directly.\n\nActually, looking at it again, maybe the points are already scaled to the weight:\n- 基本面 max 40 points × 30% = 12 out of 100? That doesn't add up to 100 either.\n\nOr maybe the total max is:\n- 基本面: 40 × 0.3 = 12\n- 技術面: 30 × 0.3 = 9\n- 籌碼面: 20 × 0.2 = 4\n- 風險: 10 × 0.2 = 2\nTotal max = 27? That doesn't make sense for a 0-100 scale.\n\nLet me re-read: \"評分 0-100\"\n\nI think the intended interpretation is:\n- Each category contributes points, and the total is the score out of 100.\n- The weights (30%, 30%, 20%, 20%) determine how much each category contributes.\n\nSo maybe:\n- 基本面: max 40 points, but weighted at 30% means max contribution is 40 × 0.3 = 12\n- 技術面: max 30 points, weighted at 30% means max contribution is 30 × 0.3 = 9\n- 籌碼面: max 20 points, weighted at 20% means max contribution is 20 × 0.2 = 4\n- 風險: max 10 points, weighted at 20% means max contribution is 10 × 0.2 = 2\n\nTotal max = 27. That's not 100.\n\nAlternatively, maybe the points ARE the final contribution:\n- 基本面: 營收>20% gives +20 (out of 30 max for this category)\n- 技術面: 價>MA20 gives +15 (out of 30 max)\n- 籌碼面: 投信連買>3天 gives +15 (out of 20 max)\n- 風險: 波動<20% gives +10 (out of 20 max)\n\nTotal max = 30 + 30 + 20 + 20 = 100. Yes! That makes sense.\n\nSo the weights ARE the max points for each category:\n- 基本面 max: 30 (but the individual items add up to 40... hmm)\n\nWait, let me re-read: \"基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\"\n\nThe 30% is the weight, and the items in parentheses are the scoring criteria. The max for 基本面 would be 20+10+10=40, but weighted at 30%...\n\nI think the simplest interpretation is:\n- Score each category based on the criteria\n- Multiply by the weight percentage\n- Sum up\n\n基本面: (0+10+10) = 20, × 0.30 = 6\n技術面: (15+10+5) = 30, × 0.30 = 9\n籌碼面: (0+0) = 0, × 0.20 = 0\n風險: (10) = 10, × 0.20 = 2\n\nTotal = 17\n\nBut that gives a max of about 27, not 100. \n\nAlternatively, maybe the weights mean the category is worth that many points out of 100:\n- 基本面 worth 30 points max\n- 技術面 worth 30 points max\n- 籌碼面 worth 20 points max\n- 風險 worth 20 points max\nTotal = 100\n\nAnd within each category, you score proportionally:\n- 基本面: max items = 20+10+10 = 40. Score = 20/40 × 30 = 15\n- 技術面: max items = 15+10+5 = 30 (or 15+10+10=35). Score = 30/30 × 30 = 30\n- 籌碼面: max items = 15+5 = 20. Score = 0/20 × 20 = 0\n- 風險: max items = 10. Score = 10/10 × 20 = 20\n\nTotal = 15 + 30 + 0 + 20 = 65\n\nHmm, that's another interpretation. Let me go with this one as it makes the most sense for a 0-100 scale.\n\nActually wait, for 技術面, the max could be 15+10+10=35 (if RSI<30) or 15+10+5=30 (if RSI 40-60). Since RSI is 59.42 (in 40-60 range), the applicable max is 15+10+5=30. So score = 30/30 × 30 = 30.\n\nFor 風險, the max positive is 10 (波動<20%). Score = 10/10 × 20 = 20.\n\nTotal = 15 + 30 + 0 + 20 = 65\n\nA score of 65 would suggest \"謹慎買入\" (cautious buy).\n\nLet me reconsider the recommendation:\n- 65/100: moderate positive\n- 基本面: 營收 only 10.1% (below 20% threshold), but 毛利率 and EPS are strong\n- 技術面: all positive signals\n- 籌碼面: no institutional buying, 融資 increasing (not decreasing)\n- 風險: low volatility, no overbought 5-day surge\n\nI'll go with 65 and \"謹慎買入\".\n\nReason (≤30字): \"技術面強但籌碼面缺乏投信支撐，基本面營收增速平\"\n\nLet me count: 技術面強但籌碼面缺乏投信支撐，基本面營收增速平 = 22 characters. Good.\n\nWait, let me recount: 技(1)術(2)面(3)強(4)但(5)籌(6)碼(7)面(8)缺(9)乏(10)投(11)信(12)支(13)撐(14)，(15)基(16)本(17)面(18)營(19)收(20)增(21)速(22)平(23) = 23 characters (including comma). Good, under 30.\n</think>\n\n{\"ev_score\": 65, \"recommendation\": \"謹慎買入\", \"reason\": \"技術面全面偏多但籌碼面缺乏投信支撐，營收增速平\"}",
+      "risk_level": "🟡 中風險",
+      "trading_plan": {
+        "entry_type": "now",
+        "entry_zone": [
+          2450.25,
+          2499.75
+        ],
+        "stop_loss": 2326.5,
+        "take_profit_1": 2722.5,
+        "take_profit_2": 2970.0,
+        "risk_reward": 1.67,
+        "action_now": "現在可進場",
+        "status": "🟢 現在可進場",
+        "stop_pct": 6.0,
+        "exit_strategy": {
+          "initial_stop": 2326.5,
+          "stage_1": {
+            "target": 2722.5,
+            "action": "賣 1/3，停損上移至成本價",
+            "trigger": "漲幅達 +10%（2722.5）"
+          },
+          "stage_2": {
+            "target": 2970.0,
+            "action": "再賣 1/3，停損上移至 +10%",
+            "trigger": "漲幅達 +20%（2970.0）"
+          },
+          "stage_3": {
+            "action": "剩餘 1/3 設 MA20 移動停利",
+            "trigger": "跌破 MA20 全數出場",
+            "moving_stop": 2432.5
+          },
+          "time_stop": {
+            "days": 20,
+            "action": "持有 20 天未達 +10% 則出場",
+            "reason": "避免機會成本"
+          },
+          "technical_exit": {
+            "rsi_overbought": 75,
+            "action": "RSI > 75 或跌破 MA50 出場",
+            "reason": "技術面轉弱"
+          }
+        }
+      }
     },
     {
       "code": "2308",
@@ -35,25 +77,67 @@
       "industry": "電子",
       "regime": "震盪",
       "revenue_yoy": -3.71,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
-      "inst_buy_days": 0,
-      "margin_change": 433,
-      "change_5d": 13.77,
-      "volatility": 57.76,
-      "ma5": 1781.0,
-      "ma20": 1765.5,
-      "rsi": 62.5,
-      "macd": 0.39,
+      "gross_margin": 35.53,
+      "net_margin": 13.99,
+      "eps": 31.42,
+      "inst_buy_days": 1,
+      "margin_change": 105,
+      "change_5d": 13.35,
+      "volatility": 56.59,
+      "ma5": 1864.0,
+      "ma20": 1780.0,
+      "rsi": 57.14,
+      "macd": 18.75,
       "price_above_ma20": true,
-      "current_price": 1900.0,
+      "current_price": 1910.0,
       "data_source": "finmind",
-      "ev_score": 38,
-      "recommendation": "回檔觀察",
-      "reason": "技術偏強但5日漲幅過熱、波動極高，營收微跌無法人加持，追高風險大。（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze 台達電 (2308) based on the provided data.\n\n**基本面 (30% weight):**\n- 月營收年增率：-3.71% → 負面，營收衰退\n- 毛利率：數據缺失 → 不引用\n- 淨利率：數據缺失 → 不引用\n- EPS：數據缺失 → 不引用\n\n基本面評分：\n- 營收 YoY -3.71%：不滿足 >20%，不加分，且為負面\n- 毛利率缺失：不引用\n- EPS缺失：不引用\n- 基本面得分：0/40 (只有營收有值且為負)\n\n**技術面 (30% weight):**\n- 股價 1900 > MA20 1765.5：是 → +15\n- MACD 0.39 > 0：是 → +10\n- RSI 62.5：在 40-70 之間，不滿足 40-60 中性（+5），也不滿足 <30 或 >70\n  - 等等，RSI 62.5 不在 40-60 範圍內，也不在 <30 或 >70。所以不加分也不扣分。\n- 5日漲跌幅 13.77% > 10%：過熱 → -5（這在風險控管）\n\n技術面得分：15 + 10 = 25/30\n\n**籌碼面 (20% weight):**\n- 投信連續買超：0天 → 不加分\n- 融資增減：433張 → 這是增加，不是減少。融資增加代表散戶加碼，不是出清。不加分。\n\n籌碼面得分：0/20\n\n**風險控管 (20% weight):**\n- 波動率 57.76% > 40%：-10\n- 5日漲跌幅 13.77% > 10%：-5（過熱）\n\n風險控管得分：-15/20\n\n**綜合評分：**\n- 基本面：0 × 30% = 0\n- 技術面：25 × 30% = 7.5\n- 籌碼面：0 × 20% = 0\n- 風險控管：-15 × 20% = -3\n\n等等，讓我重新思考評分邏輯。評分是 0-100 的綜合分數，不是簡單加權。\n\n讓我重新計算：\n\n基本面（滿分 40，權重 30%）：\n- 營收 YoY -3.71%：不達標，0分\n- 毛利率缺失：不計\n- EPS缺失：不計\n- 基本面原始分：0/40\n\n技術面（滿分 30，權重 30%）：\n- 股價 > MA20：+15\n- MACD > 0：+10\n- RSI 62.5：不在任何加分/扣分區間（40-60是+5，但62.5超出）\n- 技術面原始分：25/30\n\n籌碼面（滿分 20，權重 20%）：\n- 投信連買 0天：0\n- 融資增加 433張：不加分（融資減少才+5）\n- 籌碼面原始分：0/20\n\n風險控管（滿分 20，權重 20%）：\n- 波動率 57.76% > 40%：-10\n- 5日漲幅 13.77% > 10%：-5\n- 風險控管原始分：-15/20\n\n綜合：\n- 基本面：0 × 0.3 = 0\n- 技術面：25 × 0.3 = 7.5\n- 籌碼面：0 × 0.2 = 0\n- 風險控管：-15 × 0.2 = -3\n\n總分：0 + 7.5 + 0 + (-3) = 4.5\n\n這太低了。讓我重新思考。\n\n也許評分不是這樣計算的。讓我看看範例：\n\n範例1：營收+35%, 毛利率42%, 股價>MA20, RSI55, 投信連買5天, 波動率18%\n- 基本面：營收>20% +20, 毛利率>30% +10, EPS未知 → 30\n- 技術面：股價>MA20 +15, MACD未知, RSI55(40-60) +5 → 20\n- 籌碼面：投信連買>3天 +15 → 15\n- 風險：波動率<20% +10 → 10\n- 總分：30+20+15+10 = 75? 但答案是85\n\n嗯，可能權重是這樣：\n- 基本面 30%：滿分30\n- 技術面 30%：滿分30\n- 籌碼面 20%：滿分20\n- 風險控管 20%：滿分20\n\n範例1：\n- 基本面：營收>20% +20, 毛利率>30% +10 → 30/30\n- 技術面：股價>MA20 +15, RSI55 +5 → 20/30 (MACD未知)\n- 籌碼面：投信連買>3天 +15 → 15/20\n- 風險：波動率<20% +10 → 10/20\n- 總分：30+20+15+10 = 75\n\n但答案是85... 可能還有其他加分項或我理解有誤。\n\n讓我重新看：也許評分不是嚴格按公式，而是綜合判斷。範例只是參考。\n\n讓我用更合理的方式評分：\n\n台達電 2308：\n- 基本面：營收 -3.71%（負面），其他缺失 → 偏弱\n- 技術面：股價 > MA20（+），MACD > 0（+），RSI 62.5（中性偏強但未超買）→ 偏強\n- 籌碼面：投信未連買，融資增加（散戶加碼）→ 偏弱\n- 風險：波動率 57.76%（很高），5日漲幅 13.77%（過熱）→ 風險高\n\n綜合判斷：\n- 技術面有支撐（站上MA20，MACD正）\n- 但5日漲幅過熱（13.77%），波動率極高（57.76%）\n- 基本面營收微幅衰退\n- 籌碼面缺乏法人支持\n- 市場體制：震盪\n\n這應該是一個「回檔觀察」的案例。技術面短期偏強但過熱，風險高，基本面缺乏支撐。\n\n評分：\n- 基本面（30%）：營收-3.71%為負，0分。其他缺失不計。→ 0/30\n- 技術面（30%）：股價>MA20 +15, MACD>0 +10, RSI 62.5 不加分 → 25/30\n- 籌碼面（20%）：投信0天 0分, 融資增加不加分 → 0/20\n- 風險控管（20%）：波動率>40% -10, 5日漲幅>10% -5 → -15/20\n\n總分：0 + 25 + 0 + (-15) = 10\n\n嗯，這分數很低。但考慮到技術面確實有支撐，也許不該完全按公式。\n\n讓我重新思考。評分範圍是0-100，我應該給一個合理的分數。\n\n技術面確實不錯（站上MA20，MACD正），但：\n1. 5日漲幅13.77%過熱\n2. 波動率57.76%極高\n3. 營收微幅衰退\n4. 無法人支持\n5. 融資增加（散戶追價）\n\n在震盪市場中，這種組合通常是「追高風險大，建議回檔觀察」。\n\n我給分：35-45分之間。\n\n讓我取 38 分。\n\nRecommendation: 回檔觀察\n\nReason: 技術面偏強但5日漲幅過熱、波動率極高，營收微幅衰退且無法人加持，追高風險大。（缺失欄位：毛利率、淨利率、EPS）\n\n等等，reason要50字內。讓我精簡。\n\n\"技術面偏強但漲幅過熱、波動率極高，營收微幅衰退無法人加持，追高風險大。（缺失欄位：毛利率、淨利率、EPS）\"\n\n數一下字數... 這超過50字了。\n\n\"技術面偏強但過熱，波動率極高，營收微幅衰退無法人加持，追高風險大。（缺失欄位：毛利率、淨利率、EPS）\"\n\n還是太長。讓我再精簡：\n\n\"短期技術偏強但漲幅過熱、波動極高，營收微跌無法人加持，追高風險大。（缺失欄位：毛利率、淨利率、EPS）\"\n\n嗯，50字內... 讓我數：\n短期技術偏強但漲幅過熱、波動極高，營收微跌無法人加持，追高風險大。= 30字左右\n（缺失欄位：毛利率、淨利率、EPS）= 這算不算在50字內？\n\n我理解50字內是reason的主體內容。缺失欄位標註是額外要求。\n\n讓我重新寫：\n\"技術偏強但5日漲幅過熱、波動極高，營收微跌無法人加持，追高風險大。（缺失欄位：毛利率、淨利率、EPS）\"\n\n主體：技術偏強但5日漲幅過熱、波動極高，營收微跌無法人加持，追高風險大。≈ 30字\n加上缺失標註。\n\n我給 ev_score: 38\nrecommendation: 回檔觀察\n</think>\n\n{\n  \"ev_score\": 38,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"技術偏強但5日漲幅過熱、波動極高，營收微跌無法人加持，追高風險大。（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🔴 極高風險"
+      "ev_score": 35,
+      "recommendation": "觀望",
+      "reason": "技術面強但波動高、籌碼弱，短線追高風險大",
+      "raw_response": "\n<think>\nLet me analyze 台達電 (2308) based on the given rules.\n\n**基本面 (30% weight):**\n- 營收YoY -3.71%: Not >20%, so no +20\n- 毛利率 35.53%: >30%, so +10\n- EPS 31.42: >5, so +10\n- 淨利率 13.99%: not explicitly in scoring rules\n\n基本面 score: 0 + 10 + 10 = 20 (out of 30)\n\n**技術面 (30% weight):**\n- 現價 1910 > MA20 1780: +15\n- MACD 18.75 > 0: +10\n- RSI 57.14: in range 40-60, so +5\n- RSI not <30, not >70\n\n技術面 score: 15 + 10 + 5 = 30 (out of 30)\n\n**籌碼面 (20% weight):**\n- 投信連買 1 天: Not >3 days, so no +15\n- 融資變化 105 張: This is positive (increasing), not decreasing, so no +5\n\n籌碼面 score: 0 (out of 20)\n\n**風險 (20% weight):**\n- 波動率 56.59%: >40%, so -10\n- 5日漲幅 13.35%: >10%, so -5\n\n風險 score: -10 + (-5) = -15 (out of 20)\n\nWait, let me reconsider the scoring. The risk section seems to be about penalties. Let me re-read:\n\n風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\n\nSo the risk score can be negative. The maximum for risk would be +10 (if volatility <20%), and it can go negative.\n\nLet me calculate the total:\n- 基本面: 20/30\n- 技術面: 30/30\n- 籌碼面: 0/20\n- 風險: -15/20 (this is a penalty)\n\nTotal = 20 + 30 + 0 + (-15) = 35\n\nWait, I need to think about how to combine these. The weights are 30%, 30%, 20%, 20%. But the scoring seems to be additive within each category.\n\nLet me re-interpret: Each category has a maximum score, and the total is the sum.\n\n基本面 max: 20+10+10 = 40? No, the weight is 30%. Let me re-read.\n\nActually, I think the scoring is:\n- 基本面 (weight 30%): points earned / max possible * 30\n- 技術面 (weight 30%): points earned / max possible * 30\n- 籌碼面 (weight 20%): points earned / max possible * 20\n- 風險 (weight 20%): points earned / max possible * 20\n\nHmm, but that's complex. Let me just add them up directly as the rules state:\n\n基本面: 0 (營收) + 10 (毛利率) + 10 (EPS) = 20\n技術面: 15 (價>MA20) + 10 (MACD>0) + 5 (RSI 40-60) = 30\n籌碼面: 0 (投信連買1天, not >3) + 0 (融資增加, not減少) = 0\n風險: -10 (波動>40%) + (-5) (5日漲幅>10%) = -15\n\nTotal = 20 + 30 + 0 + (-15) = 35\n\nSo ev_score = 35\n\nWith a score of 35, this would be \"觀望\" (wait and see).\n\nLet me check the recommendation thresholds:\n- 積極買入: probably >75\n- 謹慎買入: probably 55-75\n- 觀望: probably 35-55\n- 避開: probably <35\n\n35 seems borderline between 觀望 and 避開. I'll go with 觀望.\n\nReason (≤30字): \"技術面強但波動高、籌碼弱，短線追高風險大\"\n\nLet me count: 技術面強但波動高、籌碼弱，短線追高風險大 = 19 characters. Good.\n\nWait, let me recount: 技(1)術(2)面(3)強(4)但(5)波(6)動(7)高(8)、(9)籌(10)碼(11)弱(12)，(13)短(14)線(15)追(16)高(17)風(18)險(19)大(20) = 20 characters. Good, under 30.\n</think>\n\n{\"ev_score\":35,\"recommendation\":\"觀望\",\"reason\":\"技術面強但波動高、籌碼弱，短線追高風險大\"}",
+      "risk_level": "🔴 極高風險",
+      "trading_plan": {
+        "entry_type": "pullback",
+        "entry_zone": [
+          1780.0,
+          1815.6
+        ],
+        "stop_loss": 1582.06,
+        "take_profit_1": 1977.58,
+        "take_profit_2": 2157.36,
+        "risk_reward": 0.83,
+        "action_now": "等回踩，不追價",
+        "status": "⏳ 等回踩 MA20",
+        "stop_pct": 12.0,
+        "exit_strategy": {
+          "initial_stop": 1582.06,
+          "stage_1": {
+            "target": 1977.58,
+            "action": "賣 1/3，停損上移至成本價",
+            "trigger": "漲幅達 +10%（1977.58）"
+          },
+          "stage_2": {
+            "target": 2157.36,
+            "action": "再賣 1/3，停損上移至 +10%",
+            "trigger": "漲幅達 +20%（2157.36）"
+          },
+          "stage_3": {
+            "action": "剩餘 1/3 設 MA20 移動停利",
+            "trigger": "跌破 MA20 全數出場",
+            "moving_stop": 1780.0
+          },
+          "time_stop": {
+            "days": 20,
+            "action": "持有 20 天未達 +10% 則出場",
+            "reason": "避免機會成本"
+          },
+          "technical_exit": {
+            "rsi_overbought": 75,
+            "action": "RSI > 75 或跌破 MA50 出場",
+            "reason": "技術面轉弱"
+          }
+        }
+      }
     },
     {
       "code": "2454",
@@ -61,25 +145,67 @@
       "industry": "半導體",
       "regime": "震盪",
       "revenue_yoy": 32.41,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
-      "inst_buy_days": 2,
-      "margin_change": -263,
-      "change_5d": 16.93,
-      "volatility": 56.79,
-      "ma5": 4786.0,
-      "ma20": 4469.25,
-      "rsi": 74.93,
-      "macd": 262.16,
+      "gross_margin": 46.28,
+      "net_margin": 16.43,
+      "eps": 60.55,
+      "inst_buy_days": 0,
+      "margin_change": 470,
+      "change_5d": 17.44,
+      "volatility": 55.19,
+      "ma5": 5074.0,
+      "ma20": 4602.25,
+      "rsi": 74.44,
+      "macd": 280.93,
       "price_above_ma20": true,
-      "current_price": 5180.0,
+      "current_price": 5285.0,
       "data_source": "finmind",
-      "ev_score": 42,
-      "recommendation": "回檔觀察",
-      "reason": "營收成長強勁，但RSI超買、波動率過高、5日漲幅過熱，宜待回檔再介入（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze 聯發科 (2454) step by step.\n\n**基本面（權重 30%）**\n- 月營收年增率：32.41% → > 20%：+20 分\n- 毛利率：數據缺失 → 不評分，標註缺失\n- 淨利率：數據缺失 → 不評分，標註缺失\n- EPS：數據缺失 → 不評分，標註缺失\n\n基本面得分：20/40（只有營收有值）\n基本面加權：20 × 0.30 = 6.0\n\nWait, let me re-read the scoring logic. The scores seem to be additive within each category, then weighted.\n\nLet me re-interpret:\n- 基本面 max score: 20 + 10 + 10 = 40\n- 技術面 max score: 15 + 10 + 10 = 35 (or with RSI adjustments)\n- 籌碼面 max score: 15 + 5 = 20\n- 風險控管 max score: 10 (or -10)\n\nActually, looking at the examples more carefully:\n\n範例 1: 營收+35%, 毛利率42%, 股價>MA20, RSI 55, 投信連買5天, 波動率18% → 85分\n\nLet me recalculate:\n- 基本面: 營收>20%: +20, 毛利率>30%: +10, EPS>5: unknown → 30/40\n- 技術面: 股價>MA20: +15, MACD>0: +10, RSI 40-60: +5 → 30/35\n- 籌碼面: 投信連買>3天: +15, 融資減少: +5 → 20/20\n- 風險控管: 波動率<20%: +10 → 10/10\n\nTotal raw: 30+30+20+10 = 90\nWeighted: 30×0.3 + 30×0.3 + 20×0.2 + 10×0.2 = 9+9+4+2 = 24? That doesn't match 85.\n\nHmm, maybe the scoring is just additive without weighting, and the weights are for emphasis? Or maybe the max is 100 and the scores are just added up?\n\nLet me try: 20+10+15+10+5+15+5+10 = 90. Close to 85. Maybe EPS wasn't scored.\n\nActually, let me just use the additive approach:\n- 基本面: 營收>20%: +20, 毛利率>30%: +10, EPS>5: +10 (max 40)\n- 技術面: 股價>MA20: +15, MACD>0: +10, RSI adjustments (max ~35)\n- 籌碼面: 投信連買>3天: +15, 融資減少: +5 (max 20)\n- 風險控管: 波動率<20%: +10, 波動率>40%: -10, 5日漲幅>10%: -5 (max 10, min -15)\n\nTotal max: 40+35+20+10 = 105, min could be negative.\n\nFor 範例 1: 20+10+15+10+5+15+5+10 = 90 → but answer is 85. Maybe EPS wasn't available.\n\nOK let me just apply the scoring to 聯發科:\n\n**基本面（權重 30%）**\n- 月營收年增率 32.41% > 20%：+20\n- 毛利率：數據缺失 → 不計分\n- EPS：數據缺失 → 不計分\n- 小計：20\n\n**技術面（權重 30%）**\n- 股價 5180 > MA20 4469.25：+15\n- MACD 262.16 > 0：+10\n- RSI 74.93 > 70（超買）：-10\n- 小計：15\n\n**籌碼面（權重 20%）**\n- 投信連續買超 2天（未達 >3天）：0\n- 融資增減 -263張（融資減少，散戶出清）：+5\n- 小計：5\n\n**風險控管（權重 20%）**\n- 波動率 56.79% > 40%：-10\n- 5日漲跌幅 16.93% > 10%：-5\n- 小計：-15\n\n**Total raw score: 20 + 15 + 5 + (-15) = 25**\n\nHmm, but wait. Let me reconsider. The weights might mean:\n- 基本面 score × 0.30\n- 技術面 score × 0.30\n- 籌碼面 score × 0.20\n- 風險控管 score × 0.20\n\nBut the max for each category varies. Let me normalize:\n- 基本面 max: 40 → 20/40 = 50% → 50 × 0.30 = 15\n- 技術面 max: 35 → 15/35 = 43% → 43 × 0.30 = 12.8\n- 籌碼面 max: 20 → 5/20 = 25% → 25 × 0.20 = 5\n- 風險控管 max: 10 → -15/10... this goes negative\n\nThis is getting complicated. Let me just use the simple additive approach since the examples seem to work that way.\n\n範例 2: 營收-15%, 毛利率18%, 股價<MA20, RSI 75, 投信連買0天, 波動率45% → 25分\n- 基本面: 0 (營收<20%, 毛利率<30%, EPS unknown)\n- 技術面: 0 (股價<MA20), MACD unknown, RSI>70: -10 → -10\n- 籌碼面: 0\n- 風險控管: 波動率>40%: -10\n- Total: 0 + (-10) + 0 + (-10) = -20? But answer is 25.\n\nHmm, that doesn't work either. Maybe there's a base score of 50?\n\n範例 2: 50 + 0 + (-10) + 0 + (-10) = 30? Still not 25.\n\nOr maybe: base 50, then adjustments:\n- 營收<0: -10\n- 毛利率<30%: -5\n- 股價<MA20: -10\n- RSI>70: -10\n- 投信連買0: -5\n- 波動率>40%: -10\nTotal: 50 - 10 - 5 - 10 - 10 - 5 - 10 = 0? No.\n\nLet me try another approach. Maybe the scoring is:\n- Start at 50\n- Add/subtract based on criteria\n\n範例 1: 50 + 20(營收) + 10(毛利率) + 15(MA20) + 10(MACD) + 5(RSI) + 15(投信) + 5(融資) + 10(波動率) = 140? No, capped at 100? But answer is 85.\n\nI think I'm overcomplicating this. Let me just use the additive scoring as described and see if it roughly matches:\n\nFor 聯發科:\n- 基本面: +20 (營收>20%)\n- 技術面: +15 (MA20) + 10 (MACD) - 10 (RSI>70) = +15\n- 籌碼面: 0 (投信2天<3天) + 5 (融資減少) = +5\n- 風險控管: -10 (波動率>40%) - 5 (5日漲幅>10%) = -15\n\nTotal: 20 + 15 + 5 - 15 = 25\n\nBut this seems too low for a stock with 32% revenue growth and strong technicals. The issue is the high volatility and overbought RSI.\n\nActually, looking at this more carefully as a 20-year analyst:\n- 聯發科 is a semiconductor stock in a 震盪 market\n- Revenue growth is strong at 32.41%\n- Price is well above MA20 (5180 vs 4469, about 16% above)\n- RSI at 74.93 is overbought\n- 5-day gain of 16.93% is very hot\n- Volatility at 56.79% is extremely high\n- MACD is positive at 262.16\n- 投信 only 2 days of buying (not strong)\n- 融資 decreased by 263 (slight retail exit)\n\nGiven the 震盪 market regime and the extremely high volatility + overbought RSI + 5-day surge, this is a risky entry point. The fundamentals are good but the technicals suggest it's overextended.\n\nI'd score this around 45-55. The strong revenue growth is a plus, but the extreme volatility and overbought conditions are significant negatives.\n\nLet me settle on a score. Using the additive method:\n20 + 15 + 5 + (-15) = 25\n\nBut I think the scoring should be more nuanced. The 5-day gain of 16.93% in a 震盪 market is a major red flag. The volatility of 56.79% is extremely high. However, the revenue growth is solid.\n\nI'll go with a score around 40-45. The stock has good fundamentals but is extremely overextended short-term. In a 震盪 market, chasing a 17% 5-day gain with 57% volatility is very risky.\n\nRecommendation: 回檔觀察 (wait for pullback)\n\nLet me finalize:\n- EV Score: 42\n- Recommendation: 回檔觀察\n- Reason: 營收強勁但RSI超買、波動率過高，5日漲幅過熱，宜待回檔再介入（缺失欄位：毛利率、淨利率、EPS）\n\nWait, the reason should be 50 characters or less in Chinese. Let me count.\n\n\"營收強勁但RSI超買、波動率過高，5日漲幅過熱，宜待回檔再介入\" - that's about 28 characters. Good.\n\nBut I need to note the missing fields. Let me add that.\n\n\"營收強勁但RSI超買、波動率過高，5日漲幅過熱，宜待回檔（缺失：毛利率、EPS）\" - about 33 chars.\n\nActually the instruction says 50字內. Let me keep it concise.\n\n\"營收成長強勁，但RSI超買、波動率過高、5日漲幅過熱，建議回檔再介入（缺失欄位：毛利率、EPS）\"\n\nLet me count: 營收成長強勁(6)，但RSI超買(6)、波動率過高(5)、5日漲幅過熱(6)，建議回檔再介入(7)（缺失欄位：毛利率、EPS）(12) = about 42 characters. Should be fine.\n\nLet me finalize the score. I'll go with 42.\n</think>\n\n{\n  \"ev_score\": 42,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"營收成長強勁，但RSI超買、波動率過高、5日漲幅過熱，宜待回檔再介入（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🔴 極高風險"
+      "ev_score": 40,
+      "recommendation": "觀望",
+      "reason": "RSI超買且5日漲幅過大，波動高，籌碼無支撐，宜觀望",
+      "raw_response": "\n<think>\nLet me analyze 聯發科 (2454) based on the given rules.\n\n**基本面 (30%):**\n- 營收YoY 32.41% > 20% → +20\n- 毛利率 46.28% > 30% → +10\n- EPS 60.55 > 5 → +10\n- 基本面小計: 40/40 → 30% × 40 = 12分\n\n**技術面 (30%):**\n- 價 5285 > MA20 4602.25 → +15\n- MACD 280.93 > 0 → +10\n- RSI 74.44: 不在40-60範圍，不在<30，但>70 → -10\n- 技術面小計: 15+10-10 = 15/30 → 30% × 15 = 4.5分\n\n**籌碼面 (20%):**\n- 投信連買 0 天: 不>3天，不加分\n- 融資變化 470 張: 這是增加（正數），不是減少，不加分\n- 籌碼面小計: 0/20 → 20% × 0 = 0分\n\n**風險 (20%):**\n- 波動率 55.19% > 40% → -10\n- 5日漲幅 17.44% > 10% → -5\n- 風險小計: -15/20 → 20% × (-15) = -3分\n\nWait, let me reconsider the scoring. The rules say:\n- 基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\n- 技術面30%（價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10）\n- 籌碼面20%（投信連買>3天 +15、融資減少 +5）\n- 風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\n\nLet me recalculate:\n\n**基本面 (max 40, weight 30%):**\n- 營收YoY 32.41% > 20% → +20\n- 毛利率 46.28% > 30% → +10\n- EPS 60.55 > 5 → +10\n- Total: 40\n- Weighted: 40 × 0.30 = 12\n\n**技術面 (max 30, weight 30%):**\n- 價 5285 > MA20 4602.25 → +15\n- MACD 280.93 > 0 → +10\n- RSI 74.44 > 70 → -10\n- Total: 15\n- Weighted: 15 × 0.30 = 4.5\n\n**籌碼面 (max 20, weight 20%):**\n- 投信連買 0 天: 不>3天 → 0\n- 融資變化 470 張: 正數表示增加，不是減少 → 0\n- Total: 0\n- Weighted: 0 × 0.20 = 0\n\n**風險 (max 20, weight 20%):**\n- 波動率 55.19% > 40% → -10\n- 5日漲幅 17.44% > 10% → -5\n- Total: -15\n- Weighted: -15 × 0.20 = -3\n\n**Total score: 12 + 4.5 + 0 + (-3) = 13.5**\n\nHmm, that seems very low. Let me reconsider.\n\nWait, I think the scoring might be different. Let me re-read:\n\n\"評分 0-100：基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）｜技術面30%（價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10）｜籌碼面20%（投信連買>3天 +15、融資減少 +5）｜風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\"\n\nI think the percentages are weights, and the points are raw points. Let me think about this differently.\n\nMaybe the total possible score is:\n- 基本面: max 40 points, weight 30%\n- 技術面: max 30 points (15+10+5), weight 30%\n- 籌碼面: max 20 points (15+5), weight 20%\n- 風險: max 20 points (10+5... wait, 波動<20% +10, 波動>40% -10, 5日漲幅>10% -5)\n\nActually, I think the scoring is:\n- Each category has a max score\n- The weight determines how much it contributes to the final 0-100 score\n\nLet me try another interpretation:\n- 基本面 max = 40, contributes 30% to final score\n- 技術面 max = 30, contributes 30% to final score\n- 籌碼面 max = 20, contributes 20% to final score\n- 風險 max = 20, contributes 20% to final score\n\nTotal max = 40+30+20+20 = 110? That doesn't make sense for 0-100.\n\nOr maybe:\n- 基本面: score out of 40, then × 0.30 → max 12\n- 技術面: score out of 30, then × 0.30 → max 9\n- 籌碼面: score out of 20, then × 0.20 → max 4\n- 風險: score out of 20, then × 0.20 → max 4\n\nTotal max = 12+9+4+4 = 29? That's too low.\n\nHmm, let me try yet another interpretation. Maybe the points ARE the final points and the percentages are just labels:\n\n- 基本面: +20 +10 +10 = max 40\n- 技術面: +15 +10 +5 = max 30 (but RSI>70 gives -10)\n- 籌碼面: +15 +5 = max 20\n- 風險: +10 or -10, -5 = range -15 to +10\n\nTotal max: 40+30+20+10 = 100\nTotal min: 0+(-10)+0+(-15) = -25\n\nSo the score could range from -25 to 100, clamped to 0-100.\n\nLet me recalculate:\n- 基本面: 20+10+10 = 40\n- 技術面: 15+10+(-10) = 15\n- 籌碼面: 0+0 = 0\n- 風險: -10+(-5) = -15\n\nTotal: 40+15+0+(-15) = 40\n\nSo ev_score = 40.\n\nWith a score of 40, and the market is 震盪 (consolidation), RSI is overbought at 74.44, 5-day gain is 17.44% which is very high...\n\nRecommendation: With score 40, this would be \"觀望\" (wait and see). The stock is overbought, high volatility, and no institutional buying support.\n\nActually, let me reconsider. Score 40 out of 100... \n\n- 積極買入: probably 75+\n- 謹慎買入: probably 55-74\n- 觀望: probably 35-54\n- 避開: probably <35\n\nSo 40 would be \"觀望\".\n\nReason (≤30字): \"RSI超買且5日漲幅過大，波動高，籌碼無支撐，宜觀望\"\n\nLet me count: RSI超買且5日漲幅過大，波動高，籌碼無支撐，宜觀望 = 22 characters. Good.\n\nWait, let me recount: R-S-I-超-買-且-5-日-漲-幅-過-大-，-波-動-高-，-籌-碼-無-支-撐-，-宜-觀-望 = 24 characters (counting RSI as 3, 5 as 1). Actually in Chinese, let me count more carefully:\n\n\"RSI超買且5日漲幅過大，波動高，籌碼無支撐，宜觀望\"\nR(1)S(2)I(3)超(4)買(5)且(6)5(7)日(8)漲(9)幅(10)過(11)大(12)，(13)波(14)動(15)高(16)，(17)籌(18)碼(19)無(20)支(21)撐(22)，(23)宜(24)觀(25)望(26)\n\n26 characters. Under 30. Good.\n\nActually, I should double-check: is 融資變化 470 張 positive or negative? \"融資變化 470 張\" - this likely means financing increased by 470 contracts, which is not \"融資減少\" so no points.\n\nFinal answer:\n- ev_score: 40\n- recommendation: \"觀望\"\n- reason: \"RSI超買且5日漲幅過大，波動高，籌碼無支撐，宜觀望\"\n</think>\n\n{\"ev_score\": 40, \"recommendation\": \"觀望\", \"reason\": \"RSI超買且5日漲幅過大，波動高，籌碼無支撐，宜觀望\"}",
+      "risk_level": "🔴 極高風險",
+      "trading_plan": {
+        "entry_type": "pullback",
+        "entry_zone": [
+          4602.25,
+          4694.3
+        ],
+        "stop_loss": 4090.48,
+        "take_profit_1": 5113.1,
+        "take_profit_2": 5577.93,
+        "risk_reward": 0.83,
+        "action_now": "等回踩，不追價",
+        "status": "⏳ 等回踩 MA20",
+        "stop_pct": 12.0,
+        "exit_strategy": {
+          "initial_stop": 4090.48,
+          "stage_1": {
+            "target": 5113.1,
+            "action": "賣 1/3，停損上移至成本價",
+            "trigger": "漲幅達 +10%（5113.1）"
+          },
+          "stage_2": {
+            "target": 5577.93,
+            "action": "再賣 1/3，停損上移至 +10%",
+            "trigger": "漲幅達 +20%（5577.93）"
+          },
+          "stage_3": {
+            "action": "剩餘 1/3 設 MA20 移動停利",
+            "trigger": "跌破 MA20 全數出場",
+            "moving_stop": 4602.25
+          },
+          "time_stop": {
+            "days": 20,
+            "action": "持有 20 天未達 +10% 則出場",
+            "reason": "避免機會成本"
+          },
+          "technical_exit": {
+            "rsi_overbought": 75,
+            "action": "RSI > 75 或跌破 MA50 出場",
+            "reason": "技術面轉弱"
+          }
+        }
+      }
     },
     {
       "code": "2881",
@@ -89,23 +215,65 @@
       "revenue_yoy": 280.36,
       "gross_margin": null,
       "net_margin": null,
-      "eps": null,
+      "eps": 10.7,
       "inst_buy_days": 2,
-      "margin_change": -40,
-      "change_5d": 2.32,
-      "volatility": 25.05,
-      "ma5": 152.8,
-      "ma20": 148.28,
-      "rsi": 68.97,
-      "macd": 4.03,
+      "margin_change": 262,
+      "change_5d": -0.99,
+      "volatility": 25.77,
+      "ma5": 152.5,
+      "ma20": 149.43,
+      "rsi": 49.06,
+      "macd": 2.96,
       "price_above_ma20": true,
-      "current_price": 154.5,
+      "current_price": 150.0,
       "data_source": "finmind",
-      "ev_score": 64,
-      "recommendation": "謹慎買入",
-      "reason": "股價站穩MA20，融資出清籌碼乾淨，但RSI近超買且震盪市，宜回檔再進（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze 富邦金 (2881) based on the given data and rules.\n\n**Industry: 金融 (Financial)**\n- Per the rules: 忽略營收 YoY 與 EPS；改看股價位置、波動率、融資增減\n\n**基本面（權重 30%）- 金融產業調整**\n- 月營收年增率：280.36% → 金融產業忽略營收 YoY\n- 毛利率：數據缺失 → 不作為負面證據\n- 淨利率：數據缺失 → 不作為負面證據\n- EPS：數據缺失 → 金融產業忽略 EPS\n\nSince it's financial sector, I should focus on stock price position, volatility, and margin changes instead of revenue YoY and EPS.\n\nFor financial sector, let me reassess:\n- 股價位置：154.5 > MA20 (148.28) → 正面\n- 波動率：25.05% → 中等\n- 融資增減：-40張 → 散戶出清，籌碼乾淨（利多）\n\n基本面評分（金融調整）：\n- 由於金融產業忽略營收YoY和EPS，毛利率和淨利率缺失\n- 股價位置良好（>MA20）\n- 融資減少（散戶出清）\n- 基本面給分：由於數據缺失較多，但股價位置好，給中等偏上分數\n- 基本面：約 50-55 分（數據缺失，但股價位置正面）\n\nWait, let me re-read the scoring logic more carefully. The scoring dimensions are:\n\n1. 基本面（權重 30%）\n   - 營收年增率 > 20%：+20 分\n   - 毛利率 > 30%：+10 分\n   - EPS > 5：+10 分\n\nBut for 金融: 忽略營收 YoY 與 EPS；改看股價位置、波動率、融資增減\n\nSo for financial, the fundamental scoring should be adjusted:\n- 股價位置（>MA20）：正面\n- 波動率：25.05%（中等）\n- 融資增減：-40張（散戶出清，利多）\n\nLet me score each dimension:\n\n**1. 基本面（權重 30%）- 金融調整**\n- 金融產業忽略營收YoY和EPS\n- 毛利率、淨利率數據缺失 → 不作為負面證據\n- 股價位置：154.5 > MA20 (148.28) → 正面\n- 融資減少：-40張 → 散戶出清（利多）\n- 波動率：25.05% → 中等\n- 基本面評分：由於數據缺失，但可用指標正面，給約 55-60 分\n- 基礎分 40 + 股價位置好 +10 + 融資減少 +5 + 波動率中等 +5 = 60\n\nActually, let me think about this differently. The base score for each dimension should be around 50 (neutral), then adjust.\n\nLet me restructure:\n\n**1. 基本面（30%）- 金融產業**\n- 忽略營收YoY和EPS\n- 毛利率缺失、淨利率缺失 → 不引用\n- 股價位置 > MA20：+10\n- 融資減少（散戶出清）：+5\n- 波動率 25%（中等）：+5\n- 基本面分數：50 + 10 + 5 + 5 = 70? \n\nHmm, let me think about this more carefully. The scoring criteria given are specific:\n\nFor 基本面:\n- 營收年增率 > 20%：+20 分 → 金融忽略\n- 毛利率 > 30%：+10 分 → 數據缺失，不引用\n- EPS > 5：+10 分 → 金融忽略\n\nSo for financial, the fundamental criteria are mostly N/A. I should use the adjusted criteria:\n- 股價位置（>MA20）：+15\n- 融資減少：+5\n- 波動率合理：+5\n\nBase 40 + 15 + 5 + 5 = 65? Or maybe base 50 + adjustments.\n\nLet me just be practical and score:\n\n**1. 基本面（30%）- 金融**\n- 股價 > MA20：+15\n- 融資減少（散戶出清）：+5\n- 波動率 25%（合理範圍）：+5\n- 毛利率/淨利率/EPS 缺失：不扣分\n- 基本面分數：50 + 15 + 5 + 5 = 75? \n\nActually, I think the scoring should start from 0 and add points, with a max of 100 per dimension. Let me re-read the examples.\n\nLooking at the examples:\n- Example 1: 營收+35%, 毛利率42%, 股價>MA20, RSI55, 投信連買5天, 波動率18% → 85\n- Example 2: 營收-15%, 毛利率18%, 股價<MA20, RSI75, 投信連買0天, 波動率45% → 25\n- Example 3: 營收+8%, 毛利率28%, 股價>MA20, RSI50, 投信連買1天, 波動率25% → 55\n\nLet me try to reverse-engineer the scoring:\n\nExample 1 (85):\n- 基本面: 營收>20% (+20) + 毛利率>30% (+10) + EPS>5? (assume yes, +10) = 40/40 → 40 * 0.3 = 12\n- 技術面: 股價>MA20 (+15) + MACD>0? (assume yes, +10) + RSI 40-60 (+5) = 30/30 → 30 * 0.3 = 9\n- 籌碼面: 投信連買>3天 (+15) = 15/20 → 15 * 0.2 = 3\n- 風險: 波動率<20% (+10) = 10/20 → 10 * 0.2 = 2\n- Total: 12 + 9 + 3 + 2 = 26? That doesn't add up to 85.\n\nHmm, maybe the scoring is different. Let me think of it as each dimension scored 0-100, then weighted.\n\nExample 1 (85):\n- 基本面: 營收>20% (+20) + 毛利率>30% (+10) + EPS>5 (+10) = 40 out of 40 → 100\n- 技術面: 股價>MA20 (+15) + MACD>0 (+10) + RSI 40-60 (+5) = 30 out of 30 → 100\n- 籌碼面: 投信連買>3天 (+15) = 15 out of 20 → 75\n- 風險: 波動率<20% (+10) = 10 out of 20 → 50\n- Weighted: 100*0.3 + 100*0.3 + 75*0.2 + 50*0.2 = 30 + 30 + 15 + 10 = 85 ✓\n\nExample 2 (25):\n- 基本面: 營收<0 (0) + 毛利率<30% (0) + EPS<5 (0) = 0/40 → 0\n- 技術面: 股價<MA20 (0) + MACD<0 (0) + RSI>70 (-10) = -10 → 0 (floor at 0)\n- 籌碼面: 投信連買0天 (0) = 0/20 → 0\n- 風險: 波動率>40% (-10) = -10 → 0 (floor at 0)\n- Weighted: 0 + 0 + 0 + 0 = 0? But answer is 25.\n\nHmm, that doesn't work either. Let me try another approach.\n\nMaybe the base score is 50 for each dimension, and adjustments are made:\n\nExample 1 (85):\n- 基本面: 50 + 20 + 10 + 10 = 90 → 90*0.3 = 27\n- 技術面: 50 + 15 + 10 + 5 = 80 → 80*0.3 = 24\n- 籌碼面: 50 + 15 = 65 → 65*0.2 = 13\n- 風險: 50 + 10 = 60 → 60*0.2 = 12\n- Total: 27 + 24 + 13 + 12 = 76? Not 85.\n\nLet me try yet another approach. Maybe it's simpler:\n\nExample 1 (85):\n- 基本面: 營收>20% (+20) + 毛利率>30% (+10) + EPS>5 (+10) = 40\n- 技術面: 股價>MA20 (+15) + MACD>0 (+10) + RSI 40-60 (+5) = 30\n- 籌碼面: 投信連買>3天 (+15) = 15\n- 風險: 波動率<20% (+10) = 10\n- Total: 40 + 30 + 15 + 10 = 95? Not 85.\n\nHmm. Let me try:\n- 基本面: 40 * 0.3 = 12\n- 技術面: 30 * 0.3 = 9\n- 籌碼面: 15 * 0.2 = 3\n- 風險: 10 * 0.2 = 2\n- Total: 26? No.\n\nOK, I think the scoring might be more holistic and the examples are approximate. Let me just apply the logic reasonably.\n\nFor 富邦金 (2881) - 金融產業:\n\n**1. 基本面（30%）- 金融產業調整**\n- 忽略營收YoY（280.36%）和EPS（缺失）\n- 毛利率缺失、淨利率缺失 → 不引用\n- 股價位置：154.5 > MA20 (148.28) → 正面\n- 融資減少：-40張 → 散戶出清，籌碼乾淨（利多）\n- 波動率：25.05% → 中等\n- 基本面評分：由於金融產業主要看股價位置和籌碼，股價在MA20之上，融資減少，給 65 分\n\n**2. 技術面（30%）**\n- 股價 > MA20：True → +15\n- MACD > 0：4.03 > 0 → +10\n- RSI：68.97 → 接近超買但未超過70，在40-70之間 → +5（中性偏強）\n  - Actually RSI 68.97 is close to 70 but not over. The criteria says RSI 40-60: +5, RSI > 70: -10. 68.97 is between 60 and 70, so it's not in the 40-60 range. Let me give +3 or so.\n  - Actually, re-reading: RSI 40-60（中性）：+5 分. 68.97 is above 60 but below 70. It's not explicitly covered. I'll give a small positive, maybe +3.\n- 5日漲跌幅：2.32% → 不超過10%，無過熱問題\n- 技術面評分：15 + 10 + 3 = 28 out of ~30 → 約 75 分\n\n**3. 籌碼面（20%）**\n- 投信連續買超：2天 → 未超過3天，給部分分數 +8\n- 融資減少：-40張 → 散戶出清 +5\n- 籌碼面評分：8 + 5 = 13 out of 20 → 約 65 分\n\n**4. 風險控管（20%）**\n- 波動率：25.05% → 在20-40%之間，中等風險\n- 5日漲跌幅：2.32% → 不超過10%，無過熱\n- 市場體制：震盪 → 中性\n- 風險評分：約 55 分\n\n**綜合評分：**\n- 基本面：65 * 0.3 = 19.5\n- 技術面：75 * 0.3 = 22.5\n- 籌碼面：65 * 0.2 = 13\n- 風險：55 * 0.2 = 11\n- Total: 19.5 + 22.5 + 13 + 11 = 66\n\nHmm, let me reconsider. The stock is:\n- Above MA20 (positive)\n- MACD positive (positive)\n- RSI 68.97 (approaching overbought but not there yet)\n- Margin decreasing (positive for financials - retail clearing)\n- Trust fund buying for 2 days (positive but not >3)\n- Volatility 25% (moderate)\n- 5-day change 2.32% (not overheated)\n- Market regime: 震盪 (range-bound)\n\nThis looks like a moderately positive setup. Score around 62-68 seems right.\n\nLet me settle on 65.\n\nRecommendation: 回檔觀察 or 謹慎買入?\n- Score 65 is moderate positive\n- RSI approaching 70 (caution)\n- 震盪市場\n- 投信連買只有2天（未達3天門檻）\n- 融資減少是正面的\n\nI think 謹慎買入 is appropriate for 65. Or 回檔觀察 since RSI is getting high and it's a range-bound market.\n\nActually, with RSI at 68.97 (close to overbought) and 震盪 market, I'd lean towards 回檔觀察. But the technicals are solid (above MA20, MACD positive, margin clearing). Let me go with 謹慎買入 at 65.\n\nWait, let me reconsider the score. \n\nFor 金融產業:\n- 基本面: 股價位置好，融資減少 → 65\n- 技術面: 股價>MA20, MACD>0, RSI接近超買 → 70\n- 籌碼面: 投信2天（未達3天），融資減少 → 60\n- 風險: 波動率25%中等，5日漲幅2.32%正常，震盪市場 → 55\n\nWeighted: 65*0.3 + 70*0.3 + 60*0.2 + 55*0.2 = 19.5 + 21 + 12 + 11 = 63.5 ≈ 64\n\nLet me go with 64.\n\nRecommendation: 謹慎買入 (score 60-70 range)\n\nReason (50字內): \"股價站穩MA20，融資出清籌碼乾淨，但RSI近超買且震盪市，宜回檔再進\"\n\nLet me count: 股價站穩MA20，融資出清籌碼乾淨，但RSI近超買且震盪市，宜回檔再進 = about 30 characters. Good.\n\nActually let me recount: 股(1)價(2)站(3)穩(4)M(5)A(6)2(7)0(8)，(9)融(10)資(11)出(12)清(13)籌(14)碼(15)乾(16)淨(17)，(18)但(19)R(20)S(21)I(22)近(23)超(24)買(25)且(26)震(27)盪(28)市(29)，(30)宜(31)回(32)檔(33)再(34)進(35) = 35 characters. Under 50. Good.\n\nLet me finalize: ev_score: 64, recommendation: 謹慎買入\n</think>\n\n{\n  \"ev_score\": 64,\n  \"recommendation\": \"謹慎買入\",\n  \"reason\": \"股價站穩MA20，融資出清籌碼乾淨，但RSI近超買且震盪市，宜回檔再進（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🟡 中風險"
+      "ev_score": 55,
+      "recommendation": "觀望",
+      "reason": "技術偏多籌碼未確認，觀望（缺失欄位：毛利率、淨利率）",
+      "raw_response": "\n<think>\nLet me analyze 富邦金 (2881) step by step.\n\n**基本面 (30%):**\n- 金融股，忽略營收/EPS，改看股價位置與籌碼\n- 營收YoY 280.36% - 但金融股忽略\n- 毛利率 數據缺失\n- 淨利率 數據缺失\n- EPS 10.7 - 但金融股忽略\n\nSince it's a financial stock, I should ignore revenue/EPS and focus on stock price position and chips. The missing fields (毛利率, 淨利率) should not be treated as negative.\n\nFor financial stocks, I'll assess based on stock price position relative to MA20 and chip data.\n- 股價 150.0 > MA20 149.43: 站上均線，正面\n- 投信連買 2 天: 正面\n\n基本面評分: 金融股忽略營收/EPS，看股價位置與籌碼。股價站上MA20，投信連買。給分約 20/30 (正面但不算極強)\n\nWait, let me re-read the rules. The scoring rules are:\n- 基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\n- 但規則1說金融股忽略營收/EPS改看股價位置與籌碼\n\nSo for financial stocks, I need to adjust the fundamental scoring. Let me think about this:\n- 營收YoY 280.36% > 20%: +20 (but rule says ignore for financial)\n- 毛利率 數據缺失: cannot score\n- EPS 10.7 > 5: +10 (but rule says ignore for financial)\n\nSince financial stocks ignore revenue/EPS, I'll score based on stock price position and chips:\n- 股價站上MA20: positive signal\n- 投信連買: positive signal\n\nI'll give fundamental score around 20/30 (positive but not maximum since key metrics are missing)\n\nActually, let me reconsider. The rule says \"金融股忽略營收/EPS 改看股價位置與籌碼\". So the fundamental score should be based on:\n- 股價位置: 150 > MA20 149.43, 站上均線 → positive\n- 籌碼: 投信連買2天 → positive\n\nI'll score fundamental at about 20/30.\n\n**技術面 (30%):**\n- 價 > MA20: 150.0 > 149.43 → True → +15\n- MACD > 0: 2.96 > 0 → +10\n- RSI 49.06: 在40-60之間 → +5\n- RSI < 30: No\n- RSI > 70: No\n\n技術面評分: 15 + 10 + 5 = 30/30\n\n**籌碼面 (20%):**\n- 投信連買 2 天: 規則說 >3天 +15，2天不算 >3天，所以不給+15。但連買2天仍是正面信號。\n- 融資變化 262 張: 這是增加還是減少？\"融資變化 262 張\" - 沒有明確說增加或減少。如果是增加，則不是\"融資減少\"，不給+5。\n\nWait, \"融資變化 262 張\" - this is ambiguous. It could mean the change is +262 or -262. Without clear direction, I'll assume it's a positive change (increase), so not \"融資減少\", no +5.\n\nActually, let me re-read: \"融資變化 262 張\" - this likely means the change is 262 shares. Without a negative sign, it's probably an increase. So no +5 for 融資減少.\n\nFor 投信連買 2 天: The rule says >3天 +15. 2天 is not >3天, so no +15. But it's still a positive signal. I'll give partial credit, maybe 8/20.\n\nActually, let me be strict with the rules:\n- 投信連買>3天 +15: 2天不滿足，0分\n- 融資減少 +5: 不滿足（是增加），0分\n\n籌碼面評分: 0/20? That seems too harsh. But the rules are specific. Let me give a small amount for the positive signal of 投信連買2天. Maybe 5/20.\n\nHmm, but the rules are very specific. Let me stick to them:\n- 投信連買>3天: No (only 2 days) → 0\n- 融資減少: No (262張 increase) → 0\n\n籌碼面: 0/20\n\nWait, but that seems too strict. The 投信連買2天 is still a positive signal even if not >3 days. Let me give a small credit. I'll say 5/20 for the positive chip movement.\n\n**風險 (20%):**\n- 波動率 25.77%: 20% < 25.77% < 40%, so no +10 (needs <20%) and no -10 (needs >40%)\n- 5日漲幅 -0.99%: not >10%, so no -5\n\n風險評分: 0/20 (no bonuses or penalties triggered)\n\nWait, 波動率 25.77% is between 20% and 40%, so no points. 5日漲幅 -0.99% is not >10%, so no penalty.\n\n風險: 0/20\n\n**Total Score:**\n- 基本面: 20/30\n- 技術面: 30/30\n- 籌碼面: 5/20\n- 風險: 0/20\n\nTotal: 20 + 30 + 5 + 0 = 55/100\n\nHmm, let me reconsider the fundamental score for financial stocks. The rule says to look at 股價位置與籌碼 instead. \n- 股價站上MA20: positive\n- 投信連買: positive\n\nI think 20/30 is reasonable for fundamental.\n\nActually, let me reconsider. The scoring rules are:\n- 營收>20% +20\n- 毛利率>30% +10\n- EPS>5 +10\n\nFor financial stocks, we ignore these. So what do we use instead? The rule says \"改看股價位置與籌碼\". \n\nI think the intent is that for financial stocks, the fundamental assessment is based on:\n- Stock price position (above/below key moving averages)\n- Chip/institutional activity\n\nGiven that the stock is above MA20 and institutions are buying, I'll score fundamental at 20/30.\n\nLet me recalculate:\n- 基本面: 20/30\n- 技術面: 30/30\n- 籌碼面: 5/20 (投信連買2天是正面但不到3天)\n- 風險: 0/20\n\nTotal: 55/100\n\nRecommendation: 55分 → 觀望 (between 謹慎買入 and 觀望)\n\nActually, let me think about the recommendation thresholds:\n- 80+: 積極買入\n- 65-79: 謹慎買入\n- 50-64: 觀望\n- <50: 避開\n\n55 → 觀望\n\nReason (≤30字): \"技術面偏多但籌碼未確認，震盪市觀望\"\n\nLet me count: 技術面偏多但籌碼未確認，震盪市觀望 = 16 characters. Good.\n\nWait, I need to note the missing fields. The rule says \"理由末尾標註（缺失欄位：xx）\"\n\nSo reason should end with (缺失欄位：毛利率、淨利率)\n\nLet me revise: \"技術面偏多但籌碼未確認，震盪市觀望（缺失欄位：毛利率、淨利率）\"\n\nCount: 技術面偏多但籌碼未確認，震盪市觀望（缺失欄位：毛利率、淨利率）\nThat's more than 30 characters. Let me shorten.\n\n\"技術偏多籌碼未確認，觀望（缺失欄位：毛利率、淨利率）\"\nCount: 技(1)術(2)偏(3)多(4)籌(5)碼(6)未(7)確(8)認(9)，(10)觀(11)望(12)（(13)缺(14)失(15)欄(16)位(17)：(18)毛(19)利(20)率(21)、(22)淨(23)利(24)率(25)）(26) = 26 characters. Good, under 30.\n\nActually wait, let me recount more carefully:\n技術偏多籌碼未確認，觀望（缺失欄位：毛利率、淨利率）\n技-術-偏-多-籌-碼-未-確-認-，-觀-望-（-缺-失-欄-位-：-毛-利-率-、-淨-利-率-）\nThat's 25 characters. Good.\n\nLet me finalize:\n- ev_score: 55\n- recommendation: \"觀望\"\n- reason: \"技術偏多籌碼未確認，觀望（缺失欄位：毛利率、淨利率）\"\n</think>\n\n{\"ev_score\": 55, \"recommendation\": \"觀望\", \"reason\": \"技術偏多籌碼未確認，觀望（缺失欄位：毛利率、淨利率）\"}",
+      "risk_level": "🟡 中風險",
+      "trading_plan": {
+        "entry_type": "now",
+        "entry_zone": [
+          148.5,
+          151.5
+        ],
+        "stop_loss": 140.34,
+        "take_profit_1": 165.0,
+        "take_profit_2": 180.0,
+        "risk_reward": 1.55,
+        "action_now": "現在可進場",
+        "status": "🟢 現在可進場",
+        "stop_pct": 6.4,
+        "exit_strategy": {
+          "initial_stop": 140.34,
+          "stage_1": {
+            "target": 165.0,
+            "action": "賣 1/3，停損上移至成本價",
+            "trigger": "漲幅達 +10%（165.0）"
+          },
+          "stage_2": {
+            "target": 180.0,
+            "action": "再賣 1/3，停損上移至 +10%",
+            "trigger": "漲幅達 +20%（180.0）"
+          },
+          "stage_3": {
+            "action": "剩餘 1/3 設 MA20 移動停利",
+            "trigger": "跌破 MA20 全數出場",
+            "moving_stop": 149.43
+          },
+          "time_stop": {
+            "days": 20,
+            "action": "持有 20 天未達 +10% 則出場",
+            "reason": "避免機會成本"
+          },
+          "technical_exit": {
+            "rsi_overbought": 75,
+            "action": "RSI > 75 或跌破 MA50 出場",
+            "reason": "技術面轉弱"
+          }
+        }
+      }
     },
     {
       "code": "2317",
@@ -113,25 +281,67 @@
       "industry": "電子",
       "regime": "震盪",
       "revenue_yoy": -2.61,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
-      "inst_buy_days": 2,
-      "margin_change": 134,
-      "change_5d": 2.64,
-      "volatility": 22.85,
-      "ma5": 250.4,
-      "ma20": 250.88,
-      "rsi": 53.23,
-      "macd": 0.28,
-      "price_above_ma20": true,
-      "current_price": 253.0,
+      "gross_margin": 6.12,
+      "net_margin": 2.65,
+      "eps": 15.17,
+      "inst_buy_days": 0,
+      "margin_change": 1661,
+      "change_5d": 0.0,
+      "volatility": 23.27,
+      "ma5": 252.0,
+      "ma20": 251.28,
+      "rsi": 40.0,
+      "macd": 0.35,
+      "price_above_ma20": false,
+      "current_price": 250.5,
       "data_source": "finmind",
-      "ev_score": 53,
-      "recommendation": "回檔觀察",
-      "reason": "營收微幅衰退，技術面穩健，投信初步加碼（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze 鴻海 (2317) based on the provided data.\n\n**Industry**: 電子 (Electronics) - use semiconductor/electronics evaluation scale\n\n**基本面 (30%)**:\n- 月營收年增率：-2.61% → Negative, but small. Not >20%, so no +20. It's negative, so it's a negative signal.\n- 毛利率：數據缺失 → Cannot use as evidence\n- 淨利率：數據缺失 → Cannot use as evidence\n- EPS：數據缺失 → Cannot use as evidence\n\nBasic score: 營收 YoY is -2.61%, which is negative. No positive points from fundamentals. The missing fields should not be treated as negative. So fundamentals score is low. Let me think about how to score this.\n\nThe scoring logic says:\n- 營收年增率 > 20%：+20 分\n- 毛利率 > 30%：+10 分\n- EPS > 5：+10 分\n\nNone of these are met. 營收 is negative (-2.61%), which is a negative signal but not explicitly scored in the rubric. The rubric only gives positive points. So fundamentals base score would be 0 out of 40 possible points. But since it's negative, it's a mild negative. Let me assign a low score. Maybe 10/40 for fundamentals (out of 30% weight).\n\nActually, let me re-read the scoring. The weights are:\n- 基本面 30%\n- 技術面 30%\n- 籌碼面 20%\n- 風險控管 20%\n\nLet me calculate each dimension's score out of 100, then weight them.\n\n**基本面 (weight 30%)**:\n- 營收 YoY -2.61%: Not >20%, so 0 points. It's negative, mild negative.\n- 毛利率: 數據缺失 - cannot score\n- EPS: 數據缺失 - cannot score\n- 淨利率: 數據缺失 - cannot score\n\nOnly 營收 has a value. It's negative (-2.61%). This is a mild negative. I'll give maybe 20/100 for fundamentals (out of the 30% weight).\n\nActually, let me think about this differently. The scoring rubric gives specific point allocations. Let me just apply them:\n- 營收 > 20%: No (it's -2.61%) → 0\n- 毛利率 > 30%: Missing → skip\n- EPS > 5: Missing → skip\n\nSo from the rubric, fundamentals get 0 points. But the 營收 is negative, which is a mild negative signal. I'll score fundamentals at about 20/100.\n\n**技術面 (weight 30%)**:\n- 股價 > MA20: True (253.0 > 250.88) → +15\n- MACD > 0: 0.28 > 0 → +10\n- RSI 53.23: In 40-60 range (neutral) → +5\n- 5日漲跌幅 2.64%: Not >10%, no penalty\n- 20日波動率 22.85%: Between 20% and 40%\n\nTechnical score: 15 + 10 + 5 = 30 out of... let me think about the max. The max for technical would be 15+10+10 (or 5) = 35 or so. Let me say the max is about 35. So 30/35 ≈ 85/100 for technical.\n\nWait, let me re-read. The scoring gives specific points. Let me just add them up:\n- +15 (above MA20)\n- +10 (MACD > 0)\n- +5 (RSI 40-60)\nTotal: 30\n\nThe maximum possible for technical: 15 + 10 + 10 (RSI < 30) = 35, or 15 + 10 + 5 = 30. So 30 is actually quite good. Let me say technical is about 80/100.\n\n**籌碼面 (weight 20%)**:\n- 投信連續買超：2天 → Not > 3 days, so no +15. But 2 days is positive. Maybe +5?\n- 融資增減：134張 → This is positive (increasing). The rubric says 融資減少 = +5. Here 融資 is increasing by 134張, which is a mild negative (散戶加碼). But 134張 for 鴻海 is very small (鴻海 has billions of shares). So this is negligible.\n\nActually, 134張 for 鴻海 is extremely small. 鴻海's daily volume is in the millions of shares. 134張 = 13,400 shares. This is negligible. I'll treat this as neutral.\n\n籌碼面: 投信連買 2天 (not >3, so partial credit maybe +5), 融資增加 134張 (negligible for 鴻海, neutral). Score: about 30/100.\n\n**風險控管 (weight 20%)**:\n- 波動率 22.85%: > 20% but < 40%. Not < 20% so no +10. Not > 40% so no -10. Neutral.\n- 5日漲跌幅 2.64%: Not > 10%, no penalty.\n\nRisk score: Neutral, maybe 50/100.\n\n**Overall calculation**:\n- 基本面: 20/100 × 30% = 6\n- 技術面: 80/100 × 30% = 24\n- 籌碼面: 30/100 × 20% = 6\n- 風險控管: 50/100 × 20% = 10\n\nTotal: 6 + 24 + 6 + 10 = 46\n\nHmm, let me reconsider. The 營收 is only -2.61%, which is very mild. For 鴻海 (a massive company), this is almost flat. I might be too harsh on fundamentals. Let me adjust to 25/100 for fundamentals.\n\nAlso, 技術面 is actually quite solid: above MA20, MACD positive, RSI neutral. That's a good technical setup. Let me keep 80/100.\n\n籌碼面: 投信連買 2天 is positive but not strong. 融資 134張 is negligible. Let me say 35/100.\n\n風險: 波動率 22.85% is moderate, not extreme. 5日漲幅 2.64% is fine. Let me say 55/100.\n\nRecalculating:\n- 基本面: 25 × 0.30 = 7.5\n- 技術面: 80 × 0.30 = 24\n- 籌碼面: 35 × 0.20 = 7\n- 風險控管: 55 × 0.20 = 11\n\nTotal: 7.5 + 24 + 7 + 11 = 49.5 ≈ 50\n\nThis seems like a \"回檔觀察\" or \"謹慎買入\" range. Given the mild negative 營收 but solid technicals and neutral risk, I'd say 50-55 range.\n\nLet me settle on 52.\n\nRecommendation: 回檔觀察 (the fundamentals are slightly weak with negative 營收, but technicals are decent. Not strong enough for 謹慎買入, but not bad enough for 避開.)\n\nActually, let me reconsider. 鴻海 is a major electronics company. -2.61% 月營收年增率 is very mild. The technicals are solid (above MA20, MACD positive, RSI neutral). 投信連買 2天 shows some institutional interest. The risk is moderate.\n\nI think 52-55 is appropriate. Let me go with 53.\n\nRecommendation: 回檔觀察 - because fundamentals are slightly weak (negative 營收) and 投信連買 hasn't reached 3 days yet. The technicals support a hold but not aggressive buying.\n\nReason (50 chars max): \"營收微幅衰退但技術面穩健，投信初步加碼，等待基本面確認\"\n\nLet me count: 營收微幅衰退但技術面穩健，投信初步加碼，等待基本面確認 = 26 characters. Good.\n\nWait, I need to note the missing fields. The rule says: 在理由末尾標註「（缺失欄位：xx）」\n\nMissing fields: 毛利率, 淨利率, EPS\n\nLet me adjust the reason: \"營收微幅衰退，技術面穩健，投信初步加碼（缺失欄位：毛利率、淨利率、EPS）\"\n\nLet me count: that's about 30 characters. Good, under 50.\n\nFinal answer: ev_score: 53, recommendation: 回檔觀察\n</think>\n\n{\n  \"ev_score\": 53,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"營收微幅衰退，技術面穩健，投信初步加碼（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🟡 中風險"
+      "ev_score": 25,
+      "recommendation": "觀望",
+      "reason": "營收負成長、籌碼無支撐、技術面偏弱，觀望為宜",
+      "raw_response": "\n<think>\nLet me analyze 鴻海 (2317) based on the given data and rules.\n\n**基本面 (30%):**\n- 營收YoY -2.61%: Not >20%, so no +20\n- 毛利率 6.12%: Not >30%, so no +10\n- EPS 15.17: >5, so +10\n- 淨利率 2.65%: not specifically scored\n\n基本面 score: 10/30\n\n**技術面 (30%):**\n- 現價 250.5 vs MA20 251.28: 站上=False, so no +15\n- MACD 0.35: >0, so +10\n- RSI 40.0: 40-60 range, so +5\n- RSI<30: No\n- RSI>70: No\n\n技術面 score: 15/30\n\n**籌碼面 (20%):**\n- 投信連買 0 天: Not >3天, so no +15\n- 融資變化 1661 張: This is positive (increase), not decrease, so no +5\n\n籌碼面 score: 0/20\n\n**風險 (20%):**\n- 波動率 23.27%: Not <20%, not >40%, so no adjustment\n- 5日漲幅 0.0%: Not >10%, so no -5\n\n風險 score: 0/20 (no positive or negative adjustments)\n\nWait, let me re-read the risk rules. The risk section gives adjustments:\n- 波動<20% +10\n- 波動>40% -10\n- 5日漲幅>10% -5\n\nSo the base for risk is... I think the scoring is additive. Let me reconsider.\n\nActually, looking at the scoring system more carefully:\n- 基本面30%: max 30 points (20+10+10)\n- 技術面30%: max 30 points (15+10+5 or 10)\n- 籌碼面20%: max 20 points (15+5)\n- 風險20%: This seems to be adjustments\n\nWait, let me re-read. The scoring is 0-100 total. The percentages indicate weight. Let me recalculate:\n\n基本面 (30% weight, max 30 points):\n- 營收>20%: -2.61%, no → 0\n- 毛利率>30%: 6.12%, no → 0\n- EPS>5: 15.17, yes → +10\nTotal: 10/30\n\n技術面 (30% weight, max 30 points):\n- 價>MA20: False → 0\n- MACD>0: 0.35>0, yes → +10\n- RSI 40-60: 40.0, yes → +5\nTotal: 15/30\n\n籌碼面 (20% weight, max 20 points):\n- 投信連買>3天: 0天, no → 0\n- 融資減少: 1661張 (positive change, meaning increase), no → 0\nTotal: 0/20\n\n風險 (20% weight):\n- 波動<20%: 23.27%, no → 0\n- 波動>40%: no → 0\n- 5日漲幅>10%: 0%, no → 0\nTotal: 0/20\n\nWait, for risk, what's the base score? If no adjustments apply, is it 0 or 20? Let me think about this differently.\n\nThe risk section seems to be a modifier. If volatility is <20%, you get +10 (lower risk = better). If >40%, -10. If 5-day gain >10%, -5 (overheated).\n\nSo the risk score base might be 0, and you add/subtract. Or the base is 20 and you adjust.\n\nActually, I think the scoring works like this:\n- Each category has a maximum score\n- You earn points based on conditions met\n\nFor risk (20%):\n- If 波動<20%: +10 (good, low risk)\n- If 波動>40%: -10 (bad, high risk)\n- If 5日漲幅>10%: -5 (overheated)\n\nSo the risk score could range from -10 to +10, or maybe 0 to 20.\n\nI think the most logical interpretation is:\n- Risk base: 0\n- 波動<20%: +10\n- 波動>40%: -10\n- 5日漲幅>10%: -5\n\nSo for this case: 23.27% is between 20-40%, no adjustment. 5日漲幅 0%, no adjustment.\nRisk score: 0\n\nTotal: 10 + 15 + 0 + 0 = 25/100\n\nHmm, that seems low. Let me reconsider whether the risk section has a base score.\n\nActually, I think the way to read it is:\n- 基本面 max 30\n- 技術面 max 30\n- 籌碼面 max 20\n- 風險 max 20 (but it's more of a penalty/bonus system)\n\nFor risk, if nothing triggers, maybe the base is 10 (neutral)? Or 0?\n\nI'll go with: if no risk factors trigger, score is 0 for that section. The total would be 25.\n\nActually wait - let me reconsider. The risk section says:\n- 波動<20% +10\n- 波動>40% -10\n- 5日漲幅>10% -5\n\nThese are adjustments. The base for risk might be 10 (out of 20), representing neutral risk. So:\n- Neutral: 10\n- Low vol: 10+10=20\n- High vol: 10-10=0\n- Overheated: 10-5=5\n\nWith 23.27% volatility (between 20-40) and 0% 5-day gain, the risk score would be 10 (neutral).\n\nTotal: 10 + 15 + 0 + 10 = 35/100\n\nHmm, but I'm not sure about the base. Let me just go with the literal interpretation:\n- Only add points when conditions are met\n- Risk: no conditions met → 0\n\nTotal: 10 + 15 + 0 + 0 = 25\n\nWith a score of 25, the recommendation would be \"避開\" or \"觀望\".\n\nGiven the market is 震盪 (consolidating), and the score is quite low (25), I'd say \"觀望\" (wait and see) is appropriate. The stock is below MA20, RSI is at 40 (neutral-slightly weak), MACD is slightly positive, but fundamentals are weak (negative revenue growth, low margins).\n\nActually, let me reconsider. Score 25 out of 100:\n- 0-25: 避開\n- 25-45: 觀望\n- 45-65: 謹慎買入\n- 65-85: 積極買入\n- 85-100: 積極買入\n\n25 is borderline. I'll go with \"觀望\".\n\nReason (≤30字): \"營收負成長、籌碼無支撐、技術面偏弱，觀望為宜\"\n\nLet me count: 營收負成長、籌碼無支撐、技術面偏弱，觀望為宜 = 20 characters. Good.\n\nWait, let me recount: 營(1)收(2)負(3)成(4)長(5)、(6)籌(7)碼(8)無(9)支(10)撐(11)、(12)技(13)術(14)面(15)偏(16)弱(17)，(18)觀(19)望(20)為(21)宜(22) = 22 characters. Under 30. Good.\n</think>\n\n{\"ev_score\": 25, \"recommendation\": \"觀望\", \"reason\": \"營收負成長、籌碼無支撐、技術面偏弱，觀望為宜\"}",
+      "risk_level": "🟡 中風險",
+      "trading_plan": {
+        "entry_type": "now",
+        "entry_zone": [
+          248.0,
+          253.0
+        ],
+        "stop_loss": 235.47,
+        "take_profit_1": 275.55,
+        "take_profit_2": 300.6,
+        "risk_reward": 1.67,
+        "action_now": "現在可進場",
+        "status": "🟢 現在可進場",
+        "stop_pct": 6.0,
+        "exit_strategy": {
+          "initial_stop": 235.47,
+          "stage_1": {
+            "target": 275.55,
+            "action": "賣 1/3，停損上移至成本價",
+            "trigger": "漲幅達 +10%（275.55）"
+          },
+          "stage_2": {
+            "target": 300.6,
+            "action": "再賣 1/3，停損上移至 +10%",
+            "trigger": "漲幅達 +20%（300.6）"
+          },
+          "stage_3": {
+            "action": "剩餘 1/3 設 MA20 移動停利",
+            "trigger": "跌破 MA20 全數出場",
+            "moving_stop": 251.28
+          },
+          "time_stop": {
+            "days": 20,
+            "action": "持有 20 天未達 +10% 則出場",
+            "reason": "避免機會成本"
+          },
+          "technical_exit": {
+            "rsi_overbought": 75,
+            "action": "RSI > 75 或跌破 MA50 出場",
+            "reason": "技術面轉弱"
+          }
+        }
+      }
     },
     {
       "code": "2382",
@@ -139,25 +349,36 @@
       "industry": "電子",
       "regime": "震盪",
       "revenue_yoy": 15.75,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
+      "gross_margin": 5.54,
+      "net_margin": 2.99,
+      "eps": 22.95,
       "inst_buy_days": 0,
-      "margin_change": 151,
-      "change_5d": 2.7,
-      "volatility": 33.04,
-      "ma5": 342.8,
-      "ma20": 338.27,
-      "rsi": 53.33,
-      "macd": 2.52,
-      "price_above_ma20": true,
-      "current_price": 342.0,
+      "margin_change": 220,
+      "change_5d": -1.6,
+      "volatility": 33.22,
+      "ma5": 341.9,
+      "ma20": 338.98,
+      "rsi": 45.11,
+      "macd": 2.0,
+      "price_above_ma20": false,
+      "current_price": 338.5,
       "data_source": "finmind",
-      "ev_score": 40,
-      "recommendation": "回檔觀察",
-      "reason": "技術面偏多但法人未進場，波動率偏高，建議回檔再評估（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze the stock 2382 (廣達) based on the provided data.\n\n**基本面 (權重 30%)**\n- 月營收年增率：15.75% → 未達 20%，不給 +20 分。但 > 0，算是正面。給部分分數，約 +10 分\n- 毛利率：數據缺失 → 不給分，不作為負面證據\n- 淨利率：數據缺失 → 不給分\n- EPS：數據缺失 → 不給分\n\n基本面評分：營收 15.75% 成長，未達 20% 門檻但為正面。約 10/30 分\n\n**技術面 (權重 30%)**\n- 股價 342.0 > MA20 338.27：是 → +15 分\n- MACD 2.52 > 0：是 → +10 分\n- RSI 53.33：在 40-60 之間（中性）→ +5 分\n- 近 5 日漲跌幅 2.7%：未超過 10%，不扣分\n\n技術面評分：15 + 10 + 5 = 30/30 分\n\n**籌碼面 (權重 20%)**\n- 投信連續買超：0 天 → 不給分\n- 融資增減：151 張 → 這是增加，不是減少。散戶在加碼，不是出清。不給 +5 分。\n\n籌碼面評分：0/20 分\n\n**風險控管 (權重 20%)**\n- 20 日波動率：33.04% → 介於 20% 和 40% 之間，不給 +10 也不給 -10。中性。\n- 5 日漲跌幅 2.7%：未超過 10%，不扣分\n\n風險控管評分：0/20 分（波動率 33% 介於中性區間）\n\n**總分計算：**\n- 基本面：10 × 30% = 3\n- 技術面：30 × 30% = 9\n- 籌碼面：0 × 20% = 0\n- 風險控管：0 × 20% = 0\n\n等等，讓我重新思考評分邏輯。評分是 0-100 的總分，各維度有權重。\n\n讓我重新計算：\n\n基本面（滿分 30）：\n- 營收 YoY 15.75%：未達 20%，但為正成長。給 10/20 分（按比例）\n- 毛利率：缺失，不計\n- EPS：缺失，不計\n- 基本面小計：10/30\n\n技術面（滿分 30）：\n- 股價 > MA20：+15\n- MACD > 0：+10\n- RSI 53.33（40-60）：+5\n- 技術面小計：30/30\n\n籌碼面（滿分 20）：\n- 投信連買 0 天：0\n- 融資增加 151 張（非減少）：0\n- 籌碼面小計：0/20\n\n風險控管（滿分 20）：\n- 波動率 33.04%：介於 20-40%，中性，0 分\n- 5 日漲幅 2.7%：未過熱，0 分\n- 風險控管小計：0/20\n\n總分：10 + 30 + 0 + 0 = 40\n\n嗯，40 分偏低。讓我再想想。\n\n實際上評分邏輯是：\n- 基本面滿分 30（權重 30%）\n- 技術面滿分 30（權重 30%）\n- 籌碼面滿分 20（權重 20%）\n- 風險控管滿分 20（權重 20%）\n\n基本面：營收 15.75% 是正成長但未達 20%。我給 10 分（滿分 30 中的 10 分）。毛利率和 EPS 缺失不計。\n\n技術面：15 + 10 + 5 = 30（滿分）\n\n籌碼面：0 分（投信沒買，融資是增加不是減少）\n\n風險控管：波動率 33% 中性，5 日漲幅 2.7% 正常。0 分。\n\n總分：10 + 30 + 0 + 0 = 40\n\n40 分對應的建議：\n- 80+：積極買入\n- 60-79：謹慎買入\n- 40-59：回檔觀察\n- <40：避開\n\n40 分 → 回檔觀察\n\n理由：技術面強勁（站上 MA20、MACD 正、RSI 中性），但籌碼面缺乏法人支撐，波動率偏高。缺失欄位：毛利率、淨利率、EPS。\n\n理由要 50 字內：「技術面偏多但法人未進場，波動率偏高，建議回檔再評估（缺失欄位：毛利率、淨利率、EPS）」\n\n讓我數一下字數：技術面偏多但法人未進場，波動率偏高，建議回檔再評估（缺失欄位：毛利率、淨利率、EPS）\n技(1)術(2)面(3)偏(4)多(5)但(6)法(7)人(8)未(9)進(10)場(11)，(12)波(13)動(14)率(15)偏(16)高(17)，(18)建(19)議(20)回(21)檔(22)再(23)評(24)估(25)（(26)缺(27)失(28)欄(29)位(30)：(31)毛(32)利(33)率(34)、(35)淨(36)利(37)率(38)、(39)E(40)P(41)S(42)）(43)\n\n43 字，OK 在 50 字內。\n\n等等，讓我再確認融資增減 151 張的意義。融資增減為正數表示融資增加，代表散戶在加碼買入，這不是「散戶出清」的訊號，所以不給 +5 分。正確。\n\n最終答案：\n- ev_score: 40\n- recommendation: 回檔觀察\n- reason: 技術面偏多但法人未進場，波動率偏高，建議回檔再評估（缺失欄位：毛利率、淨利率、EPS）\n</think>\n\n{\n  \"ev_score\": 40,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"技術面偏多但法人未進場，波動率偏高，建議回檔再評估（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🟠 高風險"
+      "ev_score": 25,
+      "recommendation": "避開",
+      "reason": "EPS強但籌碼空、技術面偏弱，震盪市不利",
+      "raw_response": "\n<think>\nLet me analyze 廣達 (2382) based on the given rules.\n\n**基本面 (30%):**\n- 營收YoY 15.75%: >20%? No, it's 15.75%, so no +20. But it's positive growth.\n- 毛利率 5.54%: >30%? No, so no +10.\n- EPS 22.95: >5? Yes, +10.\n\nWait, let me re-read the rules. The scoring is:\n- 營收>20% +20\n- 毛利率>30% +10\n- EPS>5 +10\n\nSo for 基本面:\n- 營收 15.75% < 20%, no points\n- 毛利率 5.54% < 30%, no points\n- EPS 22.95 > 5, +10\n\n基本面 score: 10 out of 30? Or is it 10 points out of the 30% weight?\n\nLet me re-read: \"評分 0-100：基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\"\n\nSo the maximum for 基本面 is 20+10+10 = 40 points, but it's weighted at 30%. Hmm, or is the 30% the weight and the points within are the scoring criteria?\n\nI think the structure is:\n- 基本面 contributes 30% to the total score\n- Within 基本面: 營收>20% gives +20, 毛利率>30% gives +10, EPS>5 gives +10 (max 40 within this category)\n- 技術面 contributes 30%\n- 籌碼面 contributes 20%\n- 風險 contributes 20%\n\nWait, but 20+10+10 = 40 for 基本面, and the weight is 30%. Let me think about this differently.\n\nMaybe the total score is calculated as:\n- 基本面: max 30 points (weighted 30%), with sub-scores\n- 技術面: max 30 points (weighted 30%)\n- 籌碼面: max 20 points (weighted 20%)\n- 風險: max 20 points (weighted 20%)\n\nTotal = 30 + 30 + 20 + 20 = 100\n\nSo for 基本面 (max 30):\n- 營收>20%: 15.75% < 20%, 0 points\n- 毛利率>30%: 5.54% < 30%, 0 points\n- EPS>5: 22.95 > 5, +10 points\n\nBut wait, the sub-scores add up to 40 (20+10+10), but the category max is 30. Maybe I should scale? Or maybe the points are just added and capped at 30?\n\nActually, re-reading: \"基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\" - I think the 30% is the weight, and the points in parentheses are the scoring criteria. The total score is 0-100.\n\nLet me interpret it as:\n- 基本面 max = 30 points\n  - 營收>20%: +20 (out of 30)\n  - 毛利率>30%: +10 (out of 30)\n  - EPS>5: +10 (out of 30)\n  - But max is 30, so if all three: 20+10+10=40, capped at 30?\n\nHmm, this is confusing. Let me just add the points and cap at the category maximum.\n\nActually, I think the simplest interpretation is:\n- Total score = 基本面 + 技術面 + 籌碼面 + 風險\n- 基本面 max = 30 (weight 30%)\n- 技術面 max = 30 (weight 30%)\n- 籌碼面 max = 20 (weight 20%)\n- 風險 max = 20 (weight 20%)\n\nFor 基本面:\n- 營收 15.75% < 20%: 0\n- 毛利率 5.54% < 30%: 0\n- EPS 22.95 > 5: +10\n- Total: 10/30\n\nFor 技術面 (max 30):\n- 價>MA20: 338.5 < 338.98, False → 0\n- MACD>0: 2.0 > 0 → +10\n- RSI 45.11: 40-60 range → +5\n- RSI<30: No\n- RSI>70: No\n- Total: 15/30\n\nFor 籌碼面 (max 20):\n- 投信連買>3天: 0天 → 0\n- 融資變化 220張: This is positive (increase), so 融資減少? No, it's an increase. So no +5.\n- Total: 0/20\n\nWait, 融資變化 220張 - is this an increase or decrease? \"融資變化 220 張\" - positive number usually means increase. The rule says \"融資減少 +5\", so if it's increasing, no points.\n\nFor 風險 (max 20):\n- 波動率 33.22%: <20%? No. >40%? No. So 0.\n- 5日漲幅 -1.6%: >10%? No. So 0.\n- Total: 0/20\n\nWait, for 風險, the scoring is:\n- 波動<20% +10\n- 波動>40% -10\n- 5日漲幅>10% -5\n\nSo if 波動 is between 20% and 40%, it's 0. And 5日漲幅 is -1.6%, not >10%, so 0.\n\nTotal score: 10 + 15 + 0 + 0 = 25\n\nHmm, that seems very low. Let me reconsider.\n\nActually wait - maybe the scoring isn't capped at the category max. Maybe the points just add up to a total of 100. Let me re-read.\n\n\"評分 0-100：基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）｜技術面30%（價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10）｜籌碼面20%（投信連買>3天 +15、融資減少 +5）｜風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\"\n\nOK so the percentages are weights. The points in parentheses are the raw scores. Let me calculate:\n\n基本面 raw: 0 + 0 + 10 = 10 (max possible: 20+10+10=40)\n技術面 raw: 0 + 10 + 5 + 0 + 0 = 15 (max possible: 15+10+5+10=40, but RSI conditions are mutually exclusive mostly)\n籌碼面 raw: 0 + 0 = 0 (max possible: 15+5=20)\n風險 raw: 0 + 0 + 0 = 0 (max possible: 10, min: -10-5=-15)\n\nNow applying weights:\n- 基本面: 10/40 * 30 = 7.5\n- 技術面: 15/40 * 30 = 11.25\n- 籌碼面: 0/20 * 20 = 0\n- 風險: 0/10 * 20 = 0\n\nTotal: 7.5 + 11.25 + 0 + 0 = 18.75\n\nHmm, that's very low. But maybe the interpretation is different.\n\nActually, I think the simpler interpretation is:\n- The points in parentheses ARE the points you get, and the percentage is just indicating the relative importance.\n- Total score = sum of all points, scaled to 0-100.\n\nOr maybe even simpler: the points just add up directly.\n- 基本面: 10\n- 技術面: 15\n- 籌碼面: 0\n- 風險: 0\n- Total: 25\n\nBut that doesn't account for the weights properly.\n\nLet me try another interpretation: The weights mean that 基本面 contributes at most 30 points to the total 100. The sub-criteria determine what fraction of those 30 you get.\n\n基本面: earned 10 out of max 40 → 10/40 * 30 = 7.5\n技術面: earned 15 out of max 40 → 15/40 * 30 = 11.25\n籌碼面: earned 0 out of max 20 → 0/20 * 20 = 0\n風險: earned 0 out of max 10 → 0/10 * 20 = 0\n\nTotal: 18.75 ≈ 19\n\nHmm, but this seems too low. Let me reconsider.\n\nActually, maybe the risk category works differently. The risk category has both positive and negative points. The \"base\" might be 20 (full marks for no risk), and you subtract for risks.\n\nLet me re-interpret:\n- 風險: base 20, then:\n  - 波動<20%: +10 (bonus for low volatility)\n  - 波動>40%: -10 (penalty for high volatility)\n  - 5日漲幅>10%: -5 (penalty for overbought)\n\nSo if 波動 is 33.22% (between 20 and 40), no bonus, no penalty. 5日漲幅 -1.6%, no penalty.\n風險 score: 20 (base) + 0 + 0 + 0 = 20? \n\nHmm, but that doesn't make sense either because then the max would be 30 (20+10).\n\nI think the most straightforward interpretation is:\n- Each category has a maximum score equal to its weight percentage\n- Within each category, you earn points based on the criteria\n- The points in parentheses are the actual points earned (not fractions)\n\nSo:\n- 基本面 (max 30): 0 + 0 + 10 = 10\n- 技術面 (max 30): 0 + 10 + 5 = 15\n- 籌碼面 (max 20): 0 + 0 = 0\n- 風險 (max 20): 0 + 0 + 0 = 0\n\nTotal: 10 + 15 + 0 + 0 = 25\n\nBut wait, the sub-points for 基本面 add up to 40 (20+10+10) which exceeds the 30 max. So maybe I should cap at 30.\n\nIn this case: 10 < 30, so 基本面 = 10.\n\nTotal: 25.\n\nFor a score of 25, the recommendation would be \"避開\" or \"觀望\".\n\nLet me think about the recommendation thresholds:\n- 80-100: 積極買入\n- 60-79: 謹慎買入\n- 40-59: 觀望\n- 0-39: 避開\n\nWith a score of 25, it would be \"避開\".\n\nBut wait, let me reconsider. The market is 震盪 (consolidation/range-bound). The stock is slightly below MA20, RSI is neutral at 45, MACD is slightly positive. EPS is strong at 22.95. Revenue is growing at 15.75%.\n\nActually, I realize I might be overthinking the scoring. Let me just go with the straightforward addition:\n\n基本面: 10 (only EPS qualifies)\n技術面: 15 (MACD>0: +10, RSI 40-60: +5)\n籌碼面: 0 (no 投信連買, 融資增加 not 減少)\n風險: 0 (波動 33.22% is between 20-40, 5日漲幅 -1.6% not >10%)\n\nTotal: 25\n\nScore: 25 → 避開\n\nReason (≤30字): \"EPS強但籌碼弱、技術面中性，震盪市觀望\"\n\nWait, that's more than 30 characters. Let me count: \"EPS強但籌碼弱、技術面中性，震盪市觀望\" = E,P,S,強,但,籌,碼,弱,、,技,術,面,中,性,，,震,盪,市,觀,望 = 20 characters. OK that works.\n\nActually let me recount: \"EPS強但籌碼弱、技術面中性，震盪市觀望\"\nE-P-S-強-但-籌-碼-弱-、-技-術-面-中-性-，-震-盪-市-觀-望 = 20 chars. Good.\n\nHmm, but with score 25, should it be \"避開\"? Let me reconsider if my scoring is correct.\n\nActually, I want to reconsider the 風險 category. The way it's written:\n\"風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\"\n\nThis suggests the 風險 category starts at some base and you add/subtract. If the max is 20, maybe:\n- Base: 20\n- 波動<20%: +10 (so max 30? That doesn't work with 20% weight)\n- 波動>40%: -10\n- 5日漲幅>10%: -5\n\nOr maybe the 20% weight means the category contributes 20 points max, and:\n- If 波動<20%: you get 10 out of 20\n- If 波動>40%: you get -10 (or 10 out of 20)\n- If 5日漲幅>10%: you lose 5\n\nI think the simplest interpretation: just add the points.\n風險: 0 (no conditions met)\n\nSo total remains 25.\n\nLet me go with score 25, recommendation \"避開\".\n\nWait, actually I want to reconsider. Is 25 really \"避開\"? In a 震盪 market, with decent EPS and positive MACD, maybe \"觀望\" is more appropriate. But the rules say to score based on the criteria, and 25 is in the 0-39 range.\n\nLet me set thresholds:\n- ≥75: 積極買入\n- 50-74: 謹慎買入\n- 30-49: 觀望\n- <30: 避開\n\n25 < 30, so \"避開\".\n\nFinal answer:\n- ev_score: 25\n- recommendation: \"避開\"\n- reason: \"EPS強但籌碼空、技術面偏弱，震盪市不利\"\n\nLet me count: E-P-S-強-但-籌-碼-空-、-技-術-面-偏-弱-，-震-盪-市-不-利 = 20 chars. Good.\n\nActually, let me reconsider whether the score should be higher. Let me re-examine:\n\nThe 技術面 has:\n- 價>MA20: 338.5 vs 338.98 → False → 0\n- MACD>0: 2.0 > 0 → +10\n- RSI 45.11: in 40-60 range → +5\n- RSI<30: No\n- RSI>70: No\nTotal: 15\n\nThe 基本面:\n- 營收 15.75% < 20%: 0\n- 毛利率 5.54% < 30%: 0\n- EPS 22.95 > 5: +10\nTotal: 10\n\n籌碼面:\n- 投信連買 0天, not >3: 0\n- 融資變化 220張 (positive = increase), not 減少: 0\nTotal: 0\n\n風險:\n- 波動 33.22%: not <20%, not >40%: 0\n- 5日漲幅 -1.6%: not >10%: 0\nTotal: 0\n\nGrand total: 10 + 15 + 0 + 0 = 25\n\nI'll go with 25 and \"避開\".\n</think>\n\n{\"ev_score\": 25, \"recommendation\": \"避開\", \"reason\": \"EPS強但籌碼空、技術面偏弱，震盪市不利\"}",
+      "risk_level": "🟠 高風險",
+      "trading_plan": {
+        "entry_type": "none",
+        "entry_zone": null,
+        "stop_loss": null,
+        "take_profit_1": null,
+        "take_profit_2": null,
+        "risk_reward": null,
+        "action_now": "不進場",
+        "status": "🔴 無交易計畫",
+        "exit_strategy": null
+      }
     },
     {
       "code": "3711",
@@ -165,25 +386,36 @@
       "industry": "半導體",
       "regime": "震盪",
       "revenue_yoy": 11.47,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
-      "inst_buy_days": 4,
-      "margin_change": -696,
-      "change_5d": 17.06,
-      "volatility": 53.65,
-      "ma5": 642.6,
-      "ma20": 617.1,
-      "rsi": 72.81,
-      "macd": 17.37,
+      "gross_margin": 19.49,
+      "net_margin": 8.78,
+      "eps": 13.82,
+      "inst_buy_days": 0,
+      "margin_change": -195,
+      "change_5d": 13.84,
+      "volatility": 52.98,
+      "ma5": 677.2,
+      "ma20": 626.85,
+      "rsi": 73.82,
+      "macd": 23.88,
       "price_above_ma20": true,
-      "current_price": 693.0,
+      "current_price": 699.0,
       "data_source": "finmind",
-      "ev_score": 38,
-      "recommendation": "回檔觀察",
-      "reason": "投信連買4天籌碼乾淨，但RSI超買、波動率53%過熱，短期追高風險大，宜回檔再介入（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze 日月光投控 (3711) based on the provided data.\n\n**基本面 (權重 30%)**\n- 月營收年增率：11.47% → 未達 20%，不給 +20 分。但為正成長，給部分分數。\n- 毛利率：數據缺失 → 不評分，標註缺失\n- 淨利率：數據缺失 → 不評分，標註缺失\n- EPS：數據缺失 → 不評分，標註缺失\n\n基本面評分：營收 YoY 11.47% 為正但未達 20%，給約 10 分（滿分 40 分中）。毛利率、EPS 缺失不計。\n基本面得分：10/40 → 權重後 10 × 0.3 = 3 分\n\n等等，讓我重新理解評分邏輯。評分是 0-100 的總分，各維度有權重。\n\n讓我重新計算：\n\n**基本面（權重 30%）**\n- 營收年增率 11.47%：未達 20%，不給 +20。但為正成長，給部分分數，約 +10\n- 毛利率：數據缺失 → 不計\n- EPS：數據缺失 → 不計\n- 基本面滿分約 40 分（20+10+10）\n- 實際得分：10/40\n- 權重後：10/40 × 30 = 7.5 分\n\n**技術面（權重 30%）**\n- 股價 693 > MA20 617.1：+15\n- MACD 17.37 > 0：+10\n- RSI 72.81 > 70（超買）：-10\n- 技術面滿分約 30 分（15+10+5 或 10）\n- 實際得分：15 + 10 - 10 = 15\n- 權重後：15/30 × 30 = 15 分\n\n**籌碼面（權重 20%）**\n- 投信連續買超 4 天 > 3 天：+15\n- 融資減少 -696 張（散戶出清）：+5\n- 籌碼面滿分約 20 分\n- 實際得分：15 + 5 = 20\n- 權重後：20/20 × 20 = 20 分\n\n**風險控管（權重 20%）**\n- 波動率 53.65% > 40%：-10\n- 5 日漲跌幅 17.06% > 10%：-5（過熱）\n- 風險控管滿分約 10 分（+10）\n- 實際得分：-10 - 5 = -15\n- 權重後：max(0, -15/10 × 20) = 0 分？\n\n等等，讓我重新思考評分方式。評分邏輯給的是加分/減分項目，不是百分比。讓我直接加總再乘以權重。\n\n重新理解：每個維度有滿分，然後乘以權重得到最終分數。\n\n**基本面（滿分 40，權重 30%）**\n- 營收 YoY 11.47% < 20%：不給 +20，但正成長給 +10\n- 毛利率缺失：不計\n- EPS 缺失：不計\n- 得分：10/40\n- 加權：10/40 × 30 = 7.5\n\n**技術面（滿分 30，權重 30%）**\n- 股價 > MA20：+15\n- MACD > 0：+10\n- RSI 72.81 > 70：-10\n- 得分：15 + 10 - 10 = 15/30\n- 加權：15/30 × 30 = 15\n\n**籌碼面（滿分 20，權重 20%）**\n- 投信連買 4 天 > 3：+15\n- 融資減少：+5\n- 得分：20/20\n- 加權：20/20 × 20 = 20\n\n**風險控管（滿分 10，權重 20%）**\n- 波動率 53.65% > 40%：-10\n- 5 日漲幅 17.06% > 10%：-5\n- 得分：-15，但最低 0\n- 加權：0/10 × 20 = 0\n\n總分：7.5 + 15 + 20 + 0 = 42.5\n\n嗯，但這樣感覺偏低。讓我重新看看。\n\n實際上評分邏輯可能是直接加總所有加分減分，然後映射到 0-100。\n\n讓我換個方式：\n\n所有加分項滿分：\n- 基本面：20 + 10 + 10 = 40\n- 技術面：15 + 10 + 10(超賣) = 35（或 15+10+5=30）\n- 籌碼面：15 + 5 = 20\n- 風險控管：10\n\n總滿分約 100\n\n減分項：\n- RSI > 70：-10\n- 波動率 > 40%：-10\n- 5日漲幅 > 10%：-5\n\n實際得分：\n- 基本面：營收 11.47% 正成長但未達 20%，給 +10（部分分）。毛利率、EPS 缺失不計。= 10\n- 技術面：+15（>MA20）+10（MACD>0）-10（RSI>70）= 15\n- 籌碼面：+15（投信連買4天）+5（融資減少）= 20\n- 風險控管：-10（波動率>40%）-5（5日漲幅>10%）= -15\n\n總分：10 + 15 + 20 + (-15) = 30\n\n但最低應該是 0。所以 30 分。\n\n等等，這樣似乎太嚴了。讓我重新考慮。\n\n波動率 53.65% 確實很高，5日漲幅 17% 也過熱。RSI 72.81 超買。這些都是明確的風險訊號。\n\n但籌碼面很好（投信連買4天 + 融資減少），技術面突破 MA20 且 MACD 為正。\n\n基本面營收正成長 11.47% 但不算強。\n\n綜合来看，這是一檔短期過熱但中期趨勢向好的股票。投信持續買超是正面訊號，但 RSI 超買 + 高波動率 + 5日漲幅過大，短期追高風險極高。\n\n評分：\n- 基本面：10（營收正成長但未達20%，其他缺失）\n- 技術面：15（突破MA20 + MACD正，但RSI超買扣分）\n- 籌碼面：20（投信連買 + 融資減少，滿分）\n- 風險控管：-15（波動率過高 + 5日漲幅過熱）\n\n總分：10 + 15 + 20 - 15 = 30\n\n但考慮到市場體制是「震盪」，且波動率 > 40% 在震盪市中風險更高。\n\n30 分對應「避開」或「回檔觀察」。\n\n考慮到：\n- 籌碼面極佳（投信連買4天 + 融資減少 = 散戶洗盤籌碼乾淨）\n- 技術面中期向好（>MA20, MACD>0）\n- 但短期嚴重過熱（RSI 72.81, 5日漲17%, 波動率53.65%）\n\n我傾向給 40-45 分，建議「回檔觀察」。因為籌碼面確實很好，但短期追高風險太大。\n\n讓我再調整：\n- 基本面：營收 11.47% 給 +10（滿分20的一半）\n- 技術面：+15 +10 -10 = 15\n- 籌碼面：+15 +5 = 20\n- 風險控管：-10 -5 = -15\n\n總分 = 10 + 15 + 20 - 15 = 30\n\n嗯，30 分。但考慮到籌碼面的正面訊號很強（台股邏輯：融資大減 + 股價不跌 = 散戶洗盤，籌碼乾淨），而且投信連買4天，這些在震盪市中是重要的正面訊號。\n\n我給 38 分吧，建議「回檔觀察」。\n\n理由：投信連買籌碼乾淨，但RSI超買且波動率過高，短期追高風險大，宜等回檔。\n\n缺失欄位：毛利率、淨利率、EPS\n\n最終：\n- ev_score: 38\n- recommendation: 回檔觀察\n- reason: \"投信連買籌碼乾淨，但RSI超買、波動率過高，短期追高風險大，宜待回檔再介入（缺失欄位：毛利率、淨利率、EPS）\"\n\n等等，reason 要 50 字內。讓我數一下。\n\n\"投信連買籌碼乾淨，但RSI超買、波動率過高，短期追高風險大，宜待回檔再介入\" = 33字 + 缺失標註\n\n加上缺失標註會超50字。讓我精簡。\n\n\"籌碼乾淨但RSI超買、波動率過高，短期過熱，宜回檔再介入（缺失：毛利率、淨利率、EPS）\"\n\n數一下：籌碼乾淨但RSI超買、波動率過高，短期過熱，宜回檔再介入 = 26字 + （缺失：毛利率、淨利率、EPS）= 約15字 = 41字。可以。\n\n或者更精簡：\"投信連買籌碼佳，但RSI超買、波動率>50%過熱，宜回檔觀察（缺失：毛利率、EPS）\"\n\n讓我最終確定：ev_score 38, recommendation 回檔觀察。\n</think>\n\n{\n  \"ev_score\": 38,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"投信連買4天籌碼乾淨，但RSI超買、波動率53%過熱，短期追高風險大，宜回檔再介入（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🔴 極高風險"
+      "ev_score": 15,
+      "recommendation": "避開",
+      "reason": "RSI超買、波動過高、短線漲幅大，追高風險高",
+      "raw_response": "\n<think>\nLet me analyze 日月光投控 (3711) step by step.\n\n**基本面 (30%):**\n- 營收YoY 11.47%: >20%? No. So +0 for this criterion.\n- 毛利率 19.49%: >30%? No. So +0.\n- EPS 13.82: >5? Yes. So +10.\n- 基本面得分: 10/30\n\n**技術面 (30%):**\n- 現價 699.0 > MA20 626.85: Yes. +15\n- MACD 23.88 > 0: Yes. +10\n- RSI 73.82: 40-60? No. <30? No. >70? Yes. -10\n- 技術面得分: 15 + 10 - 10 = 15/30\n\n**籌碼面 (20%):**\n- 投信連買 0 天: >3天? No. +0\n- 融資變化 -195 張: 融資減少. +5\n- 籌碼面得分: 5/20\n\n**風險 (20%):**\n- 波動率 52.98%: <20%? No. >40%? Yes. -10\n- 5日漲幅 13.84%: >10%? Yes. -5\n- 風險得分: -10 - 5 = -15/20\n\nWait, let me reconsider the scoring. The risk section seems to be a modifier. Let me re-read the rules.\n\n評分 0-100：\n- 基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\n- 技術面30%（價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10）\n- 籌碼面20%（投信連買>3天 +15、融資減少 +5）\n- 風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\n\nSo the total score is the sum of all these points, capped at 0-100.\n\nLet me recalculate:\n- 基本面: 0 (營收) + 0 (毛利率) + 10 (EPS) = 10\n- 技術面: 15 (價>MA20) + 10 (MACD>0) + 0 (RSI not in 40-60) + 0 (RSI not <30) + (-10) (RSI>70) = 15\n- 籌碼面: 0 (投信連買0天) + 5 (融資減少) = 5\n- 風險: 0 (波動not <20%) + (-10) (波動>40%) + (-5) (5日漲幅>10%) = -15\n\nTotal: 10 + 15 + 5 + (-15) = 15\n\nHmm, that seems very low. Let me reconsider.\n\nWait, the percentages (30%, 30%, 20%, 20%) might mean the maximum score for each category. Let me re-read.\n\nActually, I think the scoring is:\n- 基本面 max 30 points: 營收>20% gives +20, 毛利率>30% gives +10, EPS>5 gives +10. Max would be 40 but capped at 30? Or the 30% is just the weight.\n\nLet me re-interpret: The total score is 0-100, and each category has a weight:\n- 基本面 30%: max 30 points\n- 技術面 30%: max 30 points\n- 籌碼面 20%: max 20 points\n- 風險 20%: max 20 points\n\nBut the points listed seem to be the actual points to add/subtract, not percentages. Let me just add them up:\n\n基本面: 0 + 0 + 10 = 10\n技術面: 15 + 10 + 0 + 0 + (-10) = 15\n籌碼面: 0 + 5 = 5\n風險: 0 + (-10) + (-5) = -15\n\nTotal: 10 + 15 + 5 + (-15) = 15\n\nThat gives 15/100. That's very low.\n\nHmm, but wait. Let me reconsider. Maybe the risk section is meant to be a penalty on the total, not a separate category. Or maybe the scoring is:\n\nTotal = 基本面 + 技術面 + 籌碼面 + 風險\n\nWhere each can be negative.\n\n10 + 15 + 5 + (-15) = 15\n\nSo the score is 15.\n\nWith a score of 15, the recommendation would be \"避開\" (avoid).\n\nActually, let me reconsider. A score of 15 out of 100 is very low. The stock is overbought (RSI > 70), high volatility, and recent sharp gains. The fundamentals are mediocre. This does suggest caution.\n\nBut wait - the stock is above MA20, MACD is positive, EPS is good. The main negatives are RSI overbought, high volatility, and recent sharp rally.\n\nLet me think about the recommendation:\n- 積極買入: probably 80+\n- 謹慎買入: probably 60-79\n- 觀望: probably 40-59\n- 避開: probably <40\n\nWith a score of 15, it would be \"避開\".\n\nActually, let me reconsider whether the score should be floored at 0. 15 is positive, so it stays at 15.\n\nReason (≤30字): \"RSI超買、波動過高、短線漲幅大，追高風險高\"\n\nLet me count: RSI超買、波動過高、短線漲幅大，追高風險高 = 19 characters (counting Chinese chars and punctuation). That's within 30.\n\nWait, let me recount: R-S-I-超-買-、-波-動-過-高-、-短-線-漲-幅-大-，-追-高-風-險-高 = 22 characters. OK, within 30.\n\nLet me finalize:\n- ev_score: 15\n- recommendation: \"避開\"\n- reason: \"RSI超買、波動過高、短線漲幅大，追高風險高\"\n</think>\n\n{\"ev_score\": 15, \"recommendation\": \"避開\", \"reason\": \"RSI超買、波動過高、短線漲幅大，追高風險高\"}",
+      "risk_level": "🔴 極高風險",
+      "trading_plan": {
+        "entry_type": "none",
+        "entry_zone": null,
+        "stop_loss": null,
+        "take_profit_1": null,
+        "take_profit_2": null,
+        "risk_reward": null,
+        "action_now": "不進場",
+        "status": "🔴 無交易計畫",
+        "exit_strategy": null
+      }
     },
     {
       "code": "3017",
@@ -191,25 +423,36 @@
       "industry": "電子",
       "regime": "震盪",
       "revenue_yoy": 4.79,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
-      "inst_buy_days": 2,
-      "margin_change": 5,
-      "change_5d": 8.83,
-      "volatility": 60.27,
-      "ma5": 3319.0,
-      "ma20": 3340.25,
-      "rsi": 52.78,
-      "macd": 34.17,
+      "gross_margin": 28.87,
+      "net_margin": 17.38,
+      "eps": 75.02,
+      "inst_buy_days": 3,
+      "margin_change": 2,
+      "change_5d": 11.62,
+      "volatility": 57.84,
+      "ma5": 3452.0,
+      "ma20": 3366.75,
+      "rsi": 49.43,
+      "macd": 50.52,
       "price_above_ma20": true,
-      "current_price": 3390.0,
+      "current_price": 3555.0,
       "data_source": "finmind",
-      "ev_score": 48,
-      "recommendation": "回檔觀察",
-      "reason": "技術面偏多但波動率60%過高，基本面數據不足，回檔再戰（缺失：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze the stock 3017 (奇鋐) based on the provided data.\n\n**Industry**: 電子 (Electronics) - use semiconductor/electronics evaluation criteria\n\n**Fundamental (30%)**:\n- 月營收年增率：4.79% → Less than 20%, so no +20. It's positive but modest. Maybe +5 for positive growth.\n- 毛利率：數據缺失 → Cannot use as evidence, note as missing\n- 淨利率：數據缺失 → Cannot use as evidence, note as missing\n- EPS：數據缺失 → Cannot use as evidence, note as missing\n\nFundamental score: 營收 YoY 4.79% is positive but below 20%. I'll give a small positive. Let's say +5 out of 40 possible points for fundamentals. Actually, let me re-read the scoring logic:\n- 營收年增率 > 20%：+20 分 → 4.79% doesn't qualify\n- 毛利率 > 30%：+10 分 → 數據缺失, cannot evaluate\n- EPS > 5：+10 分 → 數據缺失, cannot evaluate\n\nSo fundamentals: only 營收 is available, and it's 4.79% (positive but low). I'll give maybe +5 for positive growth. Out of 40 max (30% weight × 100). Actually the scoring seems to be additive points, not percentage of weight. Let me re-read.\n\nThe scoring logic gives specific point values. Let me calculate:\n\n**Fundamental (weight 30%)**:\n- 營收 YoY 4.79%: Not > 20%, so 0 points from that criterion. But it's positive, maybe a small bonus. I'll give +5 for positive growth.\n- 毛利率: 數據缺失 → skip\n- EPS: 數據缺失 → skip\n- 淨利率: 數據缺失 → skip\nFundamental raw: ~5 points (out of 40 max)\n\n**Technical (weight 30%)**:\n- 股價 > MA20: True (3390 > 3340.25) → +15\n- MACD > 0: 34.17 > 0 → +10\n- RSI 52.78: In 40-60 range (neutral) → +5\n- 5日漲跌幅 8.83%: < 10%, no penalty\nTechnical raw: 15 + 10 + 5 = 30 points (out of 40 max)\n\n**籌碼面 (weight 20%)**:\n- 投信連續買超 2天: Not > 3 days, so no +15. Maybe +5 for some buying.\n- 融資增減：5張 → This is a very small increase (5 contracts). Not a significant decrease. Actually, 融資增減 5張 means financing increased by 5 contracts, which is negligible. Not a clear signal of 散戶出清. I'll give 0 or minimal.\n籌碼面 raw: ~5 points (out of 20 max)\n\n**風險控管 (weight 20%)**:\n- 波動率 60.27%: > 40% → -10\n- 5日漲跌幅 8.83%: < 10%, no penalty\n- 市場體制：震盪\n風險 raw: -10 points (out of 20 max)\n\nNow let me calculate the weighted score:\n- Fundamental: 5/40 × 30 = 3.75\n- Technical: 30/40 × 30 = 22.5\n- 籌碼面: 5/20 × 20 = 5\n- 風險: -10/20 × 20 = -10\n\nTotal: 3.75 + 22.5 + 5 + (-10) = 21.25\n\nHmm, that seems low. Let me reconsider.\n\nActually, I think the scoring is meant to be additive, not weighted as a percentage. Let me re-read the scoring logic.\n\nLooking at the examples:\n- Example 1: 營收+35%, 毛利率42%, 股價>MA20, RSI55, 投信連買5天, 波動率18% → Score 85\n  - Fundamental: 20+10+10(EPS assumed >5) = 40\n  - Technical: 15+10+5 = 30\n  - 籌碼: 15\n  - 風險: 10\n  - Total: 95? But score is 85. So maybe there's some adjustment.\n\n- Example 2: 營收-15%, 毛利率18%, 股價<MA20, RSI75, 投信0天, 波動率45% → Score 25\n  - Fundamental: 0+0+0 = 0\n  - Technical: 0+0+(-10) = -10\n  - 籌碼: 0\n  - 風險: -10\n  - Total: -20? But score is 25.\n\nHmm, the examples don't perfectly match a strict additive model. Let me think of it as a holistic assessment.\n\nLet me reconsider with a more holistic approach:\n\nFor 奇鋐 (3017):\n- 營收 YoY 4.79%: modest positive, not strong\n- 毛利率/EPS: missing\n- 股價 > MA20: Yes, slightly above (3390 vs 3340.25)\n- MACD positive: Yes\n- RSI 52.78: neutral zone\n- 5日漲幅 8.83%: approaching 10% but not over\n- 波動率 60.27%: Very high! This is a major risk factor\n- 投信連買 2天: Some institutional interest but not strong\n- 融資增減 5張: Negligible\n- 市場體制: 震盪\n\nThe high volatility (60.27%) is a significant concern. For an electronics stock in a volatile market, this is risky.\n\nLet me score more carefully:\n\nFundamental (30% weight, max 30 points):\n- 營收 4.79%: positive but weak → 5/30\n- 毛利率 missing: skip\n- EPS missing: skip\nScore: 5\n\nTechnical (30% weight, max 30 points):\n- 股價 > MA20: +15\n- MACD > 0: +10\n- RSI 40-60: +5\nScore: 30\n\n籌碼面 (20% weight, max 20 points):\n- 投信連買 2天 (not >3): +5\n- 融資增減 5張 (negligible increase): 0\nScore: 5\n\n風險控管 (20% weight, max 20 points):\n- 波動率 60.27% > 40%: -10\n- 5日漲幅 8.83% < 10%: 0\nScore: -10 (or maybe 0 with -10 penalty)\n\nTotal: 5 + 30 + 5 + (-10) = 30\n\nHmm, but the examples suggest scores are on a 0-100 scale. Let me think about this differently.\n\nMaybe the base is 50 (neutral), and then adjustments:\n- Fundamental: +5 (modest positive)\n- Technical: +15 (above MA20, MACD positive, RSI neutral)\n- 籌碼: +5 (some institutional buying)\n- 風險: -15 (very high volatility)\n\nTotal: 50 + 5 + 15 + 5 - 15 = 60\n\nOr maybe:\n- Base 50\n- 營收 positive but low: +3\n- 股價 > MA20: +5\n- MACD > 0: +3\n- RSI neutral: +2\n- 投信連買 2天: +3\n- 波動率 > 40%: -10\n- 5日漲幅接近10%: -2\n\nTotal: 50 + 3 + 5 + 3 + 2 + 3 - 10 - 2 = 54\n\nI think a score around 45-55 is appropriate. The technicals are decent (above MA20, MACD positive, RSI neutral), but the extremely high volatility (60.27%) is a major drag. The fundamental data is mostly missing, and the revenue growth is modest. The 籌碼面 shows some institutional interest but not strong.\n\nGiven the high volatility in a 震盪 market, I'd lean toward \"回檔觀察\" (wait for pullback to observe).\n\nLet me settle on a score of 48. The technicals are supportive but the volatility is a major risk. The missing fundamental data limits confidence.\n\nActually, let me reconsider. The 波動率 of 60.27% is extremely high. In the scoring logic, >40% gives -10. This is a significant penalty. Combined with the 震盪 market regime, this stock is risky.\n\nBut the technical setup is actually decent: above MA20, MACD positive, RSI in neutral zone. The 5-day gain of 8.83% is approaching the 10% overheat threshold but hasn't crossed it.\n\nI'll go with:\n- EV Score: 48\n- Recommendation: 回檔觀察\n- Reason: 技術面偏多但波動率過高，基本面數據不足，建議回檔再評估（缺失欄位：毛利率、淨利率、EPS）\n\nWait, the reason should be 50 characters or less in Chinese. Let me count.\n\n\"技術面偏多但波動率過高，基本面數據不足，建議回檔再評估\" - that's about 25 characters. Good.\n\nBut I need to note the missing fields. Let me adjust:\n\"技術面偏多但波動率60%過高，基本面數據不足，回檔再戰（缺失：毛利率、EPS）\"\n\nLet me count: 技術面偏多但波動率60%過高，基本面數據不足，回檔再戰（缺失：毛利率、EPS）\nThat's about 30 characters. Should be fine within 50.\n\nActually, re-reading the requirement: \"50 字內\" means within 50 characters. Let me make sure.\n\n\"技術面偏多但波動率過高，基本面數據不足，回檔再戰（缺失：毛利率、EPS）\" \n技(1)術(2)面(3)偏(4)多(5)但(6)波(7)動(8)率(9)過(10)高(11)，(12)基(13)本(14)面(15)數(16)據(17)不(18)足(19)，(20)回(21)檔(22)再(23)戰(24)（(25)缺(26)失(27)：(28)毛(29)利(30)率(31)、(32)E(33)P(34)S(35)）(36)\n\nThat's 36 characters. Good, within 50.\n\nLet me finalize: ev_score: 48, recommendation: 回檔觀察\n</think>\n\n{\n  \"ev_score\": 48,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"技術面偏多但波動率60%過高，基本面數據不足，回檔再戰（缺失：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🔴 極高風險"
+      "ev_score": 25,
+      "recommendation": "避開",
+      "reason": "技術偏多但波動過高、基本面偏弱，短線追高風險大",
+      "raw_response": "\n<think>\nLet me analyze 奇鋐 (3017) based on the given rules.\n\n**基本面 (30%):**\n- 營收YoY 4.79%: Not >20%, so +0\n- 毛利率 28.87%: Not >30%, so +0\n- EPS 75.02: >5, so +10\n- 基本面得分: 10/30\n\n**技術面 (30%):**\n- 現價 3555.0 > MA20 3366.75 (站上:True): +15\n- MACD 50.52 > 0: +10\n- RSI 49.43: in 40-60 range: +5\n- 技術面得分: 30/30\n\n**籌碼面 (20%):**\n- 投信連買 3 天: The rule says 投信連買>3天 +15. 3天 is not >3天, so +0\n- 融資變化 2 張: This is a very small change. The rule says 融資減少 +5. 2張 is essentially neutral/very small. I'll consider it as not significantly decreasing, so +0.\n- 籌碼面得分: 0/20\n\nWait, let me reconsider. 投信連買3天 - the rule says >3天 gets +15. 3天 is not >3天. So 0 points.\n\n融資變化 2張 - this is a very minor change. Not clearly \"融資減少\" in a meaningful way. I'll give 0.\n\n**風險 (20%):**\n- 波動率 57.84%: >40%, so -10\n- 5日漲幅 11.62%: >10%, so -5\n- 風險得分: -15/20\n\nWait, the risk score can be negative? Let me re-read the rules. The scoring is:\n- 波動<20% +10\n- 波動>40% -10\n- 5日漲幅>10% -5\n\nSo risk score = -10 + (-5) = -15\n\n**Total Score:**\n- 基本面: 10\n- 技術面: 30\n- 籌碼面: 0\n- 風險: -15\n\nTotal = 10 + 30 + 0 + (-15) = 25\n\nHmm, that seems low. Let me reconsider.\n\nActually, let me re-read the scoring rules more carefully:\n\n評分 0-100：\n- 基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\n- 技術面30%（價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10）\n- 籌碼面20%（投信連買>3天 +15、融資減少 +5）\n- 風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\n\nSo the maximum for each category:\n- 基本面: max 40 (20+10+10) but weighted at 30%... \n\nWait, I think the percentages are the weights, and the points within each category are the raw scores. Let me re-interpret:\n\nActually, I think the scoring is:\n- 基本面 contributes up to 30 points (weighted 30%)\n- 技術面 contributes up to 30 points (weighted 30%)\n- 籌碼面 contributes up to 20 points (weighted 20%)\n- 風險 contributes up to 20 points (weighted 20%)\n\nBut the specific criteria give points within each category. Let me re-read:\n\n基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\n- Max possible: 20+10+10 = 40, but the category is worth 30%\n- Actually, I think the points listed ARE the points for that category, and the percentage is just indicating the weight.\n\nHmm, let me think about this differently. Maybe the total is just the sum of all applicable points:\n\n基本面: EPS>5 → +10 (營收 not >20%, 毛利率 not >30%)\n技術面: 價>MA20 → +15, MACD>0 → +10, RSI 40-60 → +5 = +30\n籌碼面: 投信連買3天 (not >3) → 0, 融資變化2張 (not clearly decreasing) → 0 = 0\n風險: 波動>40% → -10, 5日漲幅>10% → -5 = -15\n\nTotal = 10 + 30 + 0 + (-15) = 25\n\nSo the score is 25/100.\n\nWith a score of 25, the recommendation would be \"避開\" or \"觀望\".\n\nLet me think about the recommendation levels:\n- 積極買入: probably 70+\n- 謹慎買入: probably 50-69\n- 觀望: probably 30-49\n- 避開: probably <30\n\n25 would be \"避開\" or borderline \"觀望\".\n\nActually, let me reconsider. The stock is above MA20, MACD is positive, RSI is neutral. The main negatives are high volatility and recent sharp rally. The fundamentals are mediocre (low revenue growth, margin below 30%).\n\nI'll go with 觀望 since the technicals are decent but risk is high and fundamentals are weak. Actually 25 is quite low, maybe 避開 is more appropriate.\n\nLet me settle on 觀望 because the technicals show some strength (above MA20, positive MACD) but the risk factors (high volatility, recent spike) and weak fundamentals make it not a buy.\n\nActually, 25/100 is quite low. I'll go with \"避開\".\n\nWait, let me reconsider the 籌碼面. 投信連買3天 - the rule says >3天. 3 is not >3. So 0 points. But it's still a positive signal. However, I must follow the rules strictly.\n\n融資變化 2張 - this is extremely small. In the context of 奇鋐 which trades at 3555, 2張 (200 shares) is negligible. I'll treat this as neutral, not \"融資減少\" in a meaningful way.\n\nFinal score: 25\n\nRecommendation: 避開 (score < 30)\n\nReason (≤30字): \"技術偏多但波動過高、基本面偏弱，短線追高風險大\"\n\nLet me count: 技術偏多但波動過高、基本面偏弱，短線追高風險大 = 22 characters. Good.\n\nWait, let me recount: 技(1)術(2)偏(3)多(4)但(5)波(6)動(7)過(8)高(9)、(10)基(11)本(12)面(13)偏(14)弱(15)，(16)短(17)線(18)追(19)高(20)風(21)險(22)大(23) = 23 characters. Good, under 30.\n</think>\n\n{\"ev_score\": 25, \"recommendation\": \"避開\", \"reason\": \"技術偏多但波動過高、基本面偏弱，短線追高風險大\"}",
+      "risk_level": "🔴 極高風險",
+      "trading_plan": {
+        "entry_type": "none",
+        "entry_zone": null,
+        "stop_loss": null,
+        "take_profit_1": null,
+        "take_profit_2": null,
+        "risk_reward": null,
+        "action_now": "不進場",
+        "status": "🔴 無交易計畫",
+        "exit_strategy": null
+      }
     },
     {
       "code": "1504",
@@ -217,25 +460,36 @@
       "industry": "重電",
       "regime": "震盪",
       "revenue_yoy": -2.18,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
+      "gross_margin": 24.12,
+      "net_margin": 11.19,
+      "eps": 2.76,
       "inst_buy_days": 0,
-      "margin_change": 31,
-      "change_5d": -0.58,
-      "volatility": 23.59,
-      "ma5": 69.66,
-      "ma20": 70.99,
-      "rsi": 34.38,
-      "macd": -0.9,
+      "margin_change": -121,
+      "change_5d": -3.39,
+      "volatility": 20.49,
+      "ma5": 68.86,
+      "ma20": 70.61,
+      "rsi": 31.68,
+      "macd": -1.0,
       "price_above_ma20": false,
-      "current_price": 68.6,
+      "current_price": 68.5,
       "data_source": "finmind",
-      "ev_score": 30,
-      "recommendation": "回檔觀察",
-      "reason": "股價低於均線且法人未介入，RSI近超賣待反轉確認（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze the stock 1504 (東元) based on the provided data.\n\n**Industry**: 重電 (Heavy Electrical) - This falls under 傳產/防禦 category, so I should focus on stock price position and chip structure, with reduced weight on revenue.\n\n**Data Assessment**:\n\n**基本面 (30% weight)**:\n- 月營收年增率：-2.18% (negative, but for 傳產/防禦, revenue weight is halved)\n- 毛利率：數據缺失 → cannot use as negative evidence\n- 淨利率：數據缺失 → cannot use as negative evidence\n- EPS：數據缺失 → cannot use as negative evidence\n\nFor 傳產/防禦, revenue weight is halved. Revenue YoY is -2.18%, which is slightly negative. Since it's 傳產, I'll give it a small negative.\n- Revenue YoY -2.18%: slightly negative, but for 傳產 weight is halved. Maybe -5 points out of the 20 available for revenue.\n- Gross margin: missing → skip\n- EPS: missing → skip\n\n基本面 score: Let's say out of 30 points max:\n- Revenue YoY -2.18%: For 傳產, weight halved. Normally >20% gives +20, but it's negative. I'll give maybe -3 (halved penalty).\n- Gross margin: missing → 0\n- EPS: missing → 0\nTotal 基本面: around 10-12 out of 30 (neutral to slightly negative)\n\nActually, let me re-read the scoring logic. The scoring gives points for positive conditions. If conditions aren't met, you just don't get points. But for negative values, I should consider them as negative evidence.\n\nLet me restructure:\n\n**基本面 (30%)**:\n- 營收 YoY -2.18%: Not >20%, so no +20. It's negative, so slight negative. For 傳產, weight halved. Let's say -3.\n- 毛利率: 數據缺失 → skip (not negative evidence)\n- EPS: 數據缺失 → skip (not negative evidence)\n- 淨利率: 數據缺失 → skip\n\n基本面 raw score: Let's say 8/30 (slightly negative due to revenue decline, but most data missing so can't penalize much)\n\n**技術面 (30%)**:\n- 股價 68.6 < MA20 70.99: No +15\n- MACD -0.9 < 0: No +10\n- RSI 34.38: Between 30-40, not in 40-60 range, not <30, not >70. It's approaching oversold but not quite. Maybe +3 (close to oversold)\n- 5日漲跌幅 -0.58%: Not >10%, no penalty\n- 20日波動率 23.59%: Between 20-40%, neutral\n\n技術面 raw score: \n- Price below MA20: 0\n- MACD negative: 0\n- RSI 34.38: close to oversold, maybe +3\n- No overheat penalty\nTotal: around 5/30\n\n**籌碼面 (20%)**:\n- 投信連續買超：0天 → No +15\n- 融資增減：31張 (positive, meaning 融資增加) → This is NOT 融資減少, so no +5. Actually, 融資增加 means retail investors are adding, which is slightly negative for chip structure.\n\n籌碼面 raw score: around 3/20 (no institutional buying, retail adding)\n\n**風險控管 (20%)**:\n- 波動率 23.59%: Between 20-40%, not <20% so no +10, not >40% so no -10. Neutral.\n- 5日漲跌幅 -0.58%: Not >10%, no penalty\n- 市場體制：震盪 → neutral\n\n風險控管 raw score: around 10/20 (neutral)\n\n**Total EV Score**:\n- 基本面: 8/30\n- 技術面: 5/30\n- 籌碼面: 3/20\n- 風險控管: 10/20\n\nTotal: 26/100\n\nHmm, that seems quite low. Let me reconsider.\n\nActually, let me think about this more carefully with the 傳產/防禦 lens:\n\nFor 傳產/防禦:\n- 股價位置與籌碼為主\n- 營收權重減半\n\nThe stock is at 68.6, below MA20 (70.99) and MA5 (69.66). RSI at 34.38 is approaching oversold. MACD is negative. This suggests the stock is in a downtrend but approaching a potential bottom.\n\nFor 傳產 in 震盪 market:\n- The stock is below moving averages (negative technical)\n- RSI approaching oversold (potential bounce)\n- No institutional support (0 days)\n- Retail adding (融資+31張) - slightly negative\n- Revenue slightly declining (-2.18%) - minor negative for 傳產\n- Volatility moderate at 23.59%\n\nI think a score around 30-38 would be appropriate. Let me settle on 32.\n\nRecommendation: 回檔觀察 (the stock is in a pullback, RSI approaching oversold, but no clear catalyst or institutional support)\n\nReason: \"股價低於均線，法人未介入，RSI近超賣待反轉訊號（缺失欄位：毛利率、淨利率、EPS）\"\n\nLet me count characters... that's about 35 characters in Chinese. Good, under 50.\n\nWait, let me recalculate more carefully:\n\n**基本面 (30%)** - 傳產, revenue weight halved:\n- Revenue YoY -2.18%: For 傳產, this is a minor negative. Normally >20% = +20, but it's negative. Halved weight means the penalty is also halved. Let's say -3 out of the revenue component.\n- Gross margin: missing → 0 (can't penalize)\n- EPS: missing → 0 (can't penalize)\n- Net margin: missing → 0 (can't penalize)\n\nBase score for 基本面: Let's say 10/30 (neutral baseline minus small revenue penalty)\n\n**技術面 (30%)**:\n- Price < MA20: 0 (no +15)\n- MACD < 0: 0 (no +10)\n- RSI 34.38: Not in 40-60, not <30, not >70. It's in the 30-40 range. I'll give +3 (approaching oversold, potential value)\n- 5-day change -0.58%: no penalty\n- Volatility 23.59%: neutral\n\n技術面: 3/30\n\n**籌碼面 (20%)**:\n- 投信連買 0天: 0\n- 融資+31張 (增加): This is retail adding, slightly negative. -2\n\n籌碼面: 4/20\n\n**風險控管 (20%)**:\n- Volatility 23.59%: not <20%, not >40%. Neutral. 5/20\n- 5-day change -0.58%: no overheat penalty\n- 震盪 market: neutral\n\n風險控管: 10/20\n\nTotal: 10 + 3 + 4 + 10 = 27\n\nHmm, let me round to 28. \n\nActually, I think I'm being too harsh. Let me reconsider. The RSI at 34.38 is getting close to oversold territory. In a 震盪 market, this could be a buying opportunity. But without institutional support and with price below MAs, it's still risky.\n\nI'll go with 30.\n\nRecommendation: 回檔觀察\n\nReason: \"股價低於均線且法人未介入，RSI近超賣區待反轉確認（缺失欄位：毛利率、淨利率、EPS）\"\n\nLet me count: 股價低於均線且法人未介入，RSI近超賣區待反轉確認 = about 25 chars + 缺失欄位 note. Should be under 50 total.\n\nActually let me recount: \"股價低於均線且法人未介入，RSI近超賣區待反轉確認（缺失欄位：毛利率、淨利率、EPS）\"\nThat's roughly 38 characters. Under 50. Good.\n</think>\n\n{\n  \"ev_score\": 30,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"股價低於均線且法人未介入，RSI近超賣待反轉確認（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🟡 中風險"
+      "ev_score": 5,
+      "recommendation": "避開",
+      "reason": "基本面疲弱、技術面全面偏弱、籌碼無支撐",
+      "raw_response": "\n<think>\nLet me analyze 東元 (1504) based on the given rules.\n\n**基本面 (30%):**\n- 營收YoY -2.18%: 不>20%，不加分\n- 毛利率 24.12%: 不>30%，不加分\n- EPS 2.76: 不>5，不加分\n- 基本面得分: 0/30\n\n**技術面 (30%):**\n- 現價 68.5 < MA20 70.61: 未站上，不加分\n- MACD -1.0: 不>0，不加分\n- RSI 31.68: 不<30，不>70，不40-60，不加分\n- 技術面得分: 0/30\n\n**籌碼面 (20%):**\n- 投信連買 0 天: 不>3天，不加分\n- 融資變化 -121 張: 融資減少，+5\n- 籌碼面得分: 5/20\n\n**風險 (20%):**\n- 波動率 20.49%: 不<20%，不>40%，不加分\n- 5日漲幅 -3.39%: 不>10%，不扣分\n- 風險得分: 0/20\n\n**總分: 0 + 0 + 5 + 0 = 5**\n\nWait, let me re-read the rules. The scoring is:\n- 基本面30%: 營收>20% +20、毛利率>30% +10、EPS>5 +10 → max 30\n- 技術面30%: 價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10 → max 30 (but RSI<30 and RSI>70 are mutually exclusive, and RSI40-60 is also exclusive)\n- 籌碼面20%: 投信連買>3天 +15、融資減少 +5 → max 20\n- 風險20%: 波動<20% +10、波動>40% -10、5日漲幅>10% -5 → max 20\n\nLet me recalculate:\n\n**基本面 (max 30):**\n- 營收YoY -2.18%: 不>20% → 0\n- 毛利率 24.12%: 不>30% → 0\n- EPS 2.76: 不>5 → 0\n- 小計: 0\n\n**技術面 (max 30):**\n- 價 68.5 > MA20 70.61? No → 0\n- MACD -1.0 > 0? No → 0\n- RSI 31.68: 40-60? No. <30? No (31.68 > 30). >70? No → 0\n- 小計: 0\n\n**籌碼面 (max 20):**\n- 投信連買 0 > 3? No → 0\n- 融資變化 -121: 融資減少 → +5\n- 小計: 5\n\n**風險 (max 20):**\n- 波動率 20.49%: <20%? No. >40%? No → 0\n- 5日漲幅 -3.39%: >10%? No → 0\n- 小計: 0\n\n**總分: 0 + 0 + 5 + 0 = 5**\n\nThis is very low. With a score of 5, the recommendation should be \"避開\".\n\nLet me think about the reason in ≤30 characters:\n\"基本面疲弱、技術面偏弱、籌碼無支撐\" - that's 16 characters, good.\n\nOr: \"營收負成長、技術面全面偏弱、籌碼面僅融資略減\" - too long\n\"基本面與技術面均偏弱，籌碼面無明顯支撐\" - 18 characters\n\nLet me count: 基本面與技術面均偏弱，籌碼面無明顯支撐 = 18 characters. Good.\n\nActually let me reconsider. The score is 5/100. That's very low. \"避開\" is appropriate.\n\nReason: \"基本面疲弱、技術面全面偏弱、籌碼無支撐\" = 17 chars. Good.\n</think>\n\n{\"ev_score\": 5, \"recommendation\": \"避開\", \"reason\": \"基本面疲弱、技術面全面偏弱、籌碼無支撐\"}",
+      "risk_level": "🟡 中風險",
+      "trading_plan": {
+        "entry_type": "none",
+        "entry_zone": null,
+        "stop_loss": null,
+        "take_profit_1": null,
+        "take_profit_2": null,
+        "risk_reward": null,
+        "action_now": "不進場",
+        "status": "🔴 無交易計畫",
+        "exit_strategy": null
+      }
     },
     {
       "code": "1519",
@@ -243,25 +497,67 @@
       "industry": "重電",
       "regime": "震盪",
       "revenue_yoy": -6.51,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
+      "gross_margin": 42.65,
+      "net_margin": 19.65,
+      "eps": 15.28,
       "inst_buy_days": 0,
-      "margin_change": -29,
-      "change_5d": 2.59,
-      "volatility": 43.28,
-      "ma5": 712.4,
-      "ma20": 726.3,
-      "rsi": 40.14,
-      "macd": -7.66,
+      "margin_change": -43,
+      "change_5d": -0.85,
+      "volatility": 32.99,
+      "ma5": 710.8,
+      "ma20": 722.1,
+      "rsi": 29.91,
+      "macd": -9.67,
       "price_above_ma20": false,
-      "current_price": 712.0,
+      "current_price": 699.0,
       "data_source": "finmind",
-      "ev_score": 30,
-      "recommendation": "回檔觀察",
-      "reason": "營收微跌、股價低於均線且波動率偏高；融資出清籌碼轉乾淨，待站回MA20再評估（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze 華城 (1519) based on the given data and scoring logic.\n\n**Industry**: 重電 (Heavy Electrical) - This falls under 傳產/防禦 category, so I should focus on stock price position and chip structure, with revenue weight halved.\n\n**Data Assessment:**\n\n基本面 (Weight 30%):\n- 月營收年增率：-6.51% → Negative, but for 傳產/防禦, revenue weight is halved. This is a negative signal.\n- 毛利率：數據缺失 → Cannot use as evidence\n- 淨利率：數據缺失 → Cannot use as evidence\n- EPS：數據缺失 → Cannot use as evidence\n\nSince most fundamental data is missing, I can only use the revenue YoY. For 傳產/防禦, revenue weight is halved.\n- 營收 YoY -6.51%: Negative, but halved weight. Let's say -5 points (out of 20 for revenue, halved to 10, and it's negative so -5)\n\nActually, let me re-read the scoring logic:\n- 營收年增率 > 20%：+20 分\n- 毛利率 > 30%：+10 分\n- EPS > 5：+10 分\n\nFor 傳產/防禦: 營收權重減半\n\nSo for fundamentals (max 30 points):\n- Revenue: -6.51%, not > 20%, so 0 points. But it's negative... The scoring only gives points for positive thresholds. Since it's negative and weight is halved, I'll note it as a negative but the scoring system doesn't explicitly penalize. Let me be fair - it's negative revenue growth, which is a negative signal. I'll give 0 for revenue (halved weight means max 10 instead of 20).\n- 毛利率: 數據缺失 → skip\n- EPS: 數據缺失 → skip\n\nFundamental score: 0 out of 30 (with missing data noted)\n\nActually, let me reconsider. The scoring gives points for meeting thresholds. If not met, you get 0. But negative revenue is a negative signal. For 傳產/防禦 with halved weight, I'll give a small negative or just 0.\n\nLet me be more structured:\n\n**基本面 (30%)**:\n- 營收 YoY -6.51%: Not > 20%, so 0 points. For 傳產, weight halved, so max would be 10. It's negative, so 0.\n- 毛利率: 缺失 → skip\n- EPS: 缺失 → skip\n- Score: 0/30 (but with missing data, maybe give a small base? No, I should only score what's available)\n\nActually, I think the scoring is additive. You start at 0 and add points for meeting criteria. So:\n- Revenue not > 20%: 0\n- 毛利率 missing: skip\n- EPS missing: skip\n- Fundamentals: 0/30\n\n**技術面 (30%)**:\n- 股價 > MA20: False (712 < 726.3) → 0 points (would be +15 if true)\n- MACD: -7.66, not > 0 → 0 points\n- RSI: 40.14 → This is in the 40-60 range (neutral) → +5 points\n- 5日漲跌幅: 2.59% → not > 10%, no penalty\n- Score: 5/30\n\n**籌碼面 (20%)**:\n- 投信連續買超: 0天 → 0 points\n- 融資增減: -29張 → 融資減少（散戶出清）→ +5 points\n- Score: 5/20\n\n**風險控管 (20%)**:\n- 波動率: 43.28% → > 40% → -10 points\n- 5日漲跌幅: 2.59% → not > 10%, no penalty\n- Score: -10/20... but minimum should be 0? Let me think. The scoring says -10 for > 40%. So it's -10.\n\nWait, let me re-read. The scoring is:\n- 波動率 < 20%：+10 分\n- 波動率 > 40%：-10 分\n- 5 日漲跌幅 > 10%：-5 分\n\nSo for risk:\n- 波動率 43.28% > 40%: -10\n- 5日漲跌幅 2.59%: no penalty\n- Score: -10/20\n\n**Total Score Calculation:**\n- 基本面: 0\n- 技術面: 5\n- 籌碼面: 5\n- 風險控管: -10\n\nTotal: 0 + 5 + 5 + (-10) = 0\n\nHmm, that seems very low. Let me reconsider.\n\nActually, I think the scoring might be on a 0-100 scale where each section contributes its weighted portion. Let me recalculate:\n\nThe weights are:\n- 基本面 30%\n- 技術面 30%\n- 籌碼面 20%\n- 風險控管 20%\n\nMaybe I should calculate each section as a percentage of its max, then weight it.\n\nLet me try a different approach. The total max score is 100.\n\n基本面 (max 30):\n- Revenue > 20%: +20 (but halved for 傳產, so +10 max)\n- 毛利率 > 30%: +10\n- EPS > 5: +10\n- Available: Revenue is -6.51% (0 points, halved so max 10)\n- 毛利率: missing\n- EPS: missing\n- Score: 0/30\n\n技術面 (max 30):\n- 股價 > MA20: +15 → 0 (False)\n- MACD > 0: +10 → 0 (-7.66)\n- RSI 40-60: +5 → +5 (40.14)\n- RSI < 30: +10 → N/A\n- RSI > 70: -10 → N/A\n- Score: 5/30\n\n籌碼面 (max 20):\n- 投信連買 > 3天: +15 → 0 (0天)\n- 融資減少: +5 → +5 (-29張)\n- Score: 5/20\n\n風險控管 (max 20):\n- 波動率 < 20%: +10 → 0 (43.28%)\n- 波動率 > 40%: -10 → -10 (43.28%)\n- 5日漲跌幅 > 10%: -5 → 0 (2.59%)\n- Score: -10/20\n\nTotal: 0 + 5 + 5 + (-10) = 0\n\nThat gives 0, which seems extreme. But the data does paint a negative picture:\n- Revenue declining\n- Below MA20\n- MACD negative\n- High volatility\n- No institutional buying\n\nHowever, there are some positives:\n- RSI is neutral (not oversold but not overbought)\n- 融資減少 (retail clearing)\n- 5-day change is modest (not overheated)\n\nLet me reconsider. Maybe I should give a small base score for the neutral aspects. The RSI at 40.14 is neutral, which is +5. The 融資減少 is +5. \n\nActually, I think 0 is too harsh. Let me reconsider the scoring. Perhaps the -10 for volatility should be offset by the fact that the stock isn't overheated. And the 融資減少 is a positive signal.\n\nLet me also consider: for 傳產/防禦, the focus is on 股價位置與籌碼. The stock is below MA20 (negative), but RSI is neutral, and 融資 is decreasing (positive for 籌碼).\n\nI'll adjust slightly:\n- 基本面: 0 (revenue negative, rest missing)\n- 技術面: 5 (RSI neutral)\n- 籌碼面: 5 (融資減少)\n- 風險控管: -10 (high volatility)\n\nTotal: 0\n\nBut 0 seems too extreme. Let me think about this differently. Maybe I should give a baseline and then adjust. Or maybe the scoring is meant to be more lenient.\n\nActually, looking at the examples:\n- Example 2 (low score): Revenue -15%, 毛利率 18%, below MA20, RSI 75, 0 days institutional buying, volatility 45% → Score 25\n\nOur case: Revenue -6.51% (less bad than -15%), below MA20, RSI 40 (better than 75), 0 days institutional buying, volatility 43% (similar to 45%), but 融資減少 (positive)\n\nSo our case is somewhat better than Example 2. I'd estimate around 20-30.\n\nLet me recalculate more carefully:\n\n基本面 (30% weight):\n- 營收 -6.51%: For 傳產, halved weight. Not > 20%, so 0. But it's negative... I'll give 0.\n- 毛利率: 缺失\n- EPS: 缺失\n- Subtotal: 0/30\n\n技術面 (30% weight):\n- 股價 > MA20: No → 0\n- MACD > 0: No → 0\n- RSI 40.14 (40-60): +5\n- Subtotal: 5/30\n\n籌碼面 (20% weight):\n- 投信連買 > 3天: No → 0\n- 融資減少: +5\n- Subtotal: 5/20\n\n風險控管 (20% weight):\n- 波動率 43.28% > 40%: -10\n- 5日漲幅 2.59%: 0\n- Subtotal: -10/20\n\nTotal: 0 + 5 + 5 + (-10) = 0\n\nHmm, but the examples show that even bad stocks get 25. Let me look at Example 2 again:\n- Revenue -15%: 0 (not > 20%)\n- 毛利率 18%: 0 (not > 30%)\n- EPS: not mentioned\n- 股價 > MA20: No: 0\n- RSI 75: > 70, so -10\n- MACD: not mentioned\n- 投信連買 0天: 0\n- 波動率 45%: > 40%, -10\n- 5日漲幅: not mentioned\n\nExample 2 total: 0 + 0 + 0 + 0 + (-10) + 0 + 0 + (-10) = -20? But they gave 25.\n\nSo maybe there's a baseline of 50 and you add/subtract? Or maybe the scoring is more nuanced.\n\nLet me try: Base 50, then adjustments:\n- Revenue -6.51%: -5 (halved for 傳產)\n- Below MA20: -10\n- MACD negative: -5\n- RSI 40-60: +5\n- 投信 0天: 0\n- 融資減少: +5\n- 波動率 > 40%: -10\n- 5日漲幅 normal: 0\n\nTotal: 50 - 5 - 10 - 5 + 5 + 0 + 5 - 10 + 0 = 30\n\nThat gives 30, which seems more reasonable.\n\nActually, I think the scoring system is meant to be applied as described, and the examples are approximate. Let me just go with a reasonable assessment.\n\nGiven:\n- Revenue declining (negative for 傳產)\n- Below MA20 (negative technical)\n- MACD negative (negative technical)\n- RSI neutral (slightly positive)\n- No institutional buying (neutral to negative)\n- 融資 decreasing (positive - retail clearing)\n- High volatility > 40% (negative risk)\n- 5-day change modest (neutral)\n\nFor 傳產/防禦 in a 震盪 market:\n- The 融資減少 + 股價不跌 (5日 +2.59%) could be interpreted as 散戶洗盤, 籌碼乾淨 (mildly positive)\n- But high volatility is a concern\n- Below MA20 and MACD negative suggest weakness\n\nI'll score this around 25-30. Let me go with 28.\n\nRecommendation: 避開 or 回檔觀察?\n\nGiven the high volatility (>40%), below MA20, negative MACD, declining revenue, and no institutional support, I'd say 避開. But the 融資減少 and neutral RSI provide some floor. In a 震盪 market, this could be 回檔觀察.\n\nActually, with volatility at 43% and the stock below MA20 with negative MACD, and declining revenue, I think 避開 is appropriate. But the 融資減少 is a mild positive. Let me go with 回檔觀察 since it's not as bad as Example 2 (which was 避開 at 25).\n\nWait, Example 2 had RSI 75 (overbought) and got 避開. Our RSI is 40 (neutral), which is better. But our volatility is similar. I'll go with 回檔觀察 at score 28.\n\nActually, let me reconsider. The stock is:\n- Below MA20 (712 vs 726.3) - about 2% below\n- MACD negative\n- RSI at 40 (approaching oversold but not there)\n- Revenue declining\n- High volatility\n- But 融資 decreasing (positive)\n- 5-day change +2.59% (not falling)\n\nThe 融資大減 + 股價不跌 pattern is mentioned as 散戶洗盤, 籌碼乾淨 (利多). This is a positive signal.\n\nI'll go with score 30, recommendation 回檔觀察.\n\nLet me finalize:\n- ev_score: 30\n- recommendation: 回檔觀察\n- reason: \"營收微跌、股價低於均線且波動率偏高，但融資出清顯示籌碼轉乾淨，待站回MA20再評估\"\n\nThat's about 35 characters in Chinese. Let me count: 營收微跌、股價低於均線且波動率偏高，但融資出清顯示籌碼轉乾淨，待站回MA20再評估 = about 38 characters. Need to keep under 50.\n\nLet me trim: \"營收微跌、股價低於均線、波動率偏高；融資出清籌碼轉乾淨，待站回MA20再評估\" = about 36 chars. Good.\n\nMissing fields: 毛利率、淨利率、EPS\n</think>\n\n{\n  \"ev_score\": 30,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"營收微跌、股價低於均線且波動率偏高；融資出清籌碼轉乾淨，待站回MA20再評估（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🟠 高風險"
+      "ev_score": 35,
+      "recommendation": "觀望",
+      "reason": "RSI超賣但均線下方，營收負成長，觀望",
+      "raw_response": "\n<think>\nLet me analyze 華城 (1519) step by step.\n\n**Basic Info:**\n- Industry: 重電 (Heavy Electric)\n- Market: 震盪 (Consolidation)\n\n**Fundamentals (30% weight):**\n- Revenue YoY: -6.51% (not >20%, so 0 points)\n- Gross Margin: 42.65% (>30%, +10)\n- Net Margin: 19.65%\n- EPS: 15.28 (>5, +10)\n\nFundamental score: 0 + 10 + 10 = 20 (out of 30)\n\nWait, let me re-read the rules:\n- 營收>20% +20\n- 毛利率>30% +10\n- EPS>5 +10\n\nSo max fundamental is 20+10+10 = 40? But the weight is 30%. Let me re-read.\n\nActually, I think the scoring is:\n- 基本面30%: 營收>20% +20、毛利率>30% +10、EPS>5 +10\n- 技術面30%: 價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10\n- 籌碼面20%: 投信連買>3天 +15、融資減少 +5\n- 風險20%: 波動<20% +10、波動>40% -10、5日漲幅>10% -5\n\nSo the total score is calculated by summing all applicable points, then the weights determine the contribution. Wait, or is it that each category has a max score and the weights are applied?\n\nLet me re-interpret: I think the scoring system is:\n- Each category has specific point allocations\n- The total is the sum of all points earned\n- The weights (30%, 30%, 20%, 20%) might mean the max for each category\n\nActually, looking more carefully, I think the points listed ARE the scores for each category, and the percentages are just labels for the categories. The total score is the sum of all points earned across all categories.\n\nLet me calculate:\n\n**Fundamentals (max possible: 20+10+10 = 40):**\n- Revenue YoY -6.51%: NOT >20%, so 0\n- Gross Margin 42.65%: >30%, +10\n- EPS 15.28: >5, +10\n- Subtotal: 20\n\n**Technical (max possible: 15+10+5+10 = 40, but RSI conditions are mutually exclusive):**\n- Price 699.0 > MA20 722.1? No (False), so 0\n- MACD -9.67: NOT >0, so 0\n- RSI 29.91: \n  - RSI 40-60? No\n  - RSI <30? Yes (29.91 < 30), +10\n  - RSI >70? No\n- Subtotal: 10\n\n**Chips (max possible: 15+5 = 20):**\n- 投信連買 0 天: NOT >3, so 0\n- 融資變化 -43 張: 融資減少, +5\n- Subtotal: 5\n\n**Risk (max possible: 10, with penalties):**\n- 波動率 32.99%: NOT <20%, NOT >40%, so 0\n- 5日漲幅 -0.85%: NOT >10%, so 0\n- Subtotal: 0\n\n**Total: 20 + 10 + 5 + 0 = 35**\n\nNow for recommendation:\n- 35/100 is relatively low\n- Market is 震盪 (consolidation)\n- RSI is oversold (<30) which could be a buying signal\n- But price is below MA20, MACD negative\n- Revenue declining\n- No institutional buying\n- Financing decreasing (slightly positive)\n\nGiven the score of 35, this would be \"觀望\" (wait and see) or \"避開\" (avoid).\n\nActually, RSI <30 gives +10 which is a contrarian signal. But overall the picture is weak. Score 35 out of 100... I'd say \"觀望\" (wait and see).\n\nLet me reconsider the scoring. The weights are 30%, 30%, 20%, 20%. Maybe the max score for each category should be normalized to 30, 30, 20, 20 respectively?\n\nIf max for fundamentals is 30:\n- Available points: 20 (revenue) + 10 (margin) + 10 (EPS) = 40 possible\n- But weight is 30%... \n\nHmm, I think the simplest interpretation is: just sum up all the points that apply. The percentages are just category labels. Total max would be 40+40+20+10 = 110? That doesn't make sense for a 0-100 scale.\n\nLet me re-read: \"評分 0-100\"\n\nMaybe the interpretation is:\n- Fundamentals contribute up to 30 points (out of 100)\n- Technical contributes up to 30 points\n- Chips contribute up to 20 points\n- Risk contributes up to 20 points\n\nAnd within each category, the specific conditions determine how many of those points you get.\n\nFor Fundamentals (max 30):\n- 營收>20% +20 → this is 20 out of 30\n- 毛利率>30% +10 → this is 10 out of 30\n- EPS>5 +10 → this is 10 out of 30\n- Total possible: 40, but capped at 30?\n\nHmm, this is getting confusing. Let me just go with the straightforward interpretation: sum all applicable points, cap at 100.\n\nFundamentals: 0 + 10 + 10 = 20\nTechnical: 0 + 0 + 10 = 10\nChips: 0 + 5 = 5\nRisk: 0\n\nTotal: 35\n\nScore 35 → 觀望\n\nReason (≤30 chars): \"RSI超賣但技術面偏弱，營收下滑，觀望為宜\"\n\nLet me count: RSI超賣但技術面偏弱，營收下滑，觀望為宜 = 19 chars. Good.\n\nWait, let me recount: R-S-I-超-賣-但-技-術-面-偏-弱-，-營-收-下-滑-，-觀-望-為-宜 = 21 characters (including punctuation). Should be fine, ≤30.\n\nActually let me be more concise: \"RSI超賣但均線下方，營收負成長，觀望\" = 17 chars. Good.\n</think>\n\n{\"ev_score\": 35, \"recommendation\": \"觀望\", \"reason\": \"RSI超賣但均線下方，營收負成長，觀望\"}",
+      "risk_level": "🟠 高風險",
+      "trading_plan": {
+        "entry_type": "reclaim",
+        "entry_zone": [
+          722.1,
+          736.54
+        ],
+        "stop_loss": 669.17,
+        "take_profit_1": 802.25,
+        "take_profit_2": 875.19,
+        "risk_reward": 1.21,
+        "action_now": "等站回 MA20",
+        "status": "⏳ 等站回 MA20",
+        "stop_pct": 8.2,
+        "exit_strategy": {
+          "initial_stop": 669.17,
+          "stage_1": {
+            "target": 802.25,
+            "action": "賣 1/3，停損上移至成本價",
+            "trigger": "漲幅達 +10%（802.25）"
+          },
+          "stage_2": {
+            "target": 875.19,
+            "action": "再賣 1/3，停損上移至 +10%",
+            "trigger": "漲幅達 +20%（875.19）"
+          },
+          "stage_3": {
+            "action": "剩餘 1/3 設 MA20 移動停利",
+            "trigger": "跌破 MA20 全數出場",
+            "moving_stop": 722.1
+          },
+          "time_stop": {
+            "days": 20,
+            "action": "持有 20 天未達 +10% 則出場",
+            "reason": "避免機會成本"
+          },
+          "technical_exit": {
+            "rsi_overbought": 75,
+            "action": "RSI > 75 或跌破 MA50 出場",
+            "reason": "技術面轉弱"
+          }
+        }
+      }
     },
     {
       "code": "2303",
@@ -269,25 +565,36 @@
       "industry": "半導體",
       "regime": "震盪",
       "revenue_yoy": 5.04,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
-      "inst_buy_days": 3,
-      "margin_change": -11081,
-      "change_5d": 15.52,
-      "volatility": 65.34,
-      "ma5": 152.5,
-      "ma20": 138.12,
-      "rsi": 78.33,
-      "macd": 9.27,
+      "gross_margin": 30.6,
+      "net_margin": 33.22,
+      "eps": 6.65,
+      "inst_buy_days": 0,
+      "margin_change": 232,
+      "change_5d": 4.41,
+      "volatility": 57.59,
+      "ma5": 157.4,
+      "ma20": 141.72,
+      "rsi": 70.0,
+      "macd": 8.92,
       "price_above_ma20": true,
-      "current_price": 160.0,
+      "current_price": 154.0,
       "data_source": "finmind",
-      "ev_score": 43,
-      "recommendation": "回檔觀察",
-      "reason": "超買且波動極高，籌碼佳但短期過熱，回檔再戰（缺失：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze 聯電 (2303) based on the provided data.\n\n**Industry: 半導體 (Semiconductor)** - Use semiconductor evaluation criteria: 營收 YoY、投信連買、RSI、波動率\n\n**基本面 (30% weight):**\n- 月營收年增率：5.04% → Not > 20%, so no +20. It's positive but modest. Maybe +5 for positive growth.\n- 毛利率：數據缺失 → Cannot use as evidence, note as missing\n- 淨利率：數據缺失 → Cannot use as evidence, note as missing\n- EPS：數據缺失 → Cannot use as evidence, note as missing\n\nBasic score: 營收 YoY 5.04% is positive but below 20%. I'll give a small positive. Let's say +5 out of 40 possible (20+10+10). Actually, the scoring criteria says:\n- 營收年增率 > 20%：+20 分 → Not met (5.04%)\n- 毛利率 > 30%：+10 分 → Missing, cannot score\n- EPS > 5：+10 分 → Missing, cannot score\n\nSo basic score: 0 out of 40 (only 營收 has a value, and it doesn't meet the threshold). But it's positive growth, so maybe a small credit. Let me be strict: 0 points from the defined criteria. But I should note the positive growth. Let's say 5/40 for the positive revenue growth.\n\nActually, let me re-read the scoring. The criteria are specific thresholds. 5.04% doesn't meet >20%, so 0 points. Missing fields get no points. So basic = 0/40.\n\nWait, but the rule says \"僅用「有值的欄位」評分\". So I should only score based on available data. The 營收 YoY is 5.04%, which is positive but below threshold. I'll give a partial credit maybe 5/40.\n\n**技術面 (30% weight):**\n- 股價 > MA20：True → +15\n- MACD > 0：9.27 > 0 → +10\n- RSI(14)：78.33 → RSI > 70（超買）：-10\n- 近 5 日漲跌幅：15.52% → > 10%：-5 (過熱)\n\nTechnical score: 15 + 10 - 10 - 5 = 10/30\n\n**籌碼面 (20% weight):**\n- 投信連續買超：3天 → The criteria says \"> 3 天\" for +15. 3 days is NOT > 3, it's equal. So this doesn't qualify for +15. Maybe partial credit? Let me be strict: 3 is not > 3, so 0 points. Actually, let me re-read: \"投信連續買超 > 3 天：+15 分\". 3 days is not > 3, so no points. But it's still positive. Maybe +5 for 3 days?\n\nActually, I'll be strict with the criteria. 3 days ≠ > 3 days. So 0 points for this.\n\n- 融資增減：-11081張 → 融資減少（散戶出清）：+5\n\nWait, the rule says \"融資大減 + 股價不跌 = 散戶洗盤，籌碼乾淨 (利多)\". Here 融資減少 11081張, and 股價 is rising (15.52% in 5 days). So this is a positive signal. +5 points.\n\nBut wait, 5日漲幅 15.52% means stock IS rising. So 融資大減 + 股價不跌(actually rising) = 散戶洗盤. This is bullish.\n\n籌碼面 score: 0 + 5 = 5/20\n\nHmm, but 投信連買 3天 is still a positive signal even if not >3. Let me give partial: maybe +8 for 3 days of institutional buying. Actually, let me stick to the criteria strictly. The criteria says >3 days for +15. 3 days doesn't qualify. I'll give 0.\n\nActually, re-reading: the scoring is a guideline. Let me be reasonable. 3 days of institutional buying is still positive. I'll give +10 (partial credit since it's close to the threshold).\n\n籌碼面 score: 10 + 5 = 15/20\n\n**風險控管 (20% weight):**\n- 20日波動率：65.34% → > 40%：-10\n- 5日漲跌幅：15.52% → > 10%：-5\n\nRisk score: -10 - 5 = -15/20 → floor at 0? Or can it be negative?\n\nLet me calculate the total:\n\n基本面: 5/40 × 30% = 1.5\n技術面: 10/30 × 30% = 10\n籌碼面: 15/20 × 20% = 15\n風險控管: -15/20 × 20% = -15\n\nTotal: 1.5 + 10 + 15 - 15 = 11.5\n\nHmm, that seems too low. Let me reconsider.\n\nActually, let me re-think the scoring. The weights are 30%, 30%, 20%, 20%. The max score for each category should be normalized.\n\nLet me recalculate:\n\n**基本面 (max 40 points, weight 30%):**\n- 營收 YoY 5.04%: positive but < 20%. I'll give +5 (partial)\n- 毛利率: missing → 0\n- EPS: missing → 0\nScore: 5/40\nWeighted: 5/40 × 30 = 3.75\n\n**技術面 (max 35 points, weight 30%):**\n- 股價 > MA20: +15\n- MACD > 0: +10\n- RSI 78.33 > 70: -10\n- 5日漲幅 15.52% > 10%: -5\nScore: 15 + 10 - 10 - 5 = 10/35\nWeighted: 10/35 × 30 = 8.57\n\n**籌碼面 (max 20 points, weight 20%):**\n- 投信連買 3天 (not >3): +8 (partial credit)\n- 融資減少: +5\nScore: 13/20\nWeighted: 13/20 × 20 = 13\n\n**風險控管 (max 10 points, weight 20%):**\n- 波動率 65.34% > 40%: -10\n- 5日漲幅 > 10%: -5\nScore: -15 → floor at 0? Or allow negative?\n\nIf I allow negative: -15/10 × 20 = -30\nIf I floor at 0: 0\n\nLet me allow negative for risk:\nTotal: 3.75 + 8.57 + 13 + (-30) = -4.68 → floor at 0?\n\nThat seems too harsh. Let me reconsider.\n\nActually, I think the scoring should be more balanced. Let me re-approach:\n\nThe total score is 0-100. Let me think of it as:\n- 基本面 contributes up to 30 points\n- 技術面 contributes up to 30 points\n- 籌碼面 contributes up to 20 points\n- 風險控管 contributes up to 20 points (but can subtract)\n\n**基本面 (out of 30):**\n- 營收 YoY 5.04%: positive growth, below 20% threshold. Give 8/20 (partial)\n- 毛利率: missing → 0/10\n- EPS: missing → 0/10\nTotal: 8/30\n\n**技術面 (out of 30):**\n- 股價 > MA20: +15\n- MACD > 0: +10\n- RSI 78.33 > 70: -10\n- 5日漲幅 15.52% > 10%: -5\nTotal: 10/30\n\n**籌碼面 (out of 20):**\n- 投信連買 3天: +10 (close to threshold, positive signal)\n- 融資減少 11081張: +5 (散戶出清, 籌碼乾淨)\nTotal: 15/20\n\n**風險控管 (out of 20):**\n- 波動率 65.34% > 40%: -10\n- 5日漲幅 15.52% > 10%: -5\nTotal: -15 → This is a penalty. \n\nHmm, let me think about this differently. The risk section is about penalties. So:\nBase risk score: 20 (if all good)\n- 波動率 > 40%: -10\n- 5日漲幅 > 10%: -5\nRisk score: 20 - 10 - 5 = 5/20\n\nTotal: 8 + 10 + 15 + 5 = 38\n\nHmm, that's quite low. But considering:\n- RSI at 78 is overbought\n- 5-day gain of 15.52% is overheated\n- Volatility at 65% is extremely high\n- Revenue growth is only 5%\n\nBut positives:\n- Stock above MA20\n- MACD positive\n- Institutional buying for 3 days\n- Margin decreasing (retail washing out)\n\nI think a score around 40-50 is appropriate. The stock is in a strong uptrend but significantly overbought with extreme volatility. This is a \"回檔觀察\" situation - wait for a pullback.\n\nLet me settle on:\n- 基本面: 8/30 (only revenue has data, modest growth)\n- 技術面: 10/30 (above MA20, MACD positive, but RSI overbought and 5-day gain too high)\n- 籌碼面: 15/20 (institutional buying, margin decreasing)\n- 風險控管: 5/20 (extreme volatility, overheated)\n\nTotal: 8 + 10 + 15 + 5 = 38\n\nActually, let me reconsider. The 5-day gain penalty appears in both technical and risk. Let me not double-count. I'll put it in risk only.\n\n**技術面 (out of 30):**\n- 股價 > MA20: +15\n- MACD > 0: +10\n- RSI 78.33 > 70: -10\nTotal: 15/30\n\n**風險控管 (out of 20):**\n- 波動率 65.34% > 40%: -10\n- 5日漲幅 15.52% > 10%: -5\nBase: 20\nTotal: 20 - 10 - 5 = 5/20\n\nTotal: 8 + 15 + 15 + 5 = 43\n\nI'll go with 43. Recommendation: 回檔觀察\n\nReason: RSI超買、波動率極高，技術面偏熱，建議回檔再介入（缺失欄位：毛利率、淨利率、EPS）\n\nLet me keep it under 50 characters in Chinese.\n\n\"RSI超買且波動率極高，籌碼面佳但短期過熱，宜回檔再介入（缺失欄位：毛利率、淨利率、EPS）\"\n\nThat's about 40 characters. Good.\n\nWait, let me count: RSI超買且波動率極高，籌碼面佳但短期過熱，宜回檔再介入（缺失欄位：毛利率、淨利率、EPS）\nThat's more than 50. Let me shorten.\n\n\"RSI超買、波動率極高，短期過熱，宜回檔再介入（缺失欄位：毛利率、淨利率、EPS）\"\nThat's about 35 characters. Good.\n\nActually the requirement says \"50 字內\". Let me count more carefully:\nR-S-I-超-買-、-波-動-率-極-高-，-短-期-過-熱-，-宜-回-檔-再-介-入-（-缺-失-欄-位-：-毛-利-率-、-淨-利-率-、-E-P-S-）\n\nHmm, that's a lot. Let me simplify:\n\"超買且波動極高，籌碼佳但過熱，回檔再戰（缺失：毛利率、淨利率、EPS）\"\nThat's about 30 characters. Good.\n\nFinal answer: ev_score: 43, recommendation: 回檔觀察\n</think>\n\n{\n  \"ev_score\": 43,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"超買且波動極高，籌碼佳但短期過熱，回檔再戰（缺失：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🔴 極高風險"
+      "ev_score": 25,
+      "recommendation": "避開",
+      "reason": "RSI超買、高波動、無投信支撐，震盪市風險高",
+      "raw_response": "\n<think>\nLet me analyze 聯電 (2303) based on the given rules.\n\n**基本面 (30%):**\n- 營收YoY 5.04%: Not >20%, so no +20\n- 毛利率 30.6%: >30%, so +10\n- EPS 6.65: >5, so +10\n- 淨利率 33.22%: not explicitly in scoring rules\n\n基本面 score: 0 + 10 + 10 = 20 (out of 30)\n\n**技術面 (30%):**\n- 現價 154.0 > MA20 141.72: True, so +15\n- MACD 8.92 > 0: True, so +10\n- RSI 70.0: RSI>70, so -10\n- RSI 40-60: No, it's 70\n- RSI <30: No\n\n技術面 score: 15 + 10 + (-10) = 15 (out of 30)\n\n**籌碼面 (20%):**\n- 投信連買 0 天: Not >3, so no +15\n- 融資變化 232 張: This is positive (增加), not 減少, so no +5\n\n籌碼面 score: 0 (out of 20)\n\n**風險 (20%):**\n- 波動率 57.59%: >40%, so -10\n- 5日漲幅 4.41%: Not >10%, so no -5\n- 波動<20%: No\n\n風險 score: -10 (out of 20)\n\nWait, let me reconsider the scoring. The scores seem to be additive bonuses/penalties within each category. Let me re-read the rules.\n\n評分 0-100：\n- 基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\n- 技術面30%（價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10）\n- 籌碼面20%（投信連買>3天 +15、融資減少 +5）\n- 風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\n\nSo each category has a max score:\n- 基本面: max 30 (20+10+10)\n- 技術面: max 30 (15+10+5 or 15+10+10)\n- 籌碼面: max 20 (15+5)\n- 風險: max 20 (10)\n\nLet me recalculate:\n\n**基本面 (max 30):**\n- 營收YoY 5.04%: Not >20%, +0\n- 毛利率 30.6%: >30%, +10\n- EPS 6.65: >5, +10\n- Total: 20/30\n\n**技術面 (max 30):**\n- 價>MA20: +15\n- MACD>0: +10\n- RSI 70.0: RSI>70, -10\n- Total: 15+10-10 = 15/30\n\n**籌碼面 (max 20):**\n- 投信連買 0 天: Not >3, +0\n- 融資變化 232 張: This is positive (增加), not 減少, +0\n- Total: 0/20\n\n**風險 (max 20):**\n- 波動率 57.59%: >40%, -10\n- 5日漲幅 4.41%: Not >10%, +0\n- Total: -10/20\n\nWait, can the risk score be negative? Let me think about this. The total score would be:\n20 + 15 + 0 + (-10) = 25\n\nHmm, but that seems very low. Let me reconsider.\n\nActually, I think the scoring is meant to be additive within each category, and the total is the sum. Let me just add them up:\n\nTotal = 20 + 15 + 0 + (-10) = 25\n\nBut wait, should the risk category have a base score? The rules say 風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）. It seems like the risk category only has bonuses and penalties, no base score. So if none of the conditions are met, it's 0. If 波動>40%, it's -10.\n\nSo total = 20 + 15 + 0 + (-10) = 25\n\nHmm, 25 out of 100. That's quite low. Let me double-check.\n\nActually, I think the scoring system is:\n- Each category contributes to the total 0-100 score\n- The percentages (30%, 30%, 20%, 20%) indicate the weight\n- Within each category, you get points based on the conditions\n\nWait, maybe I should interpret it differently. The 30% means the maximum contribution is 30 points. So:\n\n基本面: 20/30 points\n技術面: 15/30 points\n籌碼面: 0/20 points\n風險: -10/20 points (or 0 if we floor at 0)\n\nTotal: 20 + 15 + 0 + (-10) = 25\n\nOr if we floor risk at 0: 20 + 15 + 0 + 0 = 35\n\nI'll go with 25 since the rules explicitly say -10 for 波動>40%.\n\nActually, let me reconsider. The total max would be 30+30+20+20 = 100. The risk category can go negative. So:\n\nTotal = 20 + 15 + 0 + (-10) = 25\n\nWith a score of 25, the recommendation would be \"避開\" or \"觀望\".\n\nLet me think about the recommendation:\n- 積極買入: probably 75+\n- 謹慎買入: probably 55-74\n- 觀望: probably 35-54\n- 避開: probably <35\n\n25 would be \"避開\".\n\nBut wait, let me reconsider. The stock is above MA20, MACD is positive, but RSI is overbought at 70, volatility is very high at 57.59%, and there's no institutional buying. The market is in a 震盪 (consolidation) phase.\n\nActually, I think 25 is too harsh. Let me re-examine.\n\nHmm, but the rules are clear. Let me just follow them:\n- 基本面: 0 (營收) + 10 (毛利率) + 10 (EPS) = 20\n- 技術面: 15 (價>MA20) + 10 (MACD>0) + (-10) (RSI>70) = 15\n- 籌碼面: 0 (投信) + 0 (融資增加非減少) = 0\n- 風險: -10 (波動>40%) + 0 (5日漲幅<10%) = -10\n\nTotal: 20 + 15 + 0 + (-10) = 25\n\nRecommendation: 避開 (score < 35)\n\nReason (≤30字): RSI超買、高波動、無投信支撐，震盪市風險高\n\nLet me count: RSI超買、高波動、無投信支撐，震盪市風險高 = 19 characters. Good.\n\nWait, let me recount: R-S-I-超-買-、-高-波-動-、-無-投-信-支-撐-，-震-盪-市-風-險-高 = 21 characters (including punctuation). That's under 30.\n\nActually, I need to be more careful. Let me count Chinese characters and punctuation:\nRSI超買、高波動、無投信支撐，震盪市風險高\nR(1)S(2)I(3)超(4)買(5)、(6)高(7)波(8)動(9)、(10)無(11)投(12)信(13)支(14)撐(15)，(16)震(17)盪(18)市(19)風(20)險(21)高(22)\n\n22 characters. Under 30. Good.\n\nLet me finalize:\n- ev_score: 25\n- recommendation: \"避開\"\n- reason: \"RSI超買、高波動、無投信支撐，震盪市風險高\"\n</think>\n\n{\"ev_score\":25,\"recommendation\":\"避開\",\"reason\":\"RSI超買、高波動、無投信支撐，震盪市風險高\"}",
+      "risk_level": "🔴 極高風險",
+      "trading_plan": {
+        "entry_type": "none",
+        "entry_zone": null,
+        "stop_loss": null,
+        "take_profit_1": null,
+        "take_profit_2": null,
+        "risk_reward": null,
+        "action_now": "不進場",
+        "status": "🔴 無交易計畫",
+        "exit_strategy": null
+      }
     },
     {
       "code": "2882",
@@ -297,23 +604,34 @@
       "revenue_yoy": 17.31,
       "gross_margin": null,
       "net_margin": null,
-      "eps": null,
-      "inst_buy_days": 1,
-      "margin_change": 94,
-      "change_5d": 1.82,
-      "volatility": 32.02,
-      "ma5": 112.0,
-      "ma20": 110.53,
-      "rsi": 56.52,
-      "macd": 1.93,
-      "price_above_ma20": true,
-      "current_price": 112.0,
+      "eps": 8.48,
+      "inst_buy_days": 0,
+      "margin_change": 44,
+      "change_5d": -1.34,
+      "volatility": 31.06,
+      "ma5": 111.5,
+      "ma20": 111.38,
+      "rsi": 37.84,
+      "macd": 1.08,
+      "price_above_ma20": false,
+      "current_price": 110.5,
       "data_source": "finmind",
-      "ev_score": 48,
-      "recommendation": "回檔觀察",
-      "reason": "技術面偏多但籌碼缺乏法人確認，融資增加，回檔再佈局（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze 國泰金 (2882) based on the provided data.\n\n**Industry: 金融 (Financial)**\n- Per the rules: 忽略營收 YoY 與 EPS；改看股價位置、波動率、融資增減\n\n**基本面 (30% weight):**\n- 月營收年增率：17.31% → For financial sector, we ignore this per rules\n- 毛利率：數據缺失 → Cannot use\n- 淨利率：數據缺失 → Cannot use\n- EPS：數據缺失 → Cannot use\n- Since it's financial sector, we ignore 營收 YoY and EPS. Most fundamental data is missing.\n- For financial sector, we focus on stock price position, volatility, and margin trading changes.\n- With most fundamental data missing, I'll score this conservatively. Let's say base score around 50 (neutral) since we can't evaluate properly.\n- Actually, for financial sector, the fundamental evaluation should focus on stock price position and volatility. Let me reconsider.\n- Since most fundamental data is missing, I'll give a neutral base. Maybe 40-50 out of 100 for this dimension.\n\nWait, let me re-read the scoring logic. The scoring logic gives specific points:\n- 營收年增率 > 20%：+20 分 → 17.31% < 20%, so 0 points. But for financial, we ignore this.\n- 毛利率 > 30%：+10 分 → 數據缺失, cannot evaluate\n- EPS > 5：+10 分 → 數據缺失, cannot evaluate\n\nFor financial sector, we ignore 營收 YoY and EPS. So fundamental scoring is limited. I'll give a moderate score since we can't fully evaluate. Let's say around 40-50/100 for this dimension.\n\nActually, let me think about this differently. The scoring system gives specific points. For financial:\n- We ignore 營收 YoY and EPS\n- 毛利率 is missing\n- So fundamental score is very limited. I'll assign a neutral 50 (out of 100 for this dimension) since we can't evaluate.\n\nWait, the scoring is additive within each dimension. Let me re-read:\n\n1. 基本面（權重 30%）\n   - 營收年增率 > 20%：+20 分\n   - 毛利率 > 30%：+10 分\n   - EPS > 5：+10 分\n\nFor financial, we ignore 營收 YoY and EPS. 毛利率 is missing. So fundamental gets 0 points from the listed criteria. But we shouldn't penalize for missing data. I'll give a base neutral score.\n\nLet me think of it as: the max possible for fundamental is 40 points (20+10+10). For financial, we ignore 2 of 3 criteria, and the remaining is missing. So we can't score it. I'll assign a neutral 50% of max = 20 points? Or just note it's unevaluable and give a moderate score.\n\nActually, I think the fairest approach is: since we can't evaluate fundamentals for this financial stock (all relevant data missing), I'll give a neutral score. Let's say 50% of the dimension weight = 15 points (out of 30).\n\n2. 技術面（權重 30%）\n   - 股價 > MA20：True → +15 分\n   - MACD > 0：1.93 > 0 → +10 分\n   - RSI 40-60（中性）：56.52 → +5 分\n   - 5日漲跌幅：1.82% < 10% → no penalty\n   - Total technical: 15 + 10 + 5 = 30 points (out of 30 max)\n\n3. 籌碼面（權重 20%）\n   - 投信連續買超：1天 → not > 3 days, so 0 points\n   - 融資增減：94張 → This is positive (increase). Wait, the rule says \"融資減少（散戶出清）：+5 分\". 94張 increase means margin is increasing, which is NOT a positive signal per the rules. So 0 points.\n   - Actually wait - 融資增減：94張. This could mean +94 (increase) or -94 (decrease). The format says \"融資增減\" which typically means the change. If it's 94張 without a negative sign, it's likely +94 (increase).\n   - For financial sector, we look at 融資增減. An increase in margin could mean retail investors are piling in, which is slightly negative or neutral.\n   - Total choubi: 0 points (out of 20 max)\n\n4. 風險控管（權重 20%）\n   - 波動率：32.02% → between 20% and 40%, so no bonus, no penalty\n   - 5日漲跌幅：1.82% < 10% → no penalty\n   - Total risk: 0 points (out of 20 max)\n\nNow let me calculate the overall score:\n- 基本面: 15/30 (neutral, data missing)\n- 技術面: 30/30\n- 籌碼面: 0/20\n- 風險控管: 0/20\n\nTotal: 45/100\n\nHmm, but let me reconsider. The scoring seems to be additive within each category, and then weighted. Let me re-read.\n\nActually, I think the scoring is:\n- Each dimension has a max score\n- The points are added within each dimension\n- Then weighted by the percentage\n\nLet me recalculate:\n- 基本面 max: 40 points (20+10+10), weight 30% → max contribution 12\n  - For financial, ignore 營收 and EPS. 毛利率 missing. Score: 0/40 → contribution: 0\n  - But we shouldn't penalize for missing data. Let me give neutral: 20/40 → contribution: 6\n\n- 技術面 max: 30 points (15+10+5), weight 30% → max contribution 9\n  - Score: 15+10+5 = 30/30 → contribution: 9\n\n- 籌碼面 max: 20 points (15+5), weight 20% → max contribution 4\n  - Score: 0/20 → contribution: 0\n\n- 風險控管 max: 20 points (10-10-5), weight 20% → max contribution 4\n  - Score: 0/20 → contribution: 0\n\nTotal: 6 + 9 + 0 + 0 = 15? That seems too low.\n\nI think I'm overcomplicating this. Let me just use a 0-100 scale directly:\n\nLet me re-approach. The scoring criteria give points, and the total should be 0-100.\n\nLet me just sum up all the points:\n- 基本面: For financial, most data missing. Neutral assessment. Let's say 12/30 (40% of weight)\n- 技術面: 15 + 10 + 5 = 30/30 (100% of weight)\n- 籌碼面: 0/20 (0% of weight)\n- 風險控管: 0/20 (0% of weight)\n\nTotal: 12 + 30 + 0 + 0 = 42/100\n\nHmm, but the technical is very strong. Let me reconsider.\n\nActually, I think the scoring is meant to be:\n- Total possible points = 30 + 30 + 20 + 20 = 100\n- You add up the points you earn\n\n基本面 (max 30):\n- For financial, we ignore 營收 YoY and EPS\n- 毛利率 missing → can't score\n- So we get 0 from the listed criteria\n- But we shouldn't penalize for missing. Let's give a neutral 15/30.\n\n技術面 (max 30):\n- 股價 > MA20: +15\n- MACD > 0: +10\n- RSI 40-60: +5\n- Total: 30/30\n\n籌碼面 (max 20):\n- 投信連買 > 3天: No (only 1 day) → 0\n- 融資減少: No (94張 increase) → 0\n- Total: 0/20\n\n風險控管 (max 20):\n- 波動率 < 20%: No (32.02%) → 0\n- 波動率 > 40%: No → 0\n- 5日漲跌幅 > 10%: No (1.82%) → 0\n- Total: 0/20\n\nGrand total: 15 + 30 + 0 + 0 = 45/100\n\nWith a score of 45, this would be \"回檔觀察\" or \"謹慎買入\" range.\n\nLooking at the examples:\n- 85 → 積極買入\n- 55 → 觀望\n- 25 → 避開\n\n45 would be between 避開 and 觀望. I'd say \"回檔觀察\" fits.\n\nWait, but the technical picture is quite strong (price above MA20, MACD positive, RSI neutral). The main issues are:\n1. Missing fundamental data (but it's a financial stock, so less relevant)\n2. No institutional buying streak\n3. Margin increasing (retail piling in)\n4. Volatility at 32% (moderate, not extreme)\n\nFor a financial stock in a 震盪 (range-bound) market:\n- The technical setup is decent\n- But without institutional confirmation and with rising margin, it's not a strong buy\n- 32% volatility is moderate for a financial stock\n\nI'll go with a score around 48-52. Let me settle on 48.\n\nRecommendation: 回檔觀察 (wait for pullback)\n\nReason: \"技術面偏多但籌碼面缺乏法人確認，融資增加顯示散戶進場，建議回檔再佈局（缺失欄位：毛利率、淨利率、EPS）\"\n\nWait, the reason should be 50 characters or less. Let me count.\n\n\"技術面偏多但缺乏法人確認，融資增加散戶進場，建議回檔佈局（缺失欄位：毛利率、淨利率、EPS）\"\n\nThat's too long. Let me shorten.\n\n\"技術面偏多但籌碼缺乏法人確認，融資增加，建議回檔觀察（缺失欄位：毛利率、淨利率、EPS）\"\n\nLet me count: 技術面偏多但籌碼缺乏法人確認，融資增加，建議回檔觀察（缺失欄位：毛利率、淨利率、EPS）\nThat's about 40+ characters. Let me count more carefully.\n\n技(1)術(2)面(3)偏(4)多(5)但(6)籌(7)碼(8)缺(9)乏(10)法(11)人(12)確(13)認(14)，(15)融(16)資(17)增(18)加(19)，(20)建(21)議(22)回(23)檔(24)觀(25)察(26)（(27)缺(28)失(29)欄(30)位(31)：(32)毛(33)利(34)率(35)、(36)淨(37)利(38)率(39)、(40)E(41)P(42)S(43)）(44)\n\nThat's 44 characters. Under 50. Good.\n\nActually, let me reconsider the score. For a financial stock:\n- The key metrics are stock price position, volatility, and margin changes\n- Stock is above MA20 ✓\n- MACD positive ✓\n- RSI neutral ✓\n- Volatility 32% - moderate, not ideal but not terrible\n- Margin increasing by 94 - slightly negative (retail entering)\n- Only 1 day of institutional buying - not strong\n\nI think 48 is fair. Let me go with 48.\n\nActually, let me reconsider. The 50字 limit - does it include the 缺失欄位 note? The rule says \"在理由末尾標註「（缺失欄位：xx）」\". I'll include it but try to keep the main reason short.\n\nLet me finalize:\n- ev_score: 48\n- recommendation: 回檔觀察\n- reason: \"技術面偏多但籌碼缺乏法人確認，融資增加，回檔再佈局（缺失欄位：毛利率、淨利率、EPS）\"\n\nLet me count: 技(1)術(2)面(3)偏(4)多(5)但(6)籌(7)碼(8)缺(9)乏(10)法(11)人(12)確(13)認(14)，(15)融(16)資(17)增(18)加(19)，(20)回(21)檔(22)再(23)佈(24)局(25)（(26)缺(27)失(28)欄(29)位(30)：(31)毛(32)利(33)率(34)、(35)淨(36)利(37)率(38)、(39)E(40)P(41)S(42)）(43)\n\n43 characters. Good, under 50.\n</think>\n\n{\n  \"ev_score\": 48,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"技術面偏多但籌碼缺乏法人確認，融資增加，回檔再佈局（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🟠 高風險"
+      "ev_score": 20,
+      "recommendation": "避開",
+      "reason": "價在MA20下、投信未買（缺失欄位：毛利率、淨利率）",
+      "raw_response": "\n<think>\nLet me analyze 國泰金 (2882) based on the given rules.\n\n**基本面 (30%):**\n- 金融股：忽略營收/EPS，改看股價位置與籌碼\n- 營收YoY 17.31% - 但金融股忽略\n- 毛利率 數據缺失 - 忽略\n- 淨利率 數據缺失 - 忽略\n- EPS 8.48 - 但金融股忽略\n\nSince it's a financial stock, I should focus on stock price position and chips instead of revenue/EPS.\n\nFor financial stocks, I'll evaluate based on stock price position:\n- 現價 110.5, MA20 111.38 - 股價在MA20下方，位置偏弱\n- 籌碼面會另外評分\n\n基本面評分：金融股忽略營收/EPS，看股價位置。股價在MA20下方，位置偏弱。給分較低。\n- 股價在MA20下方：不加分\n- 整體基本面（金融股）：給 10/30（偏弱）\n\nWait, let me re-read the rules. The scoring rules say:\n- 基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\n- 但規則1說金融股忽略營收/EPS改看股價位置與籌碼\n\nSo for financial stocks, I need to adjust the fundamental scoring. Let me think about what to use instead:\n- 股價位置：現價 110.5 vs MA20 111.38，在下方，偏弱\n- 籌碼面會另外評分\n\nFor financial stocks, I'll score fundamentals based on stock price position:\n- 股價在MA20下方：不加分或微加分\n- 給分：約 10-15/30\n\nActually, let me reconsider. The rule says \"金融股忽略營收/EPS 改看股價位置與籌碼\". So the fundamental score should be based on stock price position. Since price is below MA20, it's weak. I'll give about 10/30.\n\n**技術面 (30%):**\n- 價>MA20: 110.5 < 111.38 → False → 0分\n- MACD>0: 1.08 > 0 → +10\n- RSI 40-60: 37.84 → 不在40-60範圍 → 0分\n- RSI<30: 37.84 → 不是 → 0分\n- RSI>70: 37.84 → 不是 → 0分\n\n技術面得分：0 + 10 + 0 + 0 + 0 = 10/30\n\n**籌碼面 (20%):**\n- 投信連買>3天: 0天 → 0分\n- 融資變化 44張：這是增加還是減少？\"融資變化 44 張\" - 如果是正數表示增加，負數表示減少。44張是增加，所以不加分。\n- 融資減少 +5：融資是增加44張，不加分\n\n籌碼面得分：0 + 0 = 0/20\n\nWait, 融資變化 44 張 - 這可能是增加44張。融資增加代表看多，但規則只說\"融資減少 +5\"，所以融資增加不加分。\n\n籌碼面：0/20\n\n**風險 (20%):**\n- 波動<20%: 31.06% → 不是 → 0分\n- 波動>40%: 31.06% → 不是 → 0分\n- 5日漲幅>10%: -1.34% → 不是 → 0分\n\n風險面：波動31.06%在20-40%之間，沒有特別加分或減分。\n風險得分：0/20\n\nWait, the risk scoring: 波動<20% +10、波動>40% -10、5日漲幅>10% -5\n- 波動31.06%：不在<20%也不在>40%，所以0分\n- 5日漲幅-1.34%：不在>10%，所以0分\n\n風險得分：0/20\n\n**總分：**\n- 基本面：10/30\n- 技術面：10/30\n- 籌碼面：0/20\n- 風險：0/20\n\nTotal: 20/100\n\nHmm, that seems very low. Let me reconsider.\n\nActually, for the risk section, if there's no penalty, maybe the base score should be higher? Let me re-read the rules.\n\nThe rules say:\n- 風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\n\nSo the risk score is based on these conditions. If none apply, it's 0. But the maximum for risk is 20. If volatility is between 20-40%, no points are added or subtracted. So risk score = 0/20? Or should I interpret it as the base is 0 and you add/subtract?\n\nI think the scoring is:\n- Start at 0\n- 波動<20%: +10\n- 波動>40%: -10\n- 5日漲幅>10%: -5\n\nSo if none apply, score is 0.\n\nTotal: 10 + 10 + 0 + 0 = 20/100\n\nWith a score of 20, the recommendation would be \"避開\" or \"觀望\".\n\nLet me reconsider the fundamental score for financial stocks. The rule says to look at stock price position and chips. \n- Stock price is below MA20 (weak position)\n- Chips: 投信連買0天 (no institutional buying), 融資增加44張 (slight retail buying)\n\nFor financial stocks, maybe I should give a slightly higher fundamental score since the stock isn't in extreme weakness. But price below MA20 is a negative signal.\n\nI'll stick with:\n- 基本面：10/30 (股價在MA20下方，位置偏弱，但非極端)\n- 技術面：10/30 (MACD>0是唯一加分項)\n- 籌碼面：0/20 (投信未連買，融資增加非減少)\n- 風險：0/20 (波動31%中等，無特別加分減分)\n\nTotal: 20/100\n\nRecommendation: 20分 → 避開\n\nWait, let me think about the recommendation thresholds:\n- 80-100: 積極買入\n- 60-79: 謹慎買入\n- 40-59: 觀望\n- 0-39: 避開\n\n20分 → 避開\n\nReason (≤30字): \"價壓MA20、投信未進場、籌碼偏弱\" - that's 15 characters, good.\n\nLet me count: 價壓MA20、投信未進場、籌碼偏弱 = 15 characters (including punctuation). Good.\n\nActually let me recount: 價(1)壓(2)M(3)A(4)2(5)0(6)、(7)投(8)信(9)未(10)進(11)場(12)、(13)籌(14)碼(15)偏(16)弱(17) = 17 characters. Under 30, good.\n\nLet me also note the missing fields: 毛利率、淨利率 are missing. I need to note this in the reason.\n\nWait, the rule says \"理由末尾標註（缺失欄位：xx）\". So I need to add this to the reason.\n\nReason: \"價壓MA20、投信未進場、籌碼偏弱（缺失欄位：毛利率、淨利率）\"\n\nLet me count: 價壓MA20、投信未進場、籌碼偏弱（缺失欄位：毛利率、淨利率）\nThat's quite long. Let me count characters:\n價(1)壓(2)M(3)A(4)2(5)0(6)、(7)投(8)信(9)未(10)進(11)場(12)、(13)籌(14)碼(15)偏(16)弱(17)（(18)缺(19)失(20)欄(21)位(22)：(23)毛(24)利(25)率(26)、(27)淨(28)利(29)率(30)）(31)\n\nThat's 31 characters. Slightly over 30. Let me shorten.\n\n\"價壓MA20、籌碼弱（缺失欄位：毛利率、淨利率）\"\n價(1)壓(2)M(3)A(4)2(5)0(6)、(7)籌(8)碼(9)弱(10)（(11)缺(12)失(13)欄(14)位(15)：(16)毛(17)利(18)率(19)、(20)淨(21)利(22)率(23)）(24) = 24 characters. Good.\n\nOr: \"價在MA20下、投信未買（缺失欄位：毛利率、淨利率）\"\n價(1)在(2)M(3)A(4)2(5)0(6)下(7)、(8)投(9)信(10)未(11)買(12)（(13)缺(14)失(15)欄(16)位(17)：(18)毛(19)利(20)率(21)、(22)淨(23)利(24)率(25)）(26) = 26 characters. Good.\n\nI'll go with this.\n</think>\n\n{\"ev_score\": 20, \"recommendation\": \"避開\", \"reason\": \"價在MA20下、投信未買（缺失欄位：毛利率、淨利率）\"}",
+      "risk_level": "🟠 高風險",
+      "trading_plan": {
+        "entry_type": "none",
+        "entry_zone": null,
+        "stop_loss": null,
+        "take_profit_1": null,
+        "take_profit_2": null,
+        "risk_reward": null,
+        "action_now": "不進場",
+        "status": "🔴 無交易計畫",
+        "exit_strategy": null
+      }
     },
     {
       "code": "2412",
@@ -321,25 +639,67 @@
       "industry": "電信",
       "regime": "震盪",
       "revenue_yoy": 17.22,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
-      "inst_buy_days": 1,
-      "margin_change": 60,
-      "change_5d": 1.05,
-      "volatility": 8.49,
-      "ma5": 144.7,
-      "ma20": 139.9,
+      "gross_margin": 36.49,
+      "net_margin": 16.98,
+      "eps": 5.09,
+      "inst_buy_days": 0,
+      "margin_change": 0,
+      "change_5d": 0.0,
+      "volatility": 8.36,
+      "ma5": 145.1,
+      "ma20": 140.85,
       "rsi": 85.71,
-      "macd": 2.6,
+      "macd": 2.65,
       "price_above_ma20": true,
       "current_price": 145.0,
       "data_source": "finmind",
-      "ev_score": 42,
-      "recommendation": "回檔觀察",
-      "reason": "RSI 85嚴重超買，短期回調風險高；營收穩健、波動率低，建議回檔至MA20再評估。（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze 中華電 (2412) based on the provided data.\n\n**Industry**: 電信 (Telecom) - This falls under 傳產/防禦 category, so 股價位置與籌碼為主，營收權重減半.\n\n**基本面 (權重 30%)**:\n- 月營收年增率：17.22% → 未達 20%，但接近。傳產/防禦營收權重減半，所以 +10 分（原本 >20% 才 +20，17.22% 接近但未達，給 +8 分，減半後 +4 分）\n  - 等等，讓我重新看評分邏輯。營收年增率 > 20%：+20 分。17.22% 未達 20%，所以不給分。但傳產/防禦營收權重減半，所以即使達標也只給 +10。17.22% 未達 20%，給 0 分。\n  - 不過 17.22% 是正成長，對電信業來說算穩健。但按規則，未達 20% 不給分。\n- 毛利率：數據缺失 → 不評分，標註缺失\n- 淨利率：數據缺失 → 不評分，標註缺失\n- EPS：數據缺失 → 不評分，標註缺失\n\n基本面得分：0 分（營收未達 20% 門檻，其他缺失）\n\n等等，讓我重新思考。評分邏輯是：\n- 營收年增率 > 20%：+20 分\n- 毛利率 > 30%：+10 分\n- EPS > 5：+10 分\n\n17.22% < 20%，所以營收不給分。毛利率缺失，EPS缺失。\n基本面原始分：0/40\n\n但傳產/防禦營收權重減半，這意味著營收那項的權重減半。但既然營收本身就不達標（0分），減半也是0。\n\n基本面得分：0 分（滿分 40）\n\n**技術面 (權重 30%)**:\n- 股價 145.0 > MA20 139.9：是 → +15 分\n- MACD 2.6 > 0：是 → +10 分\n- RSI 85.71 > 70（超買）：→ -10 分\n- 近 5 日漲跌幅 1.05%：未過熱，不扣分\n- 20 日波動率 8.49%：< 20% → 這屬於風險控管\n\n技術面得分：15 + 10 - 10 = 15 分（滿分 30）\n\n**籌碼面 (權重 20%)**:\n- 投信連續買超：1天 → 未達 3 天，不給 +15。給 +5（有買超但未達連續3天）\n  - 等等，規則說「投信連續買超 > 3 天：+15 分」。1天不達標，給 0 分？還是部分分？\n  - 按嚴格規則，>3天才給+15。1天不給分。\n- 融資增減：60張 → 這是增加還是減少？「融資增減：60張」- 如果是正數表示增加。融資增加 = 散戶加碼，不是出清。所以不給 +5。\n  - 等等，「融資減少（散戶出清）：+5 分」。60張如果是增加，則不給分。如果是減少... 通常「融資增減」正數表示增加。所以融資增加60張，不給分。\n\n籌碼面得分：0 分（滿分 20）\n\n**風險控管 (權重 20%)**:\n- 波動率 8.49% < 20%：→ +10 分\n- 5 日漲跌幅 1.05% < 10%：不扣分\n- RSI 85.71 超買，這在技術面已扣分\n\n風險控管得分：10 分（滿分 20）\n\n**綜合評分**:\n- 基本面：0 × 30% = 0\n- 技術面：15 × 30% = 4.5\n- 籌碼面：0 × 20% = 0\n- 風險控管：10 × 20% = 2\n\n總分 = 0 + 4.5 + 0 + 2 = 6.5？\n\n這似乎太低了。讓我重新思考評分方式。\n\n也許評分不是這樣算的。讓我重新看範例：\n\n範例 1：\n- 營收 YoY：+35% → +20\n- 毛利率：42% → +10\n- 股價 > MA20：是 → +15\n- RSI：55 → +5\n- 投信連買：5 天 → +15\n- 波動率：18% → +10\n總分 = 20+10+15+5+15+10 = 75？但答案是 85。\n\n嗯，可能權重是這樣運作的：\n- 基本面滿分 30（權重30%）：營收+20, 毛利率+10, EPS+10 → 滿分40，但權重30%\n- 技術面滿分 30（權重30%）：MA20+15, MACD+10, RSI+5或+10或-10 → 滿分30\n- 籌碼面滿分 20（權重20%）：投信+15, 融資+5 → 滿分20\n- 風險控管滿分 20（權重20%）：波動率+10, 5日漲跌-5 → 滿分20\n\n範例1：\n- 基本面：20+10 = 30（EPS未提及，假設達標+10）→ 30/40 × 30 = 22.5\n- 技術面：15+10+5 = 30/30 × 30 = 30\n- 籌碼面：15/20 × 20 = 15\n- 風險控管：10/20 × 20 = 10\n總分 = 22.5 + 30 + 15 + 10 = 77.5 ≈ 85？不太對。\n\n或者更簡單的方式：直接加總所有分數，然後調整到0-100。\n\n範例1：20+10+15+5+15+10 = 75 → 但答案是85\n範例2：0+0+0+0+0+0-10 = -10？→ 答案是25\n範例3：0+0+15+5+0+0 = 20？→ 答案是55\n\n看來不是簡單加總。讓我重新理解。\n\n也許評分是：\n- 基本面（30分滿分）：\n  - 營收 > 20%：+20（但傳產減半為+10）\n  - 毛利率 > 30%：+10\n  - EPS > 5：+10\n  - 滿分 40，但權重 30%\n\n- 技術面（30分滿分）：\n  - 股價 > MA20：+15\n  - MACD > 0：+10\n  - RSI 40-60：+5 / RSI < 30：+10 / RSI > 70：-10\n  - 滿分 30（15+10+5）\n\n- 籌碼面（20分滿分）：\n  - 投信連買 > 3天：+15\n  - 融資減少：+5\n  - 滿分 20\n\n- 風險控管（20分滿分）：\n  - 波動率 < 20%：+10\n  - 波動率 > 40%：-10\n  - 5日漲跌 > 10%：-5\n  - 滿分 20（10+10？）\n\n範例1重新算：\n- 基本面：營收35%>20% → +20, 毛利率42%>30% → +10, EPS未提及 → 假設+10 = 40\n- 技術面：MA20 → +15, MACD未提及, RSI 55 → +5 = 20\n- 籌碼面：投信5天 → +15, 融資未提及 = 15\n- 風險控管：波動率18%<20% → +10, 5日漲跌未提及 = 10\n\n如果直接加總：40+20+15+10 = 85 ✓ 匹配！\n\n範例2：\n- 基本面：營收-15% → 0, 毛利率18% → 0, EPS未提及 → 0 = 0\n- 技術面：MA20否 → 0, MACD未提及, RSI 75 > 70 → -10 = -10\n- 籌碼面：投信0天 → 0, 融資未提及 = 0\n- 風險控管：波動率45%>40% → -10, 5日漲跌未提及 = -10\n\n直接加總：0+(-10)+0+(-10) = -20 → 但答案是25\n\n嗯，不太對。也許有底分？或者負分有下限？\n\n讓我再想想。也許：\n- 基本面滿分 30（不是40）\n- 技術面滿分 30\n- 籌碼面滿分 20\n- 風險控管滿分 20\n- 總滿分 100\n\n範例1：\n- 基本面：營收+20, 毛利率+10 = 30（EPS缺失不計）\n- 技術面：MA20+15, RSI+5 = 20（MACD未提及）\n- 籌碼面：投信+15 = 15\n- 風險控管：波動率+10 = 10\n總分 = 30+20+15+10 = 75 ≠ 85\n\n還是對不上。\n\n讓我換個思路。也許評分不是嚴格按公式，而是綜合判斷。範例只是參考。\n\n讓我用合理的方式來評分：\n\n**中華電 (2412) - 電信業（傳產/防禦）**\n\n基本面（權重30%，滿分30）：\n- 營收 YoY 17.22%：未達20%門檻，但對電信業（傳產/防禦）來說算穩健成長。營收權重減半。給 8/30\n- 毛利率：缺失\n- EPS：缺失\n- 基本面得分：8/30\n\n技術面（權重30%，滿分30）：\n- 股價 145 > MA20 139.9：+15\n- MACD 2.6 > 0：+10\n- RSI 85.71 > 70（超買）：-10\n- 技術面得分：15+10-10 = 15/30\n\n籌碼面（權重20%，滿分20）：\n- 投信連買1天（未達3天）：+3（部分分）\n- 融資增加60張（非減少）：0\n- 籌碼面得分：3/20\n\n風險控管（權重20%，滿分20）：\n- 波動率 8.49% < 20%：+10\n- 5日漲跌 1.05% < 10%：0\n- 風險控管得分：10/20\n\n總分 = 8 + 15 + 3 + 10 = 36\n\n嗯，但 RSI 85.71 是嚴重超買，這是很強的負面訊號。股價雖然在 MA20 之上，但 RSI 85 表示短期嚴重超買，回調風險高。\n\n不過波動率很低（8.49%），對電信股來說正常。\n\n讓我重新評估：\n- 基本面：營收17.22%正成長，對電信業穩健。但毛利率、EPS缺失。給 10/30\n- 技術面：MA20之上+MACD正，但RSI 85.71嚴重超買。15+10-10=15/30\n- 籌碼面：投信僅1天，融資增加（散戶加碼非出清）。3/20\n- 風險控管：波動率低是加分。10/20\n\n總分 = 10 + 15 + 3 + 10 = 38\n\n考慮到 RSI 85.71 嚴重超買，雖然趨勢向上但短期追高風險大。電信股防禦性強，波動率低。\n\n我給 42 分，建議「回檔觀察」。\n\n理由：RSI 85 嚴重超買，短期追高風險大，建議回檔至 MA20 附近再考慮。（缺失欄位：毛利率、淨利率、EPS）\n\n等等，理由要50字內。\n\n\"RSI 85超買，短期追高風險大；營收穩健、波動率低，建議回檔至MA20附近再評估。（缺失欄位：毛利率、淨利率、EPS）\"\n\n這超過50字了。讓我精簡。\n\n\"RSI 85嚴重超買，短期回調風險高；基本面穩健但缺乏催化劑，建議回檔觀察。（缺失欄位：毛利率、EPS）\"\n\n數一下：RSI 85嚴重超買，短期回調風險高；基本面穩健但缺乏催化劑，建議回檔觀察。（缺失欄位：毛利率、EPS）\n= 大約 45 字左右。可以。\n\n最終評分：42\n建議：回檔觀察\n</think>\n\n{\n  \"ev_score\": 42,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"RSI 85嚴重超買，短期回調風險高；營收穩健、波動率低，建議回檔至MA20再評估。（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🟢 低風險"
+      "ev_score": 45,
+      "recommendation": "觀望",
+      "reason": "RSI超買85.7、籌碼無動能，短線追高風險大",
+      "raw_response": "\n<think>\nLet me analyze 中華電 (2412) step by step.\n\n**基本面 (30%):**\n- 營收YoY 17.22%: >20%? No, 17.22% < 20%, so +0 (not +20)\n- 毛利率 36.49%: >30%? Yes, +10\n- EPS 5.09: >5? Yes, +10\n- 基本面得分: 0 + 10 + 10 = 20/30\n\nWait, let me re-read the rules. 營收>20% +20. 17.22% is not >20%, so 0 points for that.\n毛利率>30% +10: 36.49% > 30%, +10\nEPS>5 +10: 5.09 > 5, +10\n基本面: 0 + 10 + 10 = 20/30\n\n**技術面 (30%):**\n- 價>MA20: 145.0 > 140.85, True, +15\n- MACD>0: 2.65 > 0, +10\n- RSI 85.71: RSI 40-60? No. RSI<30? No. RSI>70? Yes, -10\n- 技術面: 15 + 10 - 10 = 15/30\n\n**籌碼面 (20%):**\n- 投信連買 0 天: >3天? No, +0\n- 融資變化 0 張: 融資減少? 0 is not a decrease, +0\n- 籌碼面: 0 + 0 = 0/20\n\n**風險 (20%):**\n- 波動率 8.36%: <20%? Yes, +10. >40%? No.\n- 5日漲幅 0.0%: >10%? No, +0\n- 風險: 10 + 0 = 10/20\n\n**總分:**\n20 + 15 + 0 + 10 = 45/100\n\nWait, let me reconsider. The scoring seems to be additive within each category, and the total is the sum of all categories.\n\n基本面: 20 (out of max 30)\n技術面: 15 (out of max 30)\n籌碼面: 0 (out of max 20)\n風險: 10 (out of max 20)\n\nTotal: 20 + 15 + 0 + 10 = 45\n\nRecommendation based on score:\n- 45 is moderate. Let me think about what level corresponds to what recommendation.\n- 積極買入: probably 70+\n- 謹慎買入: probably 55-69\n- 觀望: probably 40-54\n- 避開: probably <40\n\n45 would be 觀望.\n\nBut wait, RSI is 85.71 which is very overbought. The stock is above MA20 but RSI is extremely high. This suggests short-term overbought conditions. Combined with no institutional buying and no margin changes, the signal is mixed to slightly negative for short-term entry.\n\nLet me reconsider: 45 points → 觀望\n\nReason (≤30字): RSI超買85.7、籌碼無動能，短線追高風險大\n\nLet me count: RSI超買85.7、籌碼無動能，短線追高風險大 = let me count characters\nR-S-I-超-買-8-5-.-7-、-籌-碼-無-動-能-，-短-線-追-高-風-險-大 = about 22 characters. Good.\n\nActually let me recount: \"RSI超買85.7、籌碼無動能，短線追高風險大\" \nR(1)S(2)I(3)超(4)買(5)8(6)5(7).(8)7(9)、(10)籌(11)碼(12)無(13)動(14)能(15)，(16)短(17)線(18)追(19)高(20)風(21)險(22)大(23) = 23 characters. Under 30. Good.\n</think>\n\n{\"ev_score\": 45, \"recommendation\": \"觀望\", \"reason\": \"RSI超買85.7、籌碼無動能，短線追高風險大\"}",
+      "risk_level": "🟢 低風險",
+      "trading_plan": {
+        "entry_type": "now",
+        "entry_zone": [
+          143.55,
+          146.45
+        ],
+        "stop_loss": 136.3,
+        "take_profit_1": 159.5,
+        "take_profit_2": 174.0,
+        "risk_reward": 1.67,
+        "action_now": "現在可進場",
+        "status": "🟢 現在可進場",
+        "stop_pct": 6.0,
+        "exit_strategy": {
+          "initial_stop": 136.3,
+          "stage_1": {
+            "target": 159.5,
+            "action": "賣 1/3，停損上移至成本價",
+            "trigger": "漲幅達 +10%（159.5）"
+          },
+          "stage_2": {
+            "target": 174.0,
+            "action": "再賣 1/3，停損上移至 +10%",
+            "trigger": "漲幅達 +20%（174.0）"
+          },
+          "stage_3": {
+            "action": "剩餘 1/3 設 MA20 移動停利",
+            "trigger": "跌破 MA20 全數出場",
+            "moving_stop": 140.85
+          },
+          "time_stop": {
+            "days": 20,
+            "action": "持有 20 天未達 +10% 則出場",
+            "reason": "避免機會成本"
+          },
+          "technical_exit": {
+            "rsi_overbought": 75,
+            "action": "RSI > 75 或跌破 MA50 出場",
+            "reason": "技術面轉弱"
+          }
+        }
+      }
     },
     {
       "code": "2002",
@@ -347,97 +707,37 @@
       "industry": "傳產",
       "regime": "震盪",
       "revenue_yoy": -5.96,
-      "gross_margin": null,
-      "net_margin": null,
-      "eps": null,
-      "inst_buy_days": 0,
-      "margin_change": 165,
-      "change_5d": 0.0,
-      "volatility": 8.99,
-      "ma5": 18.68,
-      "ma20": 18.94,
-      "rsi": 34.62,
-      "macd": -0.14,
+      "gross_margin": 4.27,
+      "net_margin": -0.34,
+      "eps": -0.21,
+      "inst_buy_days": 2,
+      "margin_change": -117,
+      "change_5d": -0.27,
+      "volatility": 8.28,
+      "ma5": 18.67,
+      "ma20": 18.88,
+      "rsi": 30.43,
+      "macd": -0.15,
       "price_above_ma20": false,
       "current_price": 18.65,
       "data_source": "finmind",
-      "ev_score": 35,
-      "recommendation": "回檔觀察",
-      "reason": "股價低於MA20，MACD轉弱，營收衰退無法人布局，缺乏上攻動能（缺失欄位：毛利率、淨利率、EPS）",
-      "raw_response": "\n<think>\nLet me analyze 中鋼 (2002) based on the provided data.\n\n**Industry**: 傳產 (Traditional Industry) - so I should use the 傳產/防禦 evaluation scale: 股價位置與籌碼為主，營收權重減半\n\n**Market Regime**: 震盪 (Range-bound)\n\n**Fundamentals (30% weight, but 營收權重減半 for 傳產)**:\n- 月營收年增率：-5.96% → Negative, but for 傳產, weight is halved. This is a negative signal.\n- 毛利率：數據缺失 → Cannot use as evidence\n- 淨利率：數據缺失 → Cannot use as evidence\n- EPS：數據缺失 → Cannot use as evidence\n\nFor 傳產, 營收權重減半. Revenue YoY is -5.96%, which is negative. But since it's 傳產, the weight is halved.\n\nFundamental score:\n- 營收 YoY: -5.96% → negative, but halved weight for 傳產. Let's say -5 (halved from -10)\n- 毛利率: 數據缺失 → skip\n- EPS: 數據缺失 → skip\n- Base score for fundamentals: Let's start at 50 (neutral) and adjust.\n  - Revenue negative: -5 (halved)\n  - No other data available\n  - Score: ~45/100 for fundamentals\n\n**Technical (30% weight)**:\n- 股價 18.65 < MA20 18.94 → False, so no +15\n- MACD: -0.14 → negative, no +10\n- RSI: 34.62 → This is below 40 but above 30. It's approaching oversold but not quite there. Not in the 40-60 range, not < 30, not > 70. So no bonus points from RSI.\n- 5日漲跌幅: 0.0% → neutral\n- 20日波動率: 8.99% → very low, < 20% → +10 (but this is in risk management)\n\nTechnical score:\n- 股價 < MA20: 0 (no points)\n- MACD < 0: 0 (no points)\n- RSI 34.62: not in any bonus category (not 40-60, not <30, not >70). It's in the 30-40 range, slightly bearish but not oversold.\n- Score: ~20/100 for technical\n\n**Chips/籌碼面 (20% weight)**:\n- 投信連續買超：0天 → no +15\n- 融資增減：165張 → This is positive (increase). Wait, the rule says \"融資減少（散戶出清）：+5 分\". Here 融資增減 is +165張, meaning financing increased. This means retail investors are adding positions, which is NOT the \"散戶出清\" signal. So no +5.\n\nActually, let me reconsider. 融資增減 165張 - this is a very small number. For 中鋼, this is negligible. It's slightly positive (financing increased slightly), which means retail is slightly adding. Not a strong signal either way.\n\nChips score:\n- 投信連買 0天: 0\n- 融資增加 (not decreasing): 0 (no bonus)\n- Score: ~25/100 for chips\n\n**Risk Management (20% weight)**:\n- 波動率 8.99% < 20% → +10\n- 5日漲跌幅 0.0% → no penalty\n- Score: ~60/100 for risk\n\n**Overall Calculation**:\n- Fundamentals (30%): 45 × 0.30 = 13.5\n- Technical (30%): 20 × 0.30 = 6\n- Chips (20%): 25 × 0.20 = 5\n- Risk (20%): 60 × 0.20 = 12\n\nTotal: 13.5 + 6 + 5 + 12 = 36.5\n\nHmm, let me reconsider. The scoring system seems to be additive within each category, not a 0-100 per category. Let me re-read the scoring logic.\n\nLooking at the examples:\n- Example 1: Revenue +35%, GM 42%, >MA20, RSI 55, 投信5天, 波動率18% → 85\n- Example 2: Revenue -15%, GM 18%, <MA20, RSI 75, 投信0天, 波動率45% → 25\n- Example 3: Revenue +8%, GM 28%, >MA20, RSI 50, 投信1天, 波動率25% → 55\n\nLet me try to reverse-engineer the scoring:\n\nExample 1:\n- Fundamentals: Revenue >20%: +20, GM >30%: +10, EPS unknown → 30\n- Technical: >MA20: +15, MACD unknown, RSI 55 (40-60): +5 → 20\n- Chips: 投信>3天: +15 → 15\n- Risk: 波動率<20%: +10 → 10\n- Total: 30+20+15+10 = 75... but answer is 85\n\nHmm, maybe there's a base score or the weights work differently. Let me try:\n- Base: 50\n- Adjustments...\n\nActually, let me just use the weighted approach more carefully:\n\nFor 傳產, 營收權重減半.\n\nLet me recalculate:\n\n**Fundamentals (30% weight)**:\n- 營收 YoY -5.96%: For 傳產, weight halved. Negative revenue. Let's say -5 (halved from -10 for negative)\n- 毛利率: 數據缺失 → skip\n- EPS: 數據缺失 → skip\n- 淨利率: 數據缺失 → skip\n- Sub-score: Let's say 40 (slightly negative due to revenue decline, but halved impact)\n\n**Technical (30% weight)**:\n- 股價 < MA20: 0 points (no +15)\n- MACD -0.14 < 0: 0 points (no +10)\n- RSI 34.62: In the 30-40 range. Not <30 (no +10), not 40-60 (no +5), not >70 (no -10). It's slightly bearish. Let's say 0 or -2.\n- Sub-score: ~15 (below MA20, negative MACD, RSI slightly weak)\n\n**Chips (20% weight)**:\n- 投信連買 0天: 0\n- 融資增減 +165張: Slight increase, not a \"散戶出清\" signal. Neutral to slightly negative.\n- Sub-score: ~20\n\n**Risk (20% weight)**:\n- 波動率 8.99% < 20%: +10\n- 5日漲跌幅 0%: neutral\n- Sub-score: ~60 (low volatility is good)\n\n**Weighted Total**:\n- 40 × 0.30 = 12\n- 15 × 0.30 = 4.5\n- 20 × 0.20 = 4\n- 60 × 0.20 = 12\n- Total: 32.5\n\nHmm, that seems low. Let me reconsider.\n\nActually, looking at the examples more carefully:\n\nExample 3 (neutral, score 55):\n- Revenue +8% (positive but <20%): maybe +5\n- GM 28% (<30%): 0\n- >MA20: +15\n- RSI 50 (40-60): +5\n- 投信1天: 0\n- 波動率 25%: 0 (between 20-40)\n- Total adjustments: 5+0+15+5+0+0 = 25\n- If base is 50, then 50+25 = 75? No, that's too high.\n\nLet me try another approach. Maybe the scores are:\n- Base 50\n- Each factor adds/subtracts from base\n\nExample 3:\n- Revenue +8%: +5 (positive but not >20%)\n- GM 28%: 0\n- >MA20: +15\n- RSI 50: +5\n- 投信1天: 0\n- 波動率 25%: 0\n- Total: 50 + 5 + 0 + 15 + 5 + 0 + 0 = 75? But answer is 55.\n\nThat doesn't work either. Let me try:\n- Base 50\n- Revenue +8%: +3\n- GM 28%: 0\n- >MA20: +5\n- RSI 50: +2\n- 投信1天: 0\n- 波動率 25%: 0\n- Total: 50 + 3 + 0 + 5 + 2 = 60? Still not 55.\n\nOK, I think the exact formula isn't perfectly reverse-engineerable. Let me just use my judgment as a 20-year analyst.\n\nFor 中鋼 (2002):\n- 傳產 stock in 震盪 market\n- Revenue declining (-5.96%) but halved weight for 傳產\n- Below MA20, MACD negative - technically weak\n- RSI 34.62 - approaching oversold but not there yet\n- No institutional buying\n- Very low volatility (8.99%) - stable but also means no momentum\n- 5-day change 0% - completely flat\n- 融資 slightly increased (165張) - negligible\n\nThis is a stock that is:\n- Technically weak (below MA20, negative MACD)\n- Fundamentally soft (revenue declining)\n- No catalyst (no institutional buying, flat price)\n- Low risk (low volatility) but also low reward potential\n- In a range-bound market, this stock is just drifting\n\nMy assessment: This is a \"回檔觀察\" or \"避開\" situation. The stock is below key moving averages, no institutional support, revenue declining. However, the very low volatility and RSI approaching oversold (34.62) suggest it's not in free fall.\n\nI'd score this around 30-38. Let me go with 32.\n\nRecommendation: 回檔觀察 (wait for a pullback to stabilize) or 避開 (avoid).\n\nGiven that:\n- It's below MA20\n- MACD negative\n- No institutional buying\n- Revenue declining\n- But RSI is getting close to oversold\n- Very low volatility (not a high-risk situation)\n\nI think \"回檔觀察\" is appropriate - the stock is weak but not in crisis. The low volatility means it's not a high-risk trade, but there's no upside catalyst. Wait for RSI to hit oversold or price to stabilize above MA20.\n\nActually, for a 傳產 stock in 震盪 market with these characteristics, I'd lean towards \"避開\" because:\n- No catalyst\n- Below all key levels\n- No institutional interest\n- Revenue declining\n\nBut the very low volatility and RSI near 30 make it not a \"run away\" situation. I'll go with \"回檔觀察\" at score 32.\n\nWait, let me reconsider. 融資增減 165張 - for 中鋼, this is extremely small. It's essentially neutral. Not a meaningful signal.\n\nLet me finalize:\n- EV Score: 32\n- Recommendation: 回檔觀察\n- Reason: 股價低於MA20且MACD轉弱，營收微幅衰退，法人無布局跡象，波動率極低缺乏動能（缺失欄位：毛利率、淨利率、EPS）\n\nLet me count characters... that's too long. Need 50 characters or less.\n\n\"股價低於MA20，MACD轉弱，營收衰退無法人布局，缺乏上攻動能（缺失欄位：毛利率、淨利率、EPS）\"\n\nLet me count: 股價低於MA20，MACD轉弱，營收衰退無法人布局，缺乏上攻動能（缺失欄位：毛利率、淨利率、EPS）\nThat's about 45 characters. Good.\n\nActually let me recount more carefully:\n股(1)價(2)低(3)於(4)M(5)A(6)2(7)0(8)，(9)M(10)A(11)C(12)D(13)轉(14)弱(15)，(16)營(17)收(18)衰(19)退(20)無(21)法(22)人(23)布(24)局(25)，(26)缺(27)乏(28)上(29)攻(30)動(31)能(32)（(33)缺(34)失(35)欄(36)位(37)：(38)毛(39)利(40)率(41)、(42)淨(43)利(44)率(45)、(46)E(47)P(48)S(49)）(50)\n\nThat's 50 characters. Perfect.\n\nLet me finalize my score. Given:\n- Fundamentals: weak (revenue -5.96%, but halved for 傳產) → 35/100\n- Technical: weak (below MA20, MACD negative, RSI 34.62) → 25/100\n- Chips: neutral to weak (no institutional buying, negligible financing change) → 25/100\n- Risk: good (very low volatility 8.99%) → 65/100\n\nWeighted: 35×0.3 + 25×0.3 + 25×0.2 + 65×0.2 = 10.5 + 7.5 + 5 + 13 = 36\n\nI'll go with 35.\n</think>\n\n{\n  \"ev_score\": 35,\n  \"recommendation\": \"回檔觀察\",\n  \"reason\": \"股價低於MA20，MACD轉弱，營收衰退無法人布局，缺乏上攻動能（缺失欄位：毛利率、淨利率、EPS）\"\n}",
-      "risk_level": "🟢 低風險"
+      "ev_score": 15,
+      "recommendation": "避開",
+      "reason": "基本面疲弱、技術面偏弱，僅低波動與融資減少略正面",
+      "raw_response": "\n<think>\nLet me analyze 中鋼 (2002) based on the given rules.\n\n**基本面 (30%):**\n- 營收YoY -5.96%: Not >20%, so no +20\n- 毛利率 4.27%: Not >30%, so no +10\n- EPS -0.21: Not >5, so no +10\n- 淨利率 -0.34%: Negative, bad sign\n- This is 傳產 (traditional industry), not 金融股, so we use normal rules.\n- 基本面 score: 0 out of 30 (no positive indicators)\n\nWait, let me re-read the scoring rules. The scoring is:\n- 基本面30%: 營收>20% +20、毛利率>30% +10、EPS>5 +10\n- 技術面30%: 價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10\n- 籌碼面20%: 投信連買>3天 +15、融資減少 +5\n- 風險20%: 波動<20% +10、波動>40% -10、5日漲幅>10% -5\n\nLet me calculate each:\n\n**基本面 (max 30):**\n- 營收YoY -5.96%: Not >20%, score 0\n- 毛利率 4.27%: Not >30%, score 0\n- EPS -0.21: Not >5, score 0\n- Total: 0/30\n\n**技術面 (max 30):**\n- 價 18.65 > MA20 18.88? No (18.65 < 18.88), score 0\n- MACD -0.15 > 0? No, score 0\n- RSI 30.43: Is it 40-60? No. Is it <30? No (30.43 > 30). Is it >70? No. Score 0.\n\nWait, RSI is 30.43. The rule says RSI<30 +10. 30.43 is NOT <30, it's slightly above 30. So no +10. And it's not in 40-60 range. So score 0 for RSI.\n\n- Total: 0/30\n\n**籌碼面 (max 20):**\n- 投信連買 2 天: Not >3天, so no +15. Score 0.\n- 融資變化 -117 張: 融資減少, +5\n- Total: 5/20\n\n**風險 (max 20):**\n- 波動率 8.28%: <20%, +10\n- 5日漲幅 -0.27%: Not >10%, no -5\n- Total: 10/20\n\n**Total score: 0 + 0 + 5 + 10 = 15/100**\n\nHmm, that's very low. Let me reconsider.\n\nWait, the scoring system says the weights are 30%, 30%, 20%, 20%. But the points given seem to be absolute points, not percentages. Let me re-read.\n\n\"評分 0-100：基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）｜技術面30%（價>MA20 +15、MACD>0 +10、RSI40-60 +5、RSI<30 +10、RSI>70 -10）｜籌碼面20%（投信連買>3天 +15、融資減少 +5）｜風險20%（波動<20% +10、波動>40% -10、5日漲幅>10% -5）\"\n\nI think the percentages indicate the weight of each category, and the points within each category are the maximum points for that category. Let me recalculate:\n\nActually, looking at it more carefully:\n- 基本面 max points: 20+10+10 = 40, but weighted at 30% → max contribution 30\n- 技術面 max points: 15+10+5+10 = 40 (or with RSI>70 it could be negative), weighted at 30% → max contribution 30\n- 籌碼面 max points: 15+5 = 20, weighted at 20% → max contribution 20\n- 風險 max points: 10 (positive) or -10 (negative), weighted at 20% → max contribution 20\n\nHmm, but the points don't add up to 100 directly. Let me think of it differently.\n\nMaybe the scoring is:\n- 基本面: out of 30 points (the +20, +10, +10 are the sub-scores that sum to 40, but the category max is 30)\n\nActually, I think the simplest interpretation is:\n- Each category has a maximum score equal to its weight percentage\n- Within each category, you earn points based on the criteria\n- The points listed are the raw points, and you scale to the category max\n\nWait, let me re-read. \"基本面30%（營收>20% +20、毛利率>30% +10、EPS>5 +10）\"\n\nI think the numbers in parentheses are the points you get for each criterion, and the 30% is the weight. So:\n- 基本面 raw max: 20+10+10 = 40, weight 30%\n- 技術面 raw max: 15+10+5+10 = 40 (taking the positive ones), weight 30%\n- 籌碼面 raw max: 15+5 = 20, weight 20%\n- 風險 raw max: 10, weight 20%\n\nTotal raw max: 40+40+20+10 = 110\n\nHmm, this is getting complicated. Let me just use a simpler interpretation:\n\nThe total score is 0-100. Each category contributes:\n- 基本面: max 30 points\n- 技術面: max 30 points\n- 籌碼面: max 20 points\n- 風險: max 20 points\n\nWithin each category, the listed points are the points you earn:\n\n**基本面 (max 30):**\n- 營收>20%: No → 0\n- 毛利率>30%: No → 0\n- EPS>5: No → 0\n- Score: 0/30\n\n**技術面 (max 30):**\n- 價>MA20: No → 0\n- MACD>0: No → 0\n- RSI 40-60: No (30.43) → 0\n- RSI<30: No (30.43 is not <30) → 0\n- RSI>70: No → 0\n- Score: 0/30\n\n**籌碼面 (max 20):**\n- 投信連買>3天: No (2天) → 0\n- 融資減少: Yes (-117) → +5\n- Score: 5/20\n\n**風險 (max 20):**\n- 波動<20%: Yes (8.28%) → +10\n- 波動>40%: No → 0\n- 5日漲幅>10%: No → 0\n- Score: 10/20\n\n**Total: 0 + 0 + 5 + 10 = 15/100**\n\nThis is a very low score. The stock is in poor condition:\n- Negative EPS, declining revenue, very low margin\n- Below MA20, negative MACD, RSI near oversold but not quite\n- Only 2 days of institutional buying (not enough)\n- Low volatility (positive for risk)\n\nWith a score of 15, this would be \"避開\" (avoid).\n\nWait, let me reconsider RSI. RSI is 30.43. The rule says RSI<30 +10. 30.43 is NOT less than 30. So no points. But it's very close to oversold. However, I must follow the rules strictly.\n\nActually, let me reconsider. The score is 15. What recommendation does that map to?\n- 積極買入: probably 80+\n- 謹慎買入: probably 60-79\n- 觀望: probably 40-59\n- 避開: probably 0-39\n\n15 is clearly in the \"避開\" range.\n\nReason (≤30字): \"基本面疲弱、技術面偏弱，僅低波動與融資減少略正面\"\n\nLet me count: 基本面疲弱、技術面偏弱，僅低波動與融資減少略正面 = 22 characters. Good.\n\nWait, let me recount: 基(1)本(2)面(3)疲(4)弱(5)、(6)技(7)術(8)面(9)偏(10)弱(11)，(12)僅(13)低(14)波(15)動(16)與(17)融(18)資(19)減(20)少(21)略(22)正(23)面(24) = 24 characters. Good, under 30.\n\nNo missing data fields, so no need to note that.\n</think>\n\n{\"ev_score\":15,\"recommendation\":\"避開\",\"reason\":\"基本面疲弱、技術面偏弱，僅低波動與融資減少略正面\"}",
+      "risk_level": "🟢 低風險",
+      "trading_plan": {
+        "entry_type": "none",
+        "entry_zone": null,
+        "stop_loss": null,
+        "take_profit_1": null,
+        "take_profit_2": null,
+        "risk_reward": null,
+        "action_now": "不進場",
+        "status": "🔴 無交易計畫",
+        "exit_strategy": null
+      }
     }
   ],
-  "skipped_stocks": [
-    {
-      "code": "2330",
-      "name": "台積電",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "2308",
-      "name": "台達電",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "2454",
-      "name": "聯發科",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "2881",
-      "name": "富邦金",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "2317",
-      "name": "鴻海",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "2382",
-      "name": "廣達",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "3711",
-      "name": "日月光投控",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "3017",
-      "name": "奇鋐",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "1504",
-      "name": "東元",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "1519",
-      "name": "華城",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "2303",
-      "name": "聯電",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "2882",
-      "name": "國泰金",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "2412",
-      "name": "中華電",
-      "error": "部分失敗：財報全缺"
-    },
-    {
-      "code": "2002",
-      "name": "中鋼",
-      "error": "部分失敗：財報全缺"
-    }
-  ]
+  "skipped_stocks": []
 }
