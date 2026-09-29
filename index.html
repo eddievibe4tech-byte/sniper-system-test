@@ -275,6 +275,15 @@
             });
         }
 
+        // 🆕 (PR#127 review) 統一數字格式化（單一全域定義，去除各渲染函數內的重複宣告 — DRY）：
+        //    四捨五入至 2 位，防浮動精度長小數直出 DOM；
+        //    null/undefined/空字串/非數值一律顯示 '-'（不可讓 Number(null)=0 誤導成「停損 0.00」）
+        const fmtNum = (v) => {
+            if (v == null || v === '') return '-';
+            const n = Number(v);
+            return Number.isFinite(n) ? n.toFixed(2) : '-';
+        };
+
         // 🟡 Loading Spinner HTML 模板 (統一 UI)
         function getLoadingHtml(message) {
             return `<tr><td colspan="5" class="px-4 py-4 text-center"><div class="loading-spinner"></div> ${message}</td></tr>`;
@@ -709,23 +718,24 @@
 
             const tp = r.trading_plan;
             const gap = r.current_price && r.ma20 ? ((r.current_price - r.ma20) / r.ma20 * 100) : 0;
-            const zoneLow = Array.isArray(tp.entry_zone) ? (tp.entry_zone[0] ?? '-') : '-';
-            const zoneHigh = Array.isArray(tp.entry_zone) ? (tp.entry_zone[1] ?? '-') : '-';
+            // 🆕 (PR#127 review) fmtNum 已提升為全域單一定義（見 script 頂層）
+            const zoneLow = Array.isArray(tp.entry_zone) ? fmtNum(tp.entry_zone[0]) : '-';
+            const zoneHigh = Array.isArray(tp.entry_zone) ? fmtNum(tp.entry_zone[1]) : '-';
 
             let guide = '<div class="text-sm space-y-2">';
 
             if (tp.entry_type === 'pullback' && gap > 3) {
                 guide += `<p class="font-semibold text-blue-700">📌 情境 A：價格回踩到 ${zoneLow}~${zoneHigh}</p>`;
-                guide += `<p class="ml-4 text-gray-700">→ 掛限價單買入，設停損 ${tp.stop_loss ?? '-'}，停利 ${tp.take_profit_1 ?? '-'}/${tp.take_profit_2 ?? '-'}</p>`;
+                guide += `<p class="ml-4 text-gray-700">→ 掛限價單買入，設停損 ${fmtNum(tp.stop_loss)}，停利 ${fmtNum(tp.take_profit_1)}/${fmtNum(tp.take_profit_2)}</p>`;
                 guide += `<p class="font-semibold text-blue-700 mt-2">📌 情境 B：價格突破前高（需手動確認）</p>`;
                 guide += `<p class="ml-4 text-gray-700">→ 市價追入半倉，設停損 突破價-4%</p>`;
-                guide += `<p class="font-semibold text-blue-700 mt-2">📌 情境 C：價格跌破 MA20（${r.ma20 ? r.ma20.toFixed(2) : '-'}）</p>`;
+                guide += `<p class="font-semibold text-blue-700 mt-2">📌 情境 C：價格跌破 MA20（${fmtNum(r.ma20)}）</p>`;
                 guide += `<p class="ml-4 text-gray-700">→ 不買入，等站回 MA20 再說</p>`;
             } else if (tp.entry_type === 'now') {
-                guide += `<p class="font-semibold text-green-700">📌 現在可進場（現價 ${r.current_price ?? '-'} 在進場區間內）</p>`;
-                guide += `<p class="ml-4 text-gray-700">→ 限價單 ${zoneLow}~${zoneHigh}，設停損 ${tp.stop_loss ?? '-'}</p>`;
+                guide += `<p class="font-semibold text-green-700">📌 現在可進場（現價 ${fmtNum(r.current_price)} 在進場區間內）</p>`;
+                guide += `<p class="ml-4 text-gray-700">→ 限價單 ${zoneLow}~${zoneHigh}，設停損 ${fmtNum(tp.stop_loss)}</p>`;
             } else if (tp.entry_type === 'reclaim') {
-                guide += `<p class="font-semibold text-yellow-700">📌 等價格站回 MA20（${r.ma20 ? r.ma20.toFixed(2) : '-'}）</p>`;
+                guide += `<p class="font-semibold text-yellow-700">📌 等價格站回 MA20（${fmtNum(r.ma20)}）</p>`;
                 guide += `<p class="ml-4 text-gray-700">→ 確認收盤站穩後再進場，設停損 MA20-3%</p>`;
             } else {
                 // 🆕 (PR#121 review P1) Fallback：資料異常（如 pullback 但 gap<=3）時顯示通用提示，避免空白卡片
@@ -745,11 +755,13 @@
 
             const es = r.trading_plan.exit_strategy;
 
+            // 🆕 (PR#127 review) fmtNum 已提升為全域單一定義（見 script 頂層）
+
             let html = '<div class="text-sm space-y-3">';
 
             // 初始停損
             html += `<div class="border-l-4 border-red-500 pl-3">`;
-            html += `<p class="font-semibold text-red-700">🛑 初始停損：${es.initial_stop ?? '-'}</p>`;
+            html += `<p class="font-semibold text-red-700">🛑 初始停損：${fmtNum(es.initial_stop)}</p>`;
             html += `<p class="text-gray-600 text-xs">跌破此價無條件出場，控制最大虧損</p>`;
             html += `</div>`;
 
@@ -773,7 +785,7 @@
             if (es.stage_3) {
                 html += `<div class="border-l-4 border-blue-500 pl-3">`;
                 html += `<p class="font-semibold text-blue-700">🎯 階段 3：${escapeHTML(es.stage_3.action ?? '')}</p>`;
-                html += `<p class="text-gray-600 text-xs">→ 當前 MA20：${es.stage_3.moving_stop ?? '-'}（每日更新）｜${escapeHTML(es.stage_3.trigger ?? '')}</p>`;
+                html += `<p class="text-gray-600 text-xs">→ 當前 MA20：${fmtNum(es.stage_3.moving_stop)}（每日更新）｜${escapeHTML(es.stage_3.trigger ?? '')}</p>`;
                 html += `</div>`;
             }
 
@@ -787,9 +799,23 @@
 
             // 技術面出場
             if (es.technical_exit) {
+                // 🆕 (PR#127 review) RSI 警示：目前 RSI >= 超買閾值 → 紅色「已達超買，注意減碼」
+                //    （PR#127 review：先檢查 null，避免 Number(null)=0 的隱式轉換誤判）
+                const rsiTh = es.technical_exit.rsi_overbought ?? 75;
+                const rsiCurVal = es.technical_exit.rsi_current;
+                const rsiCur = rsiCurVal != null ? Number(rsiCurVal) : NaN;
+                const rsiWarn = Number.isFinite(rsiCur) && rsiCur >= Number(rsiTh)
+                    ? `<p class="text-red-600 text-xs font-semibold">⚠️ 目前 RSI ${rsiCur.toFixed(1)} ≥ ${rsiTh}：已達超買，注意減碼</p>`
+                    : '';
+                // 🆕 MA50：backend 依 stock.get('ma50') 帶出（PR#127 review 解除硬編碼）
+                //    資料管線尚未提供 → null → 誠實顯示「待補數據」而非假裝有數值
+                const ma50Text = es.technical_exit.ma50 != null
+                    ? fmtNum(es.technical_exit.ma50)
+                    : '待補數據';
                 html += `<div class="border-l-4 border-purple-500 pl-3">`;
                 html += `<p class="font-semibold text-purple-700">⚡ 技術面出場：${escapeHTML(es.technical_exit.action ?? '')}</p>`;
-                html += `<p class="text-gray-600 text-xs">→ ${escapeHTML(es.technical_exit.reason ?? '')}</p>`;
+                html += `<p class="text-gray-600 text-xs">→ ${escapeHTML(es.technical_exit.reason ?? '')}｜MA50：${ma50Text}${es.technical_exit.ma50_available === false ? '（尚無 MA50，跌破 MA50 條件暫不適用）' : ''}</p>`;
+                html += rsiWarn;
                 html += `</div>`;
             }
 
@@ -873,16 +899,17 @@
                 //   2. 📌 買入操作指引（情境化決策樹）
                 //   3. 💰 賣的策略（持倉管理：分階段出場＋移動停利）
                 const tp = r.trading_plan;
+                // 🆕 (PR#127 review) fmtNum 已提升為全域單一定義（見 script 頂層）
                 const priceChartCard = (tp && tp.entry_type !== 'none' && Array.isArray(tp.entry_zone)) ? `
                     <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 md:col-span-3">
                         <h4 class="font-bold text-gray-800 mb-3">📊 價格地圖</h4>
                         <canvas id="price-chart-${r.code}" class="w-full" style="height: 120px;"></canvas>
                         <div class="mt-2 flex flex-wrap gap-3 text-xs text-gray-600">
-                            <span>🔵 現價 ${r.current_price ?? '-'}</span>
-                            <span>🟢 買點 ${tp.entry_zone[0] ?? '-'}~${tp.entry_zone[1] ?? '-'}</span>
-                            <span>🔴 停損 ${tp.stop_loss ?? '-'}</span>
-                            <span>🟡 +10% ${tp.take_profit_1 ?? '-'}</span>
-                            <span>🟢 +20% ${tp.take_profit_2 ?? '-'}</span>
+                            <span>🔵 現價 ${fmtNum(r.current_price)}</span>
+                            <span>🟢 買點 ${fmtNum(tp.entry_zone[0])}~${fmtNum(tp.entry_zone[1])}</span>
+                            <span>🔴 停損 ${fmtNum(tp.stop_loss)}</span>
+                            <span>🟡 +10% ${fmtNum(tp.take_profit_1)}</span>
+                            <span>🟢 +20% ${fmtNum(tp.take_profit_2)}</span>
                         </div>
                     </div>` : '';
 
