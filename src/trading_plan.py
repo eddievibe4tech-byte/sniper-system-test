@@ -25,6 +25,8 @@ def generate_trading_plan(stock: Dict) -> Dict:
     ma20 = stock.get('ma20') or 0
     vol = stock.get('volatility') or 25  # 20日年化波動率
     rec = stock.get('recommendation') or '觀望'
+    # 🆕 (PR#121 review 跟進) 讀取 rsi：供技術面出場「目前 RSI」警示使用（docstring 契約欄位）
+    rsi = stock.get('rsi') or 50
 
     # 避開/觀望：不給進場點
     if rec in ('避開',) or price <= 0 or ma20 <= 0:
@@ -109,6 +111,10 @@ def generate_trading_plan(stock: Dict) -> Dict:
             'rsi_overbought': 75,
             'action': 'RSI > 75 或跌破 MA50 出場',
             'reason': '技術面轉弱',
+            # 🆕 目前 RSI（數值；>=75 時前端以紅色警示「已達超買，注意減碼」）
+            'rsi_current': round(rsi, 1),
+            # 🆕 MA50 尚不在資料管線中 → None（誠實標記缺數據，前端顯示「待補數據」）
+            'ma50': None,
         },
     }
 

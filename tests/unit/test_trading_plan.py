@@ -140,3 +140,32 @@ def test_exit_strategy_targets_ordered():
     entry_mid = sum(plan['entry_zone']) / 2
     assert es['initial_stop'] < entry_mid
     assert entry_mid < es['stage_1']['target'] < es['stage_2']['target']
+
+
+def test_technical_exit_includes_rsi_current():
+    """(PR#121 review 跟進) technical_exit.rsi_current = 輸入 rsi（預設 50）"""
+    plan = generate_trading_plan({
+        'current_price': 100, 'ma20': 99,
+        'volatility': 30, 'recommendation': '積極買入', 'rsi': 82.34
+    })
+    te = plan['exit_strategy']['technical_exit']
+    assert te['rsi_current'] == 82.3          # round(82.34, 1)
+    assert te['rsi_overbought'] == 75         # 閾值仍在，前端據此判斷是否紅色警示
+
+    # 未提供 rsi → 預設 50（低於閾值，不觸發警示）
+    plan2 = generate_trading_plan({
+        'current_price': 100, 'ma20': 99,
+        'volatility': 30, 'recommendation': '積極買入'
+    })
+    assert plan2['exit_strategy']['technical_exit']['rsi_current'] == 50
+
+
+def test_technical_exit_ma50_is_none_placeholder():
+    """(PR#121 review 跟進) MA50 尚未納入資料管線 → 誠實回傳 None（前端顯示「待補數據」）"""
+    plan = generate_trading_plan({
+        'current_price': 100, 'ma20': 99,
+        'volatility': 30, 'recommendation': '積極買入'
+    })
+    te = plan['exit_strategy']['technical_exit']
+    assert 'ma50' in te
+    assert te['ma50'] is None
