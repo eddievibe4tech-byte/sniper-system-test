@@ -1,4 +1,6 @@
 """交易計畫產生器（src.trading_plan）單元測試"""
+import pytest
+
 from src.trading_plan import generate_trading_plan
 
 
@@ -149,7 +151,8 @@ def test_technical_exit_includes_rsi_current():
         'volatility': 30, 'recommendation': '積極買入', 'rsi': 82.34
     })
     te = plan['exit_strategy']['technical_exit']
-    assert te['rsi_current'] == 82.3          # round(82.34, 1)
+    # 🆕 (PR#127 review) 浮點數斷言改用 pytest.approx，避免 IEEE 754 精度導致偶發性失敗
+    assert te['rsi_current'] == pytest.approx(82.3, rel=1e-3)   # round(82.34, 1)
     assert te['rsi_overbought'] == 75         # 閾值仍在，前端據此判斷是否紅色警示
 
     # 未提供 rsi → 預設 50（低於閾值，不觸發警示）
@@ -157,15 +160,39 @@ def test_technical_exit_includes_rsi_current():
         'current_price': 100, 'ma20': 99,
         'volatility': 30, 'recommendation': '積極買入'
     })
-    assert plan2['exit_strategy']['technical_exit']['rsi_current'] == 50
+    assert plan2['exit_strategy']['technical_exit']['rsi_current'] == pytest.approx(50, rel=1e-3)
 
 
-def test_technical_exit_ma50_is_none_placeholder():
-    """(PR#121 review 跟進) MA50 尚未納入資料管線 → 誠實回傳 None（前端顯示「待補數據」）"""
+def test_rsi_zero_is_preserved_not_overridden_by_default():
+    """(PR#127 review) RSI=0 為有效值：dict.get(key, default) 不應被預設值 50 覆蓋（`or` 陷阱迴歸測試）"""
     plan = generate_trading_plan({
+        'current_price': 100, 'ma20': 99,
+        'volatility': 30, 'recommendation': '積極買入', 'rsi': 0
+    })
+    assert plan['exit_strategy']['technical_exit']['rsi_current'] == pytest.approx(0, abs=1e-9)
+
+
+def test_volatility_zero_is_preserved_not_overridden_by_default():
+    """(PR#127 review) volatility=0 為有效值：不被 `or 25` 覆蓋 → stop_pct 落到下限 6%"""
+    plan = generate_trading_plan({
+        'current_price': 100, 'ma20': 99,
+        'volatility': 0, 'recommendation': '積極買入'
+    })
+    assert plan['stop_pct'] == 6.0  # max(6, min(12, 0*0.25)) = 6.0
+
+
+def test_technical_exit_ma50_reads_from_stock_when_available():
+    """(PR#127 review) MA50 解除硬編碼：stock 提供 ma50 → 直接帶出；未提供 → None（前端顯示「待補數據」）"""
+    plan_with = generate_trading_plan({
+        'current_price': 100, 'ma20': 99, 'ma50': 95.5,
+        'volatility': 30, 'recommendation': '積極買入'
+    })
+    assert plan_with['exit_strategy']['technical_exit']['ma50'] == pytest.approx(95.5, rel=1e-3)
+    assert plan_with['exit_strategy']['technical_exit']['ma50_available'] is True
+
+    plan_without = generate_trading_plan({
         'current_price': 100, 'ma20': 99,
         'volatility': 30, 'recommendation': '積極買入'
     })
-    te = plan['exit_strategy']['technical_exit']
-    assert 'ma50' in te
-    assert te['ma50'] is None
+    assert plan_without['exit_strategy']['technical_exit']['ma50'] is None
+    assert plan_without['exit_strategy']['technical_exit']['ma50_available'] is False

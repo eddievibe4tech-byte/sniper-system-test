@@ -23,10 +23,15 @@ def generate_trading_plan(stock: Dict) -> Dict:
     """
     price = stock.get('current_price') or 0
     ma20 = stock.get('ma20') or 0
-    vol = stock.get('volatility') or 25  # 20日年化波動率
+    # 🆕 (PR#127 review) 改用 dict.get(key, default)：避免 `or` 陷阱（值為 0 時被預設值覆蓋）
+    vol = stock.get('volatility', 25)  # 20日年化波動率；None → 預設值於下方統一處理
+    if vol is None:
+        vol = 25
     rec = stock.get('recommendation') or '觀望'
     # 🆕 (PR#121 review 跟進) 讀取 rsi：供技術面出場「目前 RSI」警示使用（docstring 契約欄位）
-    rsi = stock.get('rsi') or 50
+    rsi = stock.get('rsi', 50)  # PR#127 review：dict.get 預設值，RSI=0 等有效值不被覆蓋
+    if rsi is None:
+        rsi = 50
 
     # 避開/觀望：不給進場點
     if rec in ('避開',) or price <= 0 or ma20 <= 0:
@@ -113,8 +118,11 @@ def generate_trading_plan(stock: Dict) -> Dict:
             'reason': '技術面轉弱',
             # 🆕 目前 RSI（數值；>=75 時前端以紅色警示「已達超買，注意減碼」）
             'rsi_current': round(rsi, 1),
-            # 🆕 MA50 尚不在資料管線中 → None（誠實標記缺數據，前端顯示「待補數據」）
-            'ma50': None,
+            # 🆕 (PR#127 review) 解除硬編碼：直接取 stock 的 ma50（無此 key → None，前端自然顯示「待補數據」；
+            #    未來後端資料管線補齊 MA50 即自動無縫接軌，無需回改此行）
+            'ma50': stock.get('ma50'),
+            # 🆕 (PR#127 review) ma50_available：明確布布林契約欄位，供前端判斷是否納入出場條件
+            'ma50_available': stock.get('ma50') is not None,
         },
     }
 
