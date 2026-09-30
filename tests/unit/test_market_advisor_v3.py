@@ -149,10 +149,12 @@ class TestVixWarning:
         return out["warnings"]
 
     def test_vix_none_triggers_manual_check_warning(self, monkeypatch, tmp_path):
+        # 🔴 修正（#129）：us 檔存在但 VIX=None → 代表四來源全失敗，
+        # 海選端已自動零候選，警告文案改為明確提示「本日不產出美股買入訊號」
         warns = self._warnings_for(monkeypatch, tmp_path,
                                    {"vix": None, "candidates": [{"symbol": "AAPL", "scenario": "動量突破",
                                                                  "recommendation": "謹慎買入", "rsi": 60}]})
-        assert any("VIX 缺失" in w and "VIX<20" in w for w in warns)
+        assert any("VIX" in w and "不產出美股買入訊號" in w for w in warns)
 
     def test_us_file_missing_also_warns(self, monkeypatch, tmp_path):
         warns = self._warnings_for(monkeypatch, tmp_path, None)

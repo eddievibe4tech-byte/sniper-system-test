@@ -156,8 +156,12 @@ def main():
         if guards:
             warnings.append(f"⚠️ 財報 3 日內不進新倉：{', '.join(guards)}")
     # 🆕 VIX 缺失：動量突破情境判定用了保守預設值，需人工確認後再執行
-    if (not us) or us.get("vix") is None:
+    # 🔴 修正（#129）：海選端已改為「VIX 缺失 → 情境＝資料不足 → 零候選」，
+    # 此處區分兩種情況：完全無數據檔 vs. 四來源全失敗（後者已自動不出買入訊號，僅提示原因）。
+    if not us:
         warnings.append("⚠️ 美股 VIX 缺失：動量突破訊號請先人工確認 VIX<20 再執行")
+    elif us.get("vix") is None or (us.get("market_scenario") or {}).get("scenario") == "資料不足":
+        warnings.append("⚠️ 美股 VIX 四來源全失敗：本日不產出美股買入訊號（collect_opportunities 已自動排除）")
     if crypto and (crypto.get("fear_greed_index") or {}).get("value", 0) > 75:
         warnings.append("🔴 加密 FNG>75 極度貪婪：不追高")
 
