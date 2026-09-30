@@ -1132,7 +1132,9 @@
             const safeCode = escapeHTML(rawCode);
             const priceNum = numOr(s.current_price, 0);
             const hasCost = cost !== null && cost > 0;
-            const pnlPct = hasCost && priceNum ? ((priceNum - cost) / cost) * 100 : null;
+            // 現價為 0（缺數 fallback）時數學上即 -100% 虧損，不應回傳 null
+            // （否則下方 ${pnlPct.toFixed(2)} 會拋 TypeError 導致整表渲染失敗）
+            const pnlPct = hasCost ? ((priceNum - cost) / cost) * 100 : null;
 
             const costBlock = hasCost ? `
                 <div class="mb-3 p-3 bg-gray-50 rounded">
@@ -1180,6 +1182,8 @@
 
         // 輸入持有成本 → localStorage（本機儲存）→ 統一管線重渲染
         function promptHoldingCost(stockCode) {
+            // 防禦：空代碼會使多筆缺 code 的股票共用 holding_cost_ key，互相覆蓋成本
+            if (!stockCode) { alert('股票代碼異常，無法儲存成本'); return; }
             const input = prompt(`請輸入 ${stockCode} 的持有成本：`);
             if (input === null) return;
             const trimmed = String(input).trim();

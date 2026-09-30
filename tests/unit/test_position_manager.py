@@ -82,6 +82,20 @@ def test_entry_triggers_missing_data_shows_placeholder():
 # 2. generate_position_strategy
 # ---------------------------------------------------------------------------
 
+
+def test_entry_triggers_non_sequence_entry_zone_no_crash():
+    # 邊際情況：entry_zone 意外傳入非序列型別（int/str/dict）→ 不得拋 TypeError
+    stock = {'current_price': 100, 'ma20': 99}
+    for bad_zone in (123, "43.65", {"a": 1}, 3.14, True):
+        triggers = generate_entry_triggers(
+            stock, {'entry_type': 'pullback', 'entry_zone': bad_zone})
+        assert '待補數據' in triggers['primary_trigger']
+    # 空列表也不應崩潰
+    triggers = generate_entry_triggers(
+        stock, {'entry_type': 'now', 'entry_zone': []})
+    assert '待補數據' in triggers['primary_trigger']
+
+
 STOCK_2890 = {'code': '2890', 'current_price': 45.5, 'ma5': 44.2, 'ma20': 43.8}
 
 
@@ -217,6 +231,11 @@ def _extract_logic_block():
     ReferenceError: window is not defined，故只截取
     generateEntryTriggers → calculateBuyReadinessScore 這段（至
     renderEntryTriggers 註解區塊前）作為鏡像測試標的。
+
+    WARNING: 此處以硬編碼字串 'const numOr' / 'function renderEntryTriggers'
+    搜尋截取 JS 區段。若日後重構 index.html 的 JS（改名、搬移位置、或新增
+    其他 'const numOr'），請同步更新下方 start/end 關鍵字，否則本 parity
+    測試會在難以追蹤的位置報錯。
     """
     html = Path(__file__).resolve().parents[2].joinpath('index.html').read_text(encoding='utf-8')
     start = html.index('const numOr')  # 三個邏輯函式共用的數字防護小工具

@@ -38,7 +38,10 @@ def generate_entry_triggers(stock: Dict, trading_plan: Optional[Dict]) -> Dict:
     if not isinstance(trading_plan, dict):
         trading_plan = {}
     entry_type = trading_plan.get('entry_type')
-    zone = trading_plan.get('entry_zone') or [None, None]
+    zone = trading_plan.get('entry_zone')
+    if not isinstance(zone, (list, tuple)):
+        # 防禦：非序列型別（如 int/str）传入時 len()/索引會拋 TypeError → API 500
+        zone = [None, None]
     zone_low = _num(zone[0] if len(zone) > 0 else None)
     zone_high = _num(zone[1] if len(zone) > 1 else None)
     zone_text = (
