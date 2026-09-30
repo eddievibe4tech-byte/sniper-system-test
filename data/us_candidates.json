@@ -4,11 +4,11 @@
   "market_scenario": {
     "scenario": "資料不足",
     "vix": null,
-    "spy_rsi": 50.24,
+    "spy_rsi": 48.79,
     "note": "市場層級象限（VIX + SPY RSI）"
   },
   "error": null,
-  "updated_at": "2026-09-29T22:01:30.842693",
+  "updated_at": "2026-09-30T22:02:04.252207",
   "rules_applied": {
     "vix_panic": 30.0,
     "vix_calm": 20.0,
