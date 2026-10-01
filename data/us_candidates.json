@@ -1,16 +1,43 @@
 {
-  "candidates": [],
-  "vix": 16.34,
+  "candidates": [
+    {
+      "symbol": "NVDA",
+      "price": 230.86,
+      "ma20": 223.46,
+      "ma50": 217.61,
+      "rsi": 60.22,
+      "high_52w": 236.0,
+      "dist_to_52w_high_pct": 2.23,
+      "price_above_ma50": true,
+      "change_5d": 2.8,
+      "change_20d": 2.99,
+      "volatility_ann_pct": 24.9,
+      "days_to_earnings": 47,
+      "earnings_guard": false,
+      "vix": 16.39,
+      "vix_source": "yfinance",
+      "scenario": "動量突破",
+      "recommendation": "謹慎買入",
+      "win_rate": "參考 ~55-60%（美股科技動量，歷史參考）",
+      "win_rate_note": "歷史參考值，非未來保證",
+      "position_size": "≤ 150 USD（約台幣 5,000），單批，用零股",
+      "stop_loss": "跌破 MA50 或 -8% 停損",
+      "take_profit": "MA50 移動停利，+25% 先減半",
+      "holding_period": "1-3 個月",
+      "screened_at": "2026-10-01 22:01"
+    }
+  ],
+  "vix": 16.39,
   "vix_source": "yfinance",
   "market_scenario": {
     "scenario": "動量突破",
-    "vix": 16.34,
+    "vix": 16.39,
     "vix_source": "yfinance",
-    "spy_rsi": 50.24,
+    "spy_rsi": 50.14,
     "note": "市場層級象限（VIX + SPY RSI）"
   },
   "error": null,
-  "updated_at": "2026-10-01T01:14:33.876455",
+  "updated_at": "2026-10-01T22:01:43.216050",
   "rules_applied": {
     "vix_panic": 30.0,
     "vix_calm": 20.0,
