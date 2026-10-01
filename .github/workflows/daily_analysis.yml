@@ -38,12 +38,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Execute Daily Analysis (Full Mode)
-        run: |
-          python -m src.main --mode full   # ✅ 跑一次即可，內部會自動生成靜態報告
-          python -m src.setup_detector || echo "⚠️ setup detector 失敗"
         env:
           FINMIND_TOKEN: ${{ secrets.FINMIND_API_TOKEN }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          ALPHA_VANTAGE_API_KEY: ${{ secrets.ALPHA_VANTAGE_API_KEY }}   # 🆕 第三層財報 fallback（免費 25 次/日，配額管控見 src/financial_cache.py）
+        run: |
+          python -m src.main --mode full   # ✅ 跑一次即可，內部會自動生成靜態報告
+          python -m src.setup_detector || echo "⚠️ setup detector 失敗"
 
       - name: Run Market Advisor
         run: |
@@ -73,6 +74,9 @@ jobs:
           #    否則前端 renderActionGuide 收到 undefined → 價格地圖／賣的策略卡片消失
           [ -f data/deep_analysis.json ] && git add data/deep_analysis.json || echo "⚠️ 無 deep_analysis.json"
           [ -f data/setup_watchlist.json ] && git add data/setup_watchlist.json || echo "⚠️ 無 setup_watchlist.json"
+          # 🔴 Alpha Vantage Fallback：財報快取必須 commit 回 repo——Actions runner 免洗，
+          #    不推回 repo 的話每天冷啟動、天天燒 AV 配額（免費版僅 25 次/日）
+          [ -f data/financial_cache.json ] && git add data/financial_cache.json || echo "⚠️ 無 financial_cache.json"
 
           git commit -m "🎯 Auto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main

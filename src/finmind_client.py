@@ -8,7 +8,89 @@ import requests
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 
+# 🔴 P0-1 修正（PR #133 review）：雙風格 import shim
+# package 風格（python -m src.main / pytest rootdir）與 flat 風格
+# （scripts/check_finmind_bulk.py 把 src/ 塞進 sys.path 後
+#  `from finmind_client import ...`）兩種呼叫方式都要能解析；
+# 若只寫 `from src.x import`，flat 載入時 repo 根不在 sys.path →
+# ModuleNotFoundError: No module named 'src'（CI finmind-bulk-guard 紅燈根因）。
+try:
+    from src.financial_cache import (load_cache, save_cache, fresh_entry,
+                                     quota_remaining, consume_quota,
+                                     TZ_TAIPEI as _CACHE_TZ)
+    from src.alpha_vantage_client import AlphaVantageClient
+except ImportError:  # flat 風格：src/ 目錄本身在 sys.path 上
+    from financial_cache import (load_cache, save_cache, fresh_entry,
+                                 quota_remaining, consume_quota,
+                                 TZ_TAIPEI as _CACHE_TZ)
+    from alpha_vantage_client import AlphaVantageClient
+
 logger = logging.getLogger(__name__)
+
+
+# ─────────────────────────────────────────────
+# Alpha Vantage 層 helper（五層鏈的第三層 fallback）
+# ─────────────────────────────────────────────
+
+def _av_call(cache: Dict, av: AlphaVantageClient, symbol: str) -> Optional[Dict]:
+    """帶配額管控的 AV 呼叫：免費版 25 次/日，超過安全上限直接跳過。
+
+    🔴 P2-4（PR #133 review）註記：採「先計次再請求」——請求失敗／限流
+    亦計次，屬保守保護額度的刻意設計，並非 bug，未來維護者請勿「修正」。
+    """
+    if quota_remaining(cache) <= 0:
+        logger.warning("Alpha Vantage 當日配額用盡，跳過 %s", symbol)
+        return None
+    consume_quota(cache)
+    return av.get_quarterly_financials(symbol)
+
+
+# 🔴 P1 修正（PR #133 review）：tw_unsupported 自癒 TTL——
+# get_quarterly_financials() 回傳 None 涵蓋兩種語意：真無資料（可永久標記）
+# 與暫時性失敗（限流 Note／網路抖動，不該永久標記）。若探測日剛好被限流，
+# flag 又隨快取 commit 進 repo，AV 層會對所有台股「靜靜退場 forever」。
+# 折衷修法：flag 記錄標記日期，超過 _UNSUPPORTED_TTL_DAYS 天自動重探一次。
+_UNSUPPORTED_TTL_DAYS = 30
+
+
+def _unsupported_flag_active(meta: Dict) -> bool:
+    """tw_unsupported 是否仍在效期內；超過 30 天視為過期並清除（下次重探）"""
+    if not meta.get("tw_unsupported"):
+        return False
+    try:
+        marked_at = datetime.fromisoformat(meta.get("tw_unsupported_at", ""))
+        if marked_at.tzinfo is None:
+            marked_at = marked_at.replace(tzinfo=_CACHE_TZ)
+        age_days = (datetime.now(_CACHE_TZ) - marked_at).total_seconds() / 86400
+    except Exception:
+        age_days = 0.0   # 舊格式／缺日期 → 保守視為剛標記，等下次到期再重探
+    if age_days >= _UNSUPPORTED_TTL_DAYS:
+        meta.pop("tw_unsupported", None)
+        meta.pop("tw_unsupported_at", None)
+        logger.info("tw_unsupported 已過 %d 天效期 → 清除標記，允許重新探測",
+                    _UNSUPPORTED_TTL_DAYS)
+        return False
+    return True
+
+
+def _resolve_tw_symbol(cache: Dict, av: AlphaVantageClient, code: str):
+    """回傳 (symbol, 探測結果)；台股後綴探測一次即快取進 cache meta，
+    避免每檔都浪費配額（AV 對台股覆蓋率不保證）。
+    標記 tw_unsupported 時一併寫入 tw_unsupported_at，配合上方 TTL 自癒。"""
+    meta = cache.setdefault("meta", {})
+    if _unsupported_flag_active(meta):
+        return None, None
+    if meta.get("tw_suffix"):
+        return f"{code}{meta['tw_suffix']}", None
+    for suf in (".TPE", ".TW", ".TWO"):
+        res = _av_call(cache, av, f"{code}{suf}")
+        if res:
+            meta["tw_suffix"] = suf
+            return f"{code}{suf}", res
+    # AV 本輪三後綴全滅 → 標記跳過以省配額，但附帶日期供 30 天後自癒重探
+    meta["tw_unsupported"] = True
+    meta["tw_unsupported_at"] = datetime.now(_CACHE_TZ).isoformat()
+    return None, None
 
 
 class FinMindClient:
@@ -28,6 +110,16 @@ class FinMindClient:
             'User-Agent': 'SniperSystem/1.0',
             'Content-Type': 'application/json'
         })
+        # 🔴 P2-2 修正（PR #133 review）：AV client 提升為實例層 lazy init，
+        # 同一 run 內多檔股票共用同一 requests.Session（連線复用），
+        # 不再於 get_financial_statements() 迴圈內逐檔新建。
+        self._av_client: Optional[AlphaVantageClient] = None
+
+    def _get_av_client(self) -> AlphaVantageClient:
+        """取得（並复用）Alpha Vantage 客戶端實例"""
+        if self._av_client is None:
+            self._av_client = AlphaVantageClient()
+        return self._av_client
     
     def _make_request(self, dataset: str, stock_id: str, days: int = 60, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Optional[List[Dict]]:
         """
@@ -280,10 +372,21 @@ class FinMindClient:
         3. 預設改為抓兩年，確保至少涵蓋四個完整季度
            （EPS 需要「最近四季」累计值，單季資料不足以計算）。
 
-        🔴 方案 C 強化（本 PR）：FinMind 財報端點仍可能因 token 權限/
+        🔴 方案 C 強化：FinMind 財報端點仍可能因 token 權限/
         服務異常回傳空資料或拋例外，此時自動 fallback 到 yfinance
-        （台股代號 → {code}.TW），確保「雙重資料源」；兩邊都拿不到
-        才回傳 None，讓 main.py 的前置攔截（方案 A）跳過 Groq。
+        （台股代號 → {code}.TW）。
+
+        🔴 Alpha Vantage Fallback（本 PR）：升級為「五層鏈」——
+            快取(40天TTL) → FinMind → yfinance → Alpha Vantage(配額管控)
+            → 過期快取(cache-stale) → None(規則引擎)
+        設計前提：
+        - AV 免費版僅 25 次/日 → 配額安全上限 20 次 + 後綴探測只做一次
+          （結果寫進 cache meta，避免每檔燒配額）。
+        - GitHub Actions runner 免洗 → 快取檔 data/financial_cache.json
+          必須由 workflow commit 回 repo 才能跨 run 存活。
+        回傳契約不變：{revenue, gross_margin, net_margin, eps, source}；
+        四源全滅且無過期快取時才回傳 None，讓 main.py 的前置攔截（方案 A）
+        跳過 Groq。
 
         Args:
             code: 股票代號
@@ -296,6 +399,18 @@ class FinMindClient:
         Returns:
             包含最新財報數據的字典（附 source 標記），取不到時回傳 None（而非 0.0）
         """
+        cache = load_cache()
+
+        # 0) 新鮮快取（40 天內）：零網路成本，多數日常運行的命中路徑
+        entry = fresh_entry(cache, code)
+        if entry:
+            logger.info(f"{code}: 財報快取命中（{entry.get('source')}，{entry.get('fetched_at')}）")
+            return self._to_result(entry, source=f"cache:{entry.get('source', 'unknown')}")
+
+        result = None
+        cache_dirty = False   # 只有動過配額／後綴探測才需要回寫快取
+
+        # 1) FinMind 主源
         try:
             result = self._get_financial_from_finmind(code, days=days)
         except Exception as e:
@@ -303,11 +418,79 @@ class FinMindClient:
             result = None
 
         if result:
-            return result
+            return self._persist(cache, code, result, expected_source='FinMind')
 
-        # 🔴 方案 C-1B：FinMind 無資料 → fallback 到 yfinance
+        # 2) yfinance fallback
         logger.info(f"{code}: FinMind 財報無資料，改用 yfinance fallback")
-        return self._get_financial_from_yfinance(code)
+        result = self._get_financial_from_yfinance(code)
+        if result:
+            return self._persist(cache, code, result, expected_source='yfinance')
+
+        # 3) Alpha Vantage（配額＋台股後綴探測管控）
+        av = self._get_av_client()   # P2-2：實例層复用，不再逐檔新建 Session
+        if av.enabled:
+            meta_before = dict(cache.get("meta", {}))
+            quota_before = cache.get("meta", {}).get("av_quota", {}).get("used", 0)
+            sym, probed = _resolve_tw_symbol(cache, av, code)
+            # 🔴 P2-1 修正（PR #133 review）：cache_dirty 只在「確實有變更」時設定——
+            # _resolve_tw_symbol 走 early-return（tw_suffix/tw_unsupported 已存在、
+            # 效期內）且本檔未發請求時，meta 與配額都沒動，不該觸發多餘的 save_cache。
+            # （跨日首次讀取時 quota_remaining() 會重置 av_quota.date，屬合理變更。）
+            meta_after = cache.get("meta", {})
+            quota_after = meta_after.get("av_quota", {}).get("used", 0)
+            cache_dirty = (quota_after != quota_before) or (meta_before != dict(meta_after))
+            av_result = probed if probed else (_av_call(cache, av, sym) if sym else None)
+            if av_result:
+                return self._persist(cache, code, av_result, expected_source='alphavantage')
+            logger.info(f"{code}: Alpha Vantage 無資料（後綴不支援／配額限制／請求失敗）")
+
+        # 4) 過期快取兜底（聊勝於無，標記 cache-stale 供前端/規則引擎辨識）
+        stale = cache["stocks"].get(code)
+        if stale:
+            logger.warning(f"{code}：三源全失敗，使用過期快取（{stale.get('fetched_at')}）")
+            if cache_dirty:
+                save_cache(cache)   # 保留配額／後綴探測等 meta 更新
+            return self._to_result(stale, source="cache-stale")
+
+        # 5) 全部失靈 → None（main.py 前置攔截跳過 Groq，規則引擎接手）
+        if cache_dirty:
+            save_cache(cache)
+        return None
+
+    @staticmethod
+    def _to_result(entry: Dict, source: str) -> Dict:
+        """統一回傳契約：只暴露下游需要的欄位＋來源標記"""
+        out = {
+            "revenue": entry.get("revenue"),
+            "gross_margin": entry.get("gross_margin"),
+            "net_margin": entry.get("net_margin"),
+            "eps": entry.get("eps"),
+            "fiscal_quarter": entry.get("fiscal_quarter"),
+            "source": source,
+        }
+        if entry.get("statement_kind"):
+            out["statement_kind"] = entry["statement_kind"]
+        return out
+
+    def _persist(self, cache: Dict, code: str, result: Dict,
+                 expected_source: Optional[str] = None) -> Dict:
+        """成功取得財報 → 寫入快取（含 fetched_at）並回傳標準化結果。
+        🔴 Actions runner 免洗：workflow 的 commit 步驟需把
+        data/financial_cache.json 推回 repo，快取才能跨 run 存活。
+
+        source 標記以「调用層」為準（expected_source），避免 monkeypatch
+        出的假 fallback 未帶 source 欄位時被誤標為 finmind；result 內建的
+        source（如 'FinMind'/'yfinance'）優先沿用原字串，維持 #103 可追溯性。"""
+        raw_source = result.get('source') or expected_source or 'finmind'
+        entry = {
+            **result,
+            "fetched_at": datetime.now(_CACHE_TZ).isoformat(),
+            "source": raw_source,
+        }
+        cache.setdefault("stocks", {})[code] = entry
+        save_cache(cache)
+        logger.info(f"{code}：財報來源={raw_source}")
+        return self._to_result(entry, source=raw_source)
 
     def _get_financial_from_finmind(self, code: str, days: int = 730) -> Optional[Dict]:
         """FinMind TaiwanStockFinancialStatements 長表解析（原方案 C 邏輯）"""
