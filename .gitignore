@@ -4,3 +4,6 @@ __pycache__/
 
 # Testing and coverage
 .coverage
+# 財報快取（每次 Actions run 重新生成並由 workflow commit 回 repo，本地測試不入库）
+data/financial_cache.json
+htmlcov/

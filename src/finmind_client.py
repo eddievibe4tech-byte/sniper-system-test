@@ -8,7 +8,42 @@ import requests
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 
+from src.financial_cache import (load_cache, save_cache, fresh_entry,
+                                 quota_remaining, consume_quota,
+                                 TZ_TAIPEI as _CACHE_TZ)
+from src.alpha_vantage_client import AlphaVantageClient
+
 logger = logging.getLogger(__name__)
+
+
+# ─────────────────────────────────────────────
+# Alpha Vantage 層 helper（五層鏈的第三層 fallback）
+# ─────────────────────────────────────────────
+
+def _av_call(cache: Dict, av: AlphaVantageClient, symbol: str) -> Optional[Dict]:
+    """帶配額管控的 AV 呼叫：免費版 25 次/日，超過安全上限直接跳過"""
+    if quota_remaining(cache) <= 0:
+        logger.warning("Alpha Vantage 當日配額用盡，跳過 %s", symbol)
+        return None
+    consume_quota(cache)
+    return av.get_quarterly_financials(symbol)
+
+
+def _resolve_tw_symbol(cache: Dict, av: AlphaVantageClient, code: str):
+    """回傳 (symbol, 探測結果)；台股後綴探測一次即快取進 cache meta，
+    避免每檔都浪費配額（AV 對台股覆蓋率不保證）。"""
+    meta = cache.setdefault("meta", {})
+    if meta.get("tw_unsupported"):
+        return None, None
+    if meta.get("tw_suffix"):
+        return f"{code}{meta['tw_suffix']}", None
+    for suf in (".TPE", ".TW", ".TWO"):
+        res = _av_call(cache, av, f"{code}{suf}")
+        if res:
+            meta["tw_suffix"] = suf
+            return f"{code}{suf}", res
+    meta["tw_unsupported"] = True   # AV 無台股資料 → 之後直接跳過，不燒配額
+    return None, None
 
 
 class FinMindClient:
@@ -280,10 +315,21 @@ class FinMindClient:
         3. 預設改為抓兩年，確保至少涵蓋四個完整季度
            （EPS 需要「最近四季」累计值，單季資料不足以計算）。
 
-        🔴 方案 C 強化（本 PR）：FinMind 財報端點仍可能因 token 權限/
+        🔴 方案 C 強化：FinMind 財報端點仍可能因 token 權限/
         服務異常回傳空資料或拋例外，此時自動 fallback 到 yfinance
-        （台股代號 → {code}.TW），確保「雙重資料源」；兩邊都拿不到
-        才回傳 None，讓 main.py 的前置攔截（方案 A）跳過 Groq。
+        （台股代號 → {code}.TW）。
+
+        🔴 Alpha Vantage Fallback（本 PR）：升級為「五層鏈」——
+            快取(40天TTL) → FinMind → yfinance → Alpha Vantage(配額管控)
+            → 過期快取(cache-stale) → None(規則引擎)
+        設計前提：
+        - AV 免費版僅 25 次/日 → 配額安全上限 20 次 + 後綴探測只做一次
+          （結果寫進 cache meta，避免每檔燒配額）。
+        - GitHub Actions runner 免洗 → 快取檔 data/financial_cache.json
+          必須由 workflow commit 回 repo 才能跨 run 存活。
+        回傳契約不變：{revenue, gross_margin, net_margin, eps, source}；
+        四源全滅且無過期快取時才回傳 None，讓 main.py 的前置攔截（方案 A）
+        跳過 Groq。
 
         Args:
             code: 股票代號
@@ -296,6 +342,18 @@ class FinMindClient:
         Returns:
             包含最新財報數據的字典（附 source 標記），取不到時回傳 None（而非 0.0）
         """
+        cache = load_cache()
+
+        # 0) 新鮮快取（40 天內）：零網路成本，多數日常運行的命中路徑
+        entry = fresh_entry(cache, code)
+        if entry:
+            logger.info(f"{code}: 財報快取命中（{entry.get('source')}，{entry.get('fetched_at')}）")
+            return self._to_result(entry, source=f"cache:{entry.get('source', 'unknown')}")
+
+        result = None
+        cache_dirty = False   # 只有動過配額／後綴探測才需要回寫快取
+
+        # 1) FinMind 主源
         try:
             result = self._get_financial_from_finmind(code, days=days)
         except Exception as e:
@@ -303,11 +361,71 @@ class FinMindClient:
             result = None
 
         if result:
-            return result
+            return self._persist(cache, code, result, expected_source='FinMind')
 
-        # 🔴 方案 C-1B：FinMind 無資料 → fallback 到 yfinance
+        # 2) yfinance fallback
         logger.info(f"{code}: FinMind 財報無資料，改用 yfinance fallback")
-        return self._get_financial_from_yfinance(code)
+        result = self._get_financial_from_yfinance(code)
+        if result:
+            return self._persist(cache, code, result, expected_source='yfinance')
+
+        # 3) Alpha Vantage（配額＋台股後綴探測管控）
+        av = AlphaVantageClient()
+        if av.enabled:
+            sym, probed = _resolve_tw_symbol(cache, av, code)
+            cache_dirty = True   # _av_call/_resolve_tw_symbol 會更新配額與 meta
+            av_result = probed if probed else (_av_call(cache, av, sym) if sym else None)
+            if av_result:
+                return self._persist(cache, code, av_result, expected_source='alphavantage')
+            logger.info(f"{code}: Alpha Vantage 無資料（後綴不支援／配額限制／請求失敗）")
+
+        # 4) 過期快取兜底（聊勝於無，標記 cache-stale 供前端/規則引擎辨識）
+        stale = cache["stocks"].get(code)
+        if stale:
+            logger.warning(f"{code}：三源全失敗，使用過期快取（{stale.get('fetched_at')}）")
+            if cache_dirty:
+                save_cache(cache)   # 保留配額／後綴探測等 meta 更新
+            return self._to_result(stale, source="cache-stale")
+
+        # 5) 全部失靈 → None（main.py 前置攔截跳過 Groq，規則引擎接手）
+        if cache_dirty:
+            save_cache(cache)
+        return None
+
+    @staticmethod
+    def _to_result(entry: Dict, source: str) -> Dict:
+        """統一回傳契約：只暴露下游需要的欄位＋來源標記"""
+        out = {
+            "revenue": entry.get("revenue"),
+            "gross_margin": entry.get("gross_margin"),
+            "net_margin": entry.get("net_margin"),
+            "eps": entry.get("eps"),
+            "fiscal_quarter": entry.get("fiscal_quarter"),
+            "source": source,
+        }
+        if entry.get("statement_kind"):
+            out["statement_kind"] = entry["statement_kind"]
+        return out
+
+    def _persist(self, cache: Dict, code: str, result: Dict,
+                 expected_source: Optional[str] = None) -> Dict:
+        """成功取得財報 → 寫入快取（含 fetched_at）並回傳標準化結果。
+        🔴 Actions runner 免洗：workflow 的 commit 步驟需把
+        data/financial_cache.json 推回 repo，快取才能跨 run 存活。
+
+        source 標記以「调用層」為準（expected_source），避免 monkeypatch
+        出的假 fallback 未帶 source 欄位時被誤標為 finmind；result 內建的
+        source（如 'FinMind'/'yfinance'）優先沿用原字串，維持 #103 可追溯性。"""
+        raw_source = result.get('source') or expected_source or 'finmind'
+        entry = {
+            **result,
+            "fetched_at": datetime.now(_CACHE_TZ).isoformat(),
+            "source": raw_source,
+        }
+        cache.setdefault("stocks", {})[code] = entry
+        save_cache(cache)
+        logger.info(f"{code}：財報來源={raw_source}")
+        return self._to_result(entry, source=raw_source)
 
     def _get_financial_from_finmind(self, code: str, days: int = 730) -> Optional[Dict]:
         """FinMind TaiwanStockFinancialStatements 長表解析（原方案 C 邏輯）"""
