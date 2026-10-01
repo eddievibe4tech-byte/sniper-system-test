@@ -823,6 +823,420 @@
             return html;
         }
 
+        // =====================================================================
+        // 🆕 (#128) 進場觸發清單 / 持倉管理策略 / 買入準備度分數
+        //    JS 鏡像 src/position_manager.py（GitHub Pages 為純靜態站點，無後端，
+        //    故前端重算；兩邊邏輯必須保持一致）。
+        //    ⚠️ 修改任一邊時請同步另一邊，函式一一對應：
+        //      generateEntryTriggers      <-> generate_entry_triggers
+        //      generatePositionStrategy   <-> generate_position_strategy
+        //      calculateBuyReadinessScore <-> calculate_buy_readiness_score
+        //    輸出文字一律經 escapeHTML；數字一律 toFixed(2)。
+        // =====================================================================
+
+        const numOr = (v, d = null) => {
+            if (v === null || v === undefined) return d;
+            const f = Number(v);
+            return Number.isFinite(f) ? f : d;
+        };
+
+        // 產生進場觸發條件（對應 position_manager.generate_entry_triggers）
+        function generateEntryTriggers(stock, tradingPlan) {
+            const s = stock && typeof stock === 'object' ? stock : {};
+            const tp = tradingPlan && typeof tradingPlan === 'object' ? tradingPlan : {};
+            const entryType = tp.entry_type;
+            const zone = Array.isArray(tp.entry_zone) ? tp.entry_zone : [];
+            const zoneLow = numOr(zone[0]);
+            const zoneHigh = numOr(zone[1]);
+            const zoneText = (zoneLow !== null && zoneHigh !== null)
+                ? `${zoneLow.toFixed(2)}~${zoneHigh.toFixed(2)}`
+                : '待補數據';
+            const ma20 = numOr(s.ma20);
+            const ma20Text = ma20 !== null ? ma20.toFixed(2) : '待補數據';
+
+            if (entryType === 'now') {
+                return {
+                    status: '🟢 現在可進場',
+                    primary_trigger: `價格在 ${zoneText} 區間內`,
+                    confirmation_signals: [
+                        'RSI < 65（未進入超買區）',
+                        '成交量 > 5日均量（動能確認）',
+                        '外資或投信當日買超（籌碼確認）',
+                    ],
+                    kline_patterns: ['出現紅K收盤（多方表態）', '或出現十字星（盤整待變，可觀望）'],
+                    avoid_if: ['RSI > 70（超買）', '成交量萎縮（缺乏動能）', '三大法人同步賣超'],
+                    action: '✅ 確認上述條件後，市價買入',
+                    confidence: '高',
+                };
+            }
+            if (entryType === 'pullback') {
+                return {
+                    status: '⏳ 等回踩 MA20',
+                    primary_trigger: `價格回踩到 ${zoneText} 區間`,
+                    confirmation_signals: [
+                        '出現「長下影線」K線（下檔有支撐）',
+                        'RSI 回落到 40-55（中性偏弱，非超賣）',
+                        '成交量縮小後放大（止穩後動能恢復）',
+                    ],
+                    kline_patterns: [
+                        '錘子線（Hammer）：長下影、小實體、收高',
+                        '吞噬形態（Bullish Engulfing）：紅K吃掉前一日的黑K',
+                        '十字星後紅K（盤整後突破）',
+                    ],
+                    avoid_if: [
+                        '跌破 MA20 且收盤未站回（支撐失效）',
+                        'RSI < 30（超賣，可能繼續跌）',
+                        '連續 3 天黑K且放量（賣壓沈重）',
+                    ],
+                    action: '⏰ 掛限價單，觸發後觀察 30 分鐘確認再成交',
+                    patience_days: '3-7 個交易日',
+                    confidence: '中（需等待）',
+                };
+            }
+            if (entryType === 'reclaim') {
+                return {
+                    status: '⏳ 等站回 MA20',
+                    primary_trigger: `價格突破 ${ma20Text} 並站穩`,
+                    confirmation_signals: [
+                        '收盤價 > MA20（突破確認）',
+                        '成交量 > 10日均量（突破動能）',
+                        '連續 2 天收盤 > MA20（站穩確認）',
+                    ],
+                    kline_patterns: ['突破長紅K（實體大、放量）', '跳空缺口向上（強勢突破）', 'W底突破頸線（底部反轉）'],
+                    avoid_if: [
+                        '假突破：盤中突破但收盤跌回',
+                        '突破但成交量萎縮（量能不足）',
+                        '突破後立即回檔破 MA20（假突破確認）',
+                    ],
+                    action: '✅ 確認站穩後，市價追入（右側交易）',
+                    patience_days: '2-5 個交易日',
+                    confidence: '中（需突破確認）',
+                };
+            }
+            return {
+                status: '🔴 不建議進場',
+                primary_trigger: '無',
+                confirmation_signals: [],
+                kline_patterns: [],
+                avoid_if: ['所有情況'],
+                action: '❌ 觀望，等待明確趨勢',
+                confidence: '低',
+            };
+        }
+
+        // 產生持倉管理策略（對應 position_manager.generate_position_strategy）
+        function generatePositionStrategy(stock, tradingPlan, holdingCost = null) {
+            const s = stock && typeof stock === 'object' ? stock : {};
+            const currentPrice = numOr(s.current_price, 0) || 0;
+            const ma5 = numOr(s.ma5);
+            const ma20 = numOr(s.ma20);
+            const ma5Text = ma5 !== null ? ma5.toFixed(2) : '待補數據';
+            const ma20Text = ma20 !== null ? ma20.toFixed(2) : '待補數據';
+            let cost = numOr(holdingCost);
+            if (cost !== null && cost <= 0) cost = null; // 0/負值/NaN → 視為未輸入
+
+            if (cost === null) {
+                return {
+                    scenario: 'unknown_cost',
+                    recommendation: '無法判斷',
+                    actions: [
+                        '請輸入您的持有成本，系統會給出具體建議',
+                        '若已獲利 > 10%：建議先賣 1/3 鎖定利潤',
+                        `若虧損中：設嚴格停損 ${(currentPrice * 0.92).toFixed(2)} (-8%)`,
+                        `若接近 MA20 (${ma20Text})：觀察是否止穩`,
+                    ],
+                    risk_level: '需評估',
+                };
+            }
+
+            const pnlPct = ((currentPrice - cost) / cost) * 100;
+
+            if (pnlPct > 15) {
+                return {
+                    scenario: 'large_profit',
+                    recommendation: '分批獲利了結',
+                    pnl_pct: Number(pnlPct.toFixed(2)),
+                    actions: [
+                        `✅ 已獲利 ${pnlPct.toFixed(1)}%，建議先賣 1/2 鎖定利潤`,
+                        `剩餘 1/2 設移動停利：跌破 MA5 (${ma5Text}) 全數出場`,
+                        `或設定 +25% 停利：漲到 ${(cost * 1.25).toFixed(2)} 全數出場`,
+                        '不建議加碼追高，避免利潤回吐',
+                    ],
+                    risk_level: '低（已鎖定利潤）',
+                    exit_strategy: {
+                        immediate: `跌破 MA5 (${ma5Text}) 市價出場`,
+                        trailing: '每日更新 MA5，跌破即出場',
+                        target: `漲到 ${(cost * 1.25).toFixed(2)} (+25%) 出場`,
+                    },
+                };
+            }
+            if (pnlPct > 5) {
+                return {
+                    scenario: 'small_profit',
+                    recommendation: '續抱 + 移動停利',
+                    pnl_pct: Number(pnlPct.toFixed(2)),
+                    actions: [
+                        `獲利 ${pnlPct.toFixed(1)}%，可續抱`,
+                        `設移動停利：跌破 MA5 (${ma5Text}) 或昨日低點出場`,
+                        `若跌破 MA20 (${ma20Text}) 減碼至 1/2`,
+                        '若回測 MA20 後反彈，可考慮加碼',
+                    ],
+                    risk_level: '中',
+                    exit_strategy: {
+                        trailing: `跌破 MA5 (${ma5Text}) 出場`,
+                        support: `跌破 MA20 (${ma20Text}) 減碼`,
+                    },
+                };
+            }
+            if (pnlPct > -8) {
+                return {
+                    scenario: 'small_loss',
+                    recommendation: '嚴格停損 + 觀察',
+                    pnl_pct: Number(pnlPct.toFixed(2)),
+                    actions: [
+                        `虧損 ${Math.abs(pnlPct).toFixed(1)}%，仍在停損範圍內`,
+                        `嚴格停損：跌破 ${(cost * 0.92).toFixed(2)} (-8%) 市價出場`,
+                        `若跌破 MA20 (${ma20Text}) 立即出場，不攤平`,
+                        '出場後等價格站回 MA20 再重新評估',
+                    ],
+                    risk_level: '高',
+                    exit_strategy: {
+                        stop_loss: `${(cost * 0.92).toFixed(2)} (-8%)`,
+                        support_break: `跌破 MA20 (${ma20Text}) 立即出場`,
+                    },
+                };
+            }
+            return {
+                scenario: 'large_loss',
+                recommendation: '立即出場',
+                pnl_pct: Number(pnlPct.toFixed(2)),
+                actions: [
+                    `⚠️ 虧損 ${Math.abs(pnlPct).toFixed(1)}%，已超過停損範圍`,
+                    '建議立即市價出場，保存本金',
+                    '不要攤平，避免損失擴大',
+                    `等價格站回 MA20 (${ma20Text}) 且出現買入信號再重新進場`,
+                ],
+                risk_level: '危險',
+                exit_strategy: {
+                    immediate: '市價出場，不猶豫',
+                },
+            };
+        }
+
+        // 買入準備度分數（對應 position_manager.calculate_buy_readiness_score）
+        function calculateBuyReadinessScore(stock, tradingPlan) {
+            const s = stock && typeof stock === 'object' ? stock : {};
+            const tp = tradingPlan && typeof tradingPlan === 'object' ? tradingPlan : {};
+            let score = 50;
+            const factors = [];
+
+            const currentPrice = numOr(s.current_price, 0) || 0;
+            const ma20 = numOr(s.ma20, 0) || 0;
+            let rsi = numOr(s.rsi, 50);
+            if (rsi === null) rsi = 50;
+            const entryType = tp.entry_type;
+
+            const gapPct = ma20 > 0 ? ((currentPrice - ma20) / ma20) * 100 : 0;
+
+            if (entryType === 'now' && gapPct >= -1 && gapPct <= 3) {
+                score += 20; factors.push('價格在理想進場區間 (+20)');
+            } else if (entryType === 'pullback' && gapPct >= -1 && gapPct <= 1) {
+                score += 15; factors.push('價格接近 MA20 (+15)');
+            } else if (gapPct > 5) {
+                score -= 20; factors.push('乖離過大 (-20)');
+            } else if (gapPct < -3) {
+                score -= 10; factors.push('價格過低，可能續跌 (-10)');
+            }
+
+            if (rsi >= 40 && rsi <= 60) {
+                score += 15; factors.push('RSI 中性 (+15)');
+            } else if (rsi < 30) {
+                score -= 10; factors.push('RSI 超賣，可能續跌 (-10)');
+            } else if (rsi > 70) {
+                score -= 15; factors.push('RSI 超買 (-15)');
+            }
+
+            const volume = numOr(s.volume);
+            const avgVolume = numOr(s.volume_avg_5);
+            if (volume !== null && avgVolume !== null && avgVolume > 0) {
+                if (volume > avgVolume * 1.2) {
+                    score += 10; factors.push('成交量放大 (+10)');
+                } else if (volume < avgVolume * 0.7) {
+                    score -= 5; factors.push('成交量萎縮 (-5)');
+                }
+            }
+
+            score = Math.max(0, Math.min(100, score));
+
+            let level, action;
+            if (score >= 80) { level = '極佳'; action = '✅ 可立即進場'; }
+            else if (score >= 60) { level = '良好'; action = '✅ 可進場，但需確認觸發條件'; }
+            else if (score >= 40) { level = '普通'; action = '⏳ 建議等待更好的進場點'; }
+            else { level = '不佳'; action = '❌ 不建議進場'; }
+
+            return { score, level, action, factors };
+        }
+
+        // 卡片 1：🎯 進場觸發清單
+        function renderEntryTriggers(stock, tradingPlan) {
+            const triggers = generateEntryTriggers(stock, tradingPlan);
+            const liAll = (arr) => arr.map(x => `<li>• ${escapeHTML(x)}</li>`).join('');
+
+            return `
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <h4 class="font-bold text-gray-800 mb-3">🎯 進場觸發清單</h4>
+                    <p class="text-sm text-gray-600 mb-2"><span class="font-semibold">狀態：</span>${escapeHTML(triggers.status)}</p>
+                    <p class="text-sm text-gray-600 mb-3"><span class="font-semibold">主要觸發：</span>${escapeHTML(triggers.primary_trigger)}</p>
+
+                    <div class="space-y-2 mb-3">
+                        <p class="text-xs font-semibold text-gray-700">✅ 確認信號（需滿足至少 2 項）：</p>
+                        <ul class="text-xs text-gray-600 space-y-1 ml-4">${liAll(triggers.confirmation_signals)}</ul>
+                    </div>
+
+                    <div class="space-y-2 mb-3">
+                        <p class="text-xs font-semibold text-gray-700">📈 K線形態（加分項）：</p>
+                        <ul class="text-xs text-gray-600 space-y-1 ml-4">${liAll(triggers.kline_patterns)}</ul>
+                    </div>
+
+                    <div class="space-y-2 mb-3">
+                        <p class="text-xs font-semibold text-red-700">⚠️ 避免情況（出現任一則不買）：</p>
+                        <ul class="text-xs text-red-600 space-y-1 ml-4">${liAll(triggers.avoid_if)}</ul>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-blue-50 rounded">
+                        <p class="text-sm font-semibold text-blue-900">💡 行動建議：${escapeHTML(triggers.action)}</p>
+                        ${triggers.patience_days ? `<p class="text-xs text-blue-700 mt-1">預期等待：${escapeHTML(triggers.patience_days)}</p>` : ''}
+                        <p class="text-xs text-blue-700 mt-1">信心等級：${escapeHTML(triggers.confidence)}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 卡片 2：💼 持倉管理策略（持有成本存 localStorage，僅存在使用者本機）
+        function renderPositionStrategy(stock, tradingPlan, holdingCost = null) {
+            const s = stock && typeof stock === 'object' ? stock : {};
+            const cost = numOr(holdingCost);
+            const strategy = generatePositionStrategy(s, tradingPlan, cost);
+
+            const riskColors = {
+                '低（已鎖定利潤）': 'bg-green-100 text-green-800',
+                '中': 'bg-yellow-100 text-yellow-800',
+                '高': 'bg-orange-100 text-orange-800',
+                '危險': 'bg-red-100 text-red-800',
+                '需評估': 'bg-gray-100 text-gray-800',
+            };
+            const riskClass = riskColors[strategy.risk_level] || 'bg-gray-100 text-gray-800';
+
+            // code 用於 onclick 字串參數：先過濾非法字元（股票代碼僅含英數字），再 escapeHTML
+            const rawCode = String(s.code ?? '').replace(/[^A-Za-z0-9]/g, '');
+            const safeCode = escapeHTML(rawCode);
+            const priceNum = numOr(s.current_price, 0);
+            const hasCost = cost !== null && cost > 0;
+            // 現價為 0（缺數 fallback）時數學上即 -100% 虧損，不應回傳 null
+            // （否則下方 ${pnlPct.toFixed(2)} 會拋 TypeError 導致整表渲染失敗）
+            const pnlPct = hasCost ? ((priceNum - cost) / cost) * 100 : null;
+
+            const costBlock = hasCost ? `
+                <div class="mb-3 p-3 bg-gray-50 rounded">
+                    <div class="flex justify-between text-sm"><span class="text-gray-600">持有成本：</span><span class="font-semibold">${cost.toFixed(2)}</span></div>
+                    <div class="flex justify-between text-sm"><span class="text-gray-600">現價：</span><span class="font-semibold">${priceNum.toFixed(2)}</span></div>
+                    <div class="flex justify-between text-sm mt-2 pt-2 border-t"><span class="text-gray-600">損益：</span>
+                        <span class="font-bold ${pnlPct >= 0 ? 'text-green-600' : 'text-red-600'}">${pnlPct.toFixed(2)}%</span>
+                    </div>
+                    <button onclick="promptHoldingCost('${safeCode}')" class="mt-2 text-xs underline text-blue-600">修改成本</button>
+                </div>
+            ` : `
+                <div class="mb-3 p-3 bg-yellow-50 rounded">
+                    <p class="text-xs text-yellow-800">⚠️ 未設定持有成本，顯示一般性建議。
+                        <button onclick="promptHoldingCost('${safeCode}')" class="underline ml-2">輸入成本</button>
+                    </p>
+                </div>
+            `;
+
+            const exitBlock = strategy.exit_strategy ? `
+                <div class="mt-4 p-3 bg-red-50 rounded">
+                    <p class="text-xs font-semibold text-red-900 mb-2">🚨 出場條件：</p>
+                    <ul class="text-xs text-red-700 space-y-1">
+                        ${Object.values(strategy.exit_strategy).map(v => `<li>• ${escapeHTML(String(v))}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : '';
+
+            return `
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <h4 class="font-bold text-gray-800 mb-3">💼 持倉管理策略</h4>
+                    ${costBlock}
+                    <div class="mb-3">
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ${riskClass}">風險等級：${escapeHTML(strategy.risk_level)}</span>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-sm font-semibold text-gray-700">建議操作：</p>
+                        <ul class="text-sm text-gray-600 space-y-2 ml-4">
+                            ${strategy.actions.map(a => `<li>• ${escapeHTML(a)}</li>`).join('')}
+                        </ul>
+                    </div>
+                    ${exitBlock}
+                </div>
+            `;
+        }
+
+        // 輸入持有成本 → localStorage（本機儲存）→ 統一管線重渲染
+        function promptHoldingCost(stockCode) {
+            // 防禦：空代碼會使多筆缺 code 的股票共用 holding_cost_ key，互相覆蓋成本
+            if (!stockCode) { alert('股票代碼異常，無法儲存成本'); return; }
+            const input = prompt(`請輸入 ${stockCode} 的持有成本：`);
+            if (input === null) return;
+            const trimmed = String(input).trim();
+            if (trimmed === '') {
+                localStorage.removeItem(`holding_cost_${stockCode}`);
+                applyTablePipeline();
+                return;
+            }
+            const val = parseFloat(trimmed);
+            if (!isNaN(val) && val > 0) {
+                localStorage.setItem(`holding_cost_${stockCode}`, String(val));
+                applyTablePipeline();
+            } else {
+                alert('請輸入有效的正數價格');
+            }
+        }
+
+        // 卡片 3：📊 買入準備度分數
+        function renderBuyReadinessScore(stock, tradingPlan) {
+            const readiness = calculateBuyReadinessScore(stock, tradingPlan);
+            const scoreColors = {
+                '極佳': 'text-green-600',
+                '良好': 'text-blue-600',
+                '普通': 'text-yellow-600',
+                '不佳': 'text-red-600',
+            };
+            const scoreColor = scoreColors[readiness.level] || 'text-gray-600';
+
+            return `
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                    <h4 class="font-bold text-gray-800 mb-3">📊 買入準備度</h4>
+                    <div class="mb-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-3xl font-bold ${scoreColor}">${readiness.score}</span>
+                            <span class="text-lg font-semibold ${scoreColor}">${escapeHTML(readiness.level)}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-2 rounded-full" style="width: ${readiness.score}%"></div>
+                        </div>
+                    </div>
+                    <div class="mt-3 p-3 bg-blue-50 rounded">
+                        <p class="text-sm font-semibold text-blue-900">${escapeHTML(readiness.action)}</p>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <p class="text-xs font-semibold text-gray-700">評分因素：</p>
+                        <ul class="text-xs text-gray-600 space-y-1 ml-4">
+                            ${readiness.factors.map(f => `<li>• ${escapeHTML(f)}</li>`).join('') || '<li class="text-gray-400">• 無顯著加分／扣分因素</li>'}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
         // 🆕 (PR#121 review P0) 全域渲染世代計數器：
         //    每次 renderAnalysisTable 遞增；舊的 setTimeout 排程觸發時若世代已過期則跳過，
         //    避免快速切換排序/篩選時用舊資料繪製新 Canvas 的競態條件。
@@ -978,6 +1392,11 @@
                                 ${priceChartCard}
                                 ${actionGuideCard}
                                 ${exitStrategyCard}
+
+                                <!-- 🆕 (#128) 進場觸發清單／持倉管理策略／買入準備度 -->
+                                ${renderEntryTriggers(r, tp)}
+                                ${renderPositionStrategy(r, tp, localStorage.getItem(`holding_cost_${r.code}`))}
+                                ${renderBuyReadinessScore(r, tp)}
 
                             </div>
                         </td>
