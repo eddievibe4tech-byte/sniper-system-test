@@ -1778,6 +1778,7 @@
                 '反彈陷阱': 'bg-yellow-100 text-yellow-800',
                 '極度危險': 'bg-red-100 text-red-800',
                 '動量突破': 'bg-indigo-100 text-indigo-800',
+                '資料不足': 'bg-gray-100 text-gray-500',
             };
             const cls = styles[scenario] || 'bg-gray-100 text-gray-800';
             const emoji = {
@@ -1849,7 +1850,13 @@
                 const res = await fetch(BASE + 'data/us_candidates.json?v=' + Date.now());
                 if (!res.ok) throw new Error(res.status);
                 const d = await res.json();
-                let html = `<p class="mb-2 text-sm">VIX：<b>${d.vix ?? '-'}</b>｜市場象限：${escapeHTML(d.market_scenario?.scenario || '-')}</p>`;
+                // 🔴 修正（#129）：顯示 VIX 數值與資料來源；四來源全失敗時紅字警告（不再出現「VIX 缺失卻推薦 AAPL」）
+                let html = `<p class="mb-2 text-sm">VIX：<b>${d.vix ?? '缺失'}</b>` +
+                    (d.vix_source ? `（來源 ${escapeHTML(d.vix_source)}）` : '') +
+                    `｜市場象限：${escapeHTML(d.market_scenario?.scenario || '-')}</p>`;
+                if (d.market_scenario?.scenario === '資料不足') {
+                    html += '<p class="text-red-500 text-sm mb-2">⚠️ VIX 四來源全失敗：本日不產出美股買入訊號</p>';
+                }
                 const cands = d.candidates || [];
                 if (!cands.length) {
                     el.innerHTML = html + '<p class="text-gray-500 text-center py-4">今日無可行動的美股情境。</p>';

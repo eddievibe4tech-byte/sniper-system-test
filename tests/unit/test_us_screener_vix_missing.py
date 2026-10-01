@@ -56,7 +56,8 @@ _MOMENTUM_TICKER = {
 
 def _run_with_vix(vix):
     fake_client = mock.MagicMock()
-    fake_client.get_vix.return_value = vix
+    # 新格式（#129）：get_vix() 回傳 {'value', 'source'}；None 代表四來源全失敗
+    fake_client.get_vix.return_value = ({"value": vix, "source": "yfinance"} if vix is not None else None)
     fake_client.get_index_rsi.return_value = 55.0
     fake_client.scan.return_value = {"AAPL": dict(_MOMENTUM_TICKER)}
     with mock.patch.object(us, "USClient", return_value=fake_client), \

@@ -8,6 +8,7 @@ import time
 from typing import Dict, List, Optional
 
 import pandas as pd
+import requests
 import yfinance as yf
 
 logger = logging.getLogger("USClient")
@@ -20,12 +21,18 @@ US_INDEX = {"spy": "SPY", "qqq": "QQQ", "vix": "^VIX"}
 class USClient:
     def __init__(self, sleep_between: float = 1.0):
         self.sleep_between = sleep_between  # 避免 yfinance 限流
+        # VIX 備援來源（CBOE / FRED 公開端點）共用的 HTTP session
+        self.session = requests.Session()
+        self.session.headers.update({"User-Agent": "SniperSystem/1.0"})
 
-    def get_history(self, symbol: str, period: str = "1y", interval: str = "1d") -> Optional[pd.DataFrame]:
+    def get_history(self, symbol: str, period: str = "1y", interval: str = "1d",
+                    min_rows: int = 60) -> Optional[pd.DataFrame]:
+        """取得日 K；min_rows 可調（🔴 修正：VIX 等「只需最新值」的標的不再被 60 行門檻擋掉）"""
         try:
             df = yf.Ticker(symbol).history(period=period, interval=interval, auto_adjust=True)
-            if df is None or df.empty or len(df) < 60:
-                logger.warning("%s 歷史資料不足", symbol)
+            if df is None or df.empty or len(df) < min_rows:
+                logger.warning("%s 歷史資料不足（%s 行 < %s）",
+                               symbol, 0 if df is None else len(df), min_rows)
                 return None
             return df
         except Exception as e:
@@ -76,9 +83,61 @@ class USClient:
             "volatility_ann_pct": round(vol_ann, 1),
         }
 
-    def get_vix(self) -> Optional[float]:
-        df = self.get_history(US_INDEX["vix"], period="1mo")
-        return round(float(df["Close"].iloc[-1]), 2) if df is not None else None
+    def get_vix(self) -> Optional[Dict]:
+        """
+        🔴 修正：VIX 多來源 fallback 鏈（yfinance 日K → yfinance fast_info → CBOE → FRED）
+        舊版缺陷：get_vix 用 period="1mo"（約 21 根日K）卻被 get_history 的 60 行門檻永久擋死，
+        導致 VIX 永遠回傳 None。現改為 min_rows=5，並補上三條免 key 備援來源。
+        回傳 {'value': float, 'source': str}；全失敗回傳 None
+        """
+        # 來源 1：yfinance 日K（🔴 關鍵修正：min_rows=5，VIX 只需最新值）
+        df = self.get_history(US_INDEX["vix"], period="1mo", min_rows=5)
+        if df is not None:
+            return {"value": round(float(df["Close"].iloc[-1]), 2), "source": "yfinance"}
+
+        # 來源 2：yfinance fast_info（不走歷史資料，較不易被限流）
+        # 🔧 相容性修正：部分版本 fast_info 是 FastInfo 物件、無 .get()（會拋 AttributeError），
+        # 改用 getattr 取屬性，同時兼容 last_price / lastPrice 兩種鍵名
+        try:
+            fi = yf.Ticker(US_INDEX["vix"]).fast_info
+            price = getattr(fi, "last_price", None) or getattr(fi, "lastPrice", None)
+            if price is None:
+                # 兼容以 dict 形式實作的 fast_info
+                try:
+                    price = fi.get("lastPrice") or fi.get("last_price")
+                except Exception:
+                    price = None
+            if price:
+                return {"value": round(float(price), 2), "source": "yfinance_fast"}
+        except Exception as e:
+            logger.warning("yfinance fast_info VIX 失敗：%s", e)
+
+        # 來源 3：CBOE 延遲報價（公開 JSON，免 key）
+        try:
+            r = self.session.get(
+                "https://cdn.cboe.com/api/global/delayed_quotes/quotes/^VIX.json", timeout=10)
+            r.raise_for_status()
+            price = r.json()["data"]["price"]
+            if price:
+                return {"value": round(float(price), 2), "source": "cboe"}
+        except Exception as e:
+            logger.warning("CBOE VIX 失敗：%s", e)
+
+        # 來源 4：FRED 公開 CSV（VIXCLS 日序列，免 key）
+        try:
+            r = self.session.get("https://fred.stlouisfed.org/graph/fredgraph.csv?id=VIXCLS", timeout=10)
+            r.raise_for_status()
+            for line in reversed(r.text.strip().splitlines()[1:]):
+                parts = line.split(",")
+                # 🔧 Future-proof：FRED 未來若在日期/數值後新增備註欄或時間戳，
+                # 仍能以 >=2 解析（只要求「日期 + 數值」存在），避免最後一個來源無故失效
+                if len(parts) >= 2 and parts[1] not in (".", ""):
+                    return {"value": round(float(parts[1]), 2), "source": "fred"}
+        except Exception as e:
+            logger.warning("FRED VIX 失敗：%s", e)
+
+        logger.error("VIX 四來源全失敗")
+        return None
 
     def get_index_rsi(self, key: str = "spy") -> Optional[float]:
         df = self.get_history(US_INDEX.get(key, "SPY"))

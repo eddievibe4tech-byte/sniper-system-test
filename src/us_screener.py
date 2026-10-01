@@ -92,13 +92,18 @@ def run_us_screener() -> List[Dict]:
     print("🇺🇸 啟動美股動能海選引擎...")
     client = USClient()
 
-    vix = client.get_vix()
+    # 🔴 修正（#129）：get_vix() 改為多來源 fallback 鏈，回傳 {'value', 'source'}；
+    # VIX 缺失時一律不產生買入推薦（見 get_us_scenario「資料不足」守門）。
+    vix_data = client.get_vix()
+    vix = vix_data["value"] if vix_data else None
+    vix_source = vix_data["source"] if vix_data else None
     spy_rsi = client.get_index_rsi("spy")
-    print(f"  VIX：{vix}｜SPY RSI：{spy_rsi}")
+    print(f"  VIX：{vix}（來源：{vix_source}）｜SPY RSI：{spy_rsi}")
 
     market_scenario = {
         "scenario": get_us_scenario(vix, spy_rsi or 50.0, True, 0.0),
         "vix": vix,
+        "vix_source": vix_source,                    # 🆕 透明化來源
         "spy_rsi": spy_rsi,
         "note": "市場層級象限（VIX + SPY RSI）",
     }
@@ -106,7 +111,7 @@ def run_us_screener() -> List[Dict]:
     scanned = client.scan()
     if not scanned:
         print("❌ 無法取得美股市場數據")
-        save_us_results([], vix, market_scenario, error="yfinance 數據取得失敗")
+        save_us_results([], vix, market_scenario, vix_source=vix_source, error="yfinance 數據取得失敗")
         return []
 
     candidates = []
@@ -137,6 +142,7 @@ def run_us_screener() -> List[Dict]:
             "volatility_ann_pct": t["volatility_ann_pct"],
             "days_to_earnings": dte, "earnings_guard": guard,
             "vix": vix,
+            "vix_source": vix_source,
             "scenario": scenario,
             "recommendation": rec,
             "win_rate": meta["win_rate"],
@@ -150,12 +156,13 @@ def run_us_screener() -> List[Dict]:
 
     order = {"動量突破": 0, "黃金買點": 1, "極度危險": 2}
     candidates.sort(key=lambda x: (order[x["scenario"]], x["dist_to_52w_high_pct"]))
-    save_us_results(candidates, vix, market_scenario)
+    save_us_results(candidates, vix, market_scenario, vix_source=vix_source)
     print(f"✅ 美股海選完成：{len(candidates)} 檔")
     return candidates
 
 
-def save_us_results(candidates, vix, market_scenario, error: Optional[str] = None) -> None:
+def save_us_results(candidates, vix, market_scenario, vix_source: Optional[str] = None,
+                    error: Optional[str] = None) -> None:
     data_dir = os.path.join(os.path.dirname(__file__), "..", "data")
     os.makedirs(data_dir, exist_ok=True)
     path = os.path.join(data_dir, "us_candidates.json")
@@ -163,6 +170,7 @@ def save_us_results(candidates, vix, market_scenario, error: Optional[str] = Non
         json.dump({
             "candidates": candidates,
             "vix": vix,
+            "vix_source": vix_source,               # 🆕 yfinance / yfinance_fast / cboe / fred
             "market_scenario": market_scenario,
             "error": error,
             "updated_at": datetime.now().isoformat(),
