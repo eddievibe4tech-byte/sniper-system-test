@@ -11,6 +11,7 @@ Alpha Vantage Fallback 與財報快取 單元測試
 4. 快取命中／過期兜底（cache-stale）行為
 """
 import json
+import os
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -95,6 +96,13 @@ def test_eps_falls_back_to_epsDiluted(monkeypatch):
     assert out["eps"] == 9.8
 
 
+def _make_null_av():
+    """AV client stub：enabled=True，但 get_quarterly_financials 恆回 None"""
+    av = AlphaVantageClient(api_key="dummy")
+    av.get_quarterly_financials = lambda symbol: None
+    return av
+
+
 # ─────────────────────────────────────────────
 # 配額管控（_av_call）
 # ─────────────────────────────────────────────
@@ -108,6 +116,46 @@ def test_quota_guard_blocks_without_http(monkeypatch):
     monkeypatch.setattr(av.session, "get", boom)
     from src.finmind_client import _av_call
     assert _av_call(cache, av, "2330.TPE") is None
+
+
+# ─────────────────────────────────────────────
+# P0-1 回歸：flat import 風格（scripts/check_finmind_bulk.py 的載入方式）
+# ─────────────────────────────────────────────
+
+def test_flat_import_style_works():
+    """CI finmind-bulk-guard 紅燈根因回歸測試：
+
+    scripts/ 把 src/ 目錄塞進 sys.path 後以 flat 風格匯入
+    （from finmind_client import ...）。此時 repo 根不在 sys.path，
+    若 finmind_client.py 只有 package 風格 `from src.x import` →
+    ModuleNotFoundError: No module named 'src'。
+    雙風格 import shim 必須讓兩種載入方式都能成功。"""
+    import subprocess, sys, pathlib
+    src_dir = str(pathlib.Path(__file__).resolve().parents[2] / "src")
+    code = (
+        "import sys; sys.path.insert(0, %r);"
+        "from finmind_client import FinMindClient, _av_call;"
+        "from financial_cache import load_cache;"
+        "print('ok')" % src_dir
+    )
+    r = subprocess.run([sys.executable, "-c", code],
+                       capture_output=True, text=True, timeout=60)
+    assert r.returncode == 0, f"flat import 失敗：{r.stderr}"
+    assert "No module named 'src'" not in r.stderr
+    assert "ok" in r.stdout
+
+
+def test_check_finmind_bulk_script_runs(tmp_path, monkeypatch):
+    """直接執行 CI 出紅燈的腳本本身（未設 token → mock 路徑），確認不再崩潰"""
+    import subprocess, sys, pathlib
+    root = pathlib.Path(__file__).resolve().parents[2]
+    env = os.environ.copy()
+    env.pop("FINMIND_TOKEN", None)  # 走 mock 驗證分支，不打真實 API
+    # 快取重導到 tmp，避免腳本執行污染 repo data/
+    env["PYTHONPATH"] = str(root)
+    r = subprocess.run([sys.executable, str(root / "scripts" / "check_finmind_bulk.py")],
+                       capture_output=True, text=True, timeout=120, cwd=str(root), env=env)
+    assert "ModuleNotFoundError" not in r.stderr, f"腳本 import 崩潰：{r.stderr}"
 
 
 def test_quota_consumed_on_call():
@@ -156,7 +204,7 @@ def test_suffix_probe_success_cached_in_meta():
 
 
 def test_suffix_probe_failure_marks_unsupported():
-    """三後綴全滅 → meta.tw_unsupported=True，之後 AV 自動退場不燒配額"""
+    """三後綴全滅 → meta.tw_unsupported=True（附標記日期），之後 AV 自動退場不燒配額"""
     from src.finmind_client import _resolve_tw_symbol
     cache = {"meta": {}, "stocks": {}}
     av = AlphaVantageClient(api_key="dummy")
@@ -167,11 +215,59 @@ def test_suffix_probe_failure_marks_unsupported():
     assert sym is None and res is None
     assert len(calls) == 3   # .TPE / .TW / .TWO 各探測一次
     assert cache["meta"]["tw_unsupported"] is True
+    # 🔴 P1：標記必須附帶日期，供 30 天 TTL 自癒重探
+    assert "tw_unsupported_at" in cache["meta"]
 
     calls.clear()
     sym2, res2 = _resolve_tw_symbol(cache, av, "2427")
     assert sym2 is None and res2 is None
-    assert calls == []       # unsupported 之後零請求
+    assert calls == []       # unsupported 效期內零請求
+
+
+# ─────────────────────────────────────────────
+# P1：tw_unsupported 自癒 TTL（限流污染不再永久關掉 AV 層）
+# ─────────────────────────────────────────────
+
+def test_unsupported_flag_heals_after_ttl():
+    """標記超過 30 天 → 自動清除並重新探測（若當日剛好被限流，AV 層不會退場 forever）"""
+    from src.finmind_client import _resolve_tw_symbol
+    stale_mark = (datetime.now(fc.TZ_TAIPEI) - timedelta(days=31)).isoformat()
+    cache = {"meta": {"tw_unsupported": True, "tw_unsupported_at": stale_mark},
+             "stocks": {}}
+    av = AlphaVantageClient(api_key="dummy")
+    calls = []
+    def fake_get(symbol):
+        calls.append(symbol)
+        return {"eps": 2.0} if symbol.endswith(".TPE") else None
+    av.get_quarterly_financials = fake_get
+
+    sym, res = _resolve_tw_symbol(cache, av, "2330")
+    assert sym == "2330.TPE" and res is not None          # 重探成功
+    assert cache["meta"].get("tw_suffix") == ".TPE"
+    assert "tw_unsupported" not in cache["meta"]           # 舊標記已清除
+
+
+def test_unsupported_flag_within_ttl_blocks():
+    """標記未滿 30 天 → 仍跳過、零請求（省配額設計不變）"""
+    from src.finmind_client import _resolve_tw_symbol
+    fresh_mark = (datetime.now(fc.TZ_TAIPEI) - timedelta(days=5)).isoformat()
+    cache = {"meta": {"tw_unsupported": True, "tw_unsupported_at": fresh_mark},
+             "stocks": {}}
+    av = AlphaVantageClient(api_key="dummy")
+    calls = []
+    av.get_quarterly_financials = lambda symbol: calls.append(symbol) or None
+
+    sym, res = _resolve_tw_symbol(cache, av, "2330")
+    assert sym is None and res is None
+    assert calls == []
+    assert cache["meta"]["tw_unsupported"] is True         # 標記保留
+
+
+def test_unsupported_legacy_flag_without_date_kept(tmp_cache):
+    """舊格式（無日期欄位）→ 保守視為有效，不立即重探（避免每次 run 燒配額）"""
+    from src.finmind_client import _unsupported_flag_active
+    meta = {"tw_unsupported": True}
+    assert _unsupported_flag_active(meta) is True
 
 
 # ─────────────────────────────────────────────
@@ -180,11 +276,14 @@ def test_suffix_probe_failure_marks_unsupported():
 
 @pytest.fixture
 def tmp_cache(tmp_path, monkeypatch):
-    """把 CACHE_PATH 重導到 tmp_path，避免污染 repo 的 data/financial_cache.json"""
+    """把 CACHE_PATH 重導到 tmp_path，避免污染 repo 的 data/financial_cache.json
+
+    🔴 P2-3 修正（PR #133 review）：只需 patch fc.CACHE_PATH——load_cache/save_cache
+    於「呼叫期」解析 financial_cache 模組全域，finmind_client 引用的是同一組函式；
+    舊版對 fmc.CACHE_PATH 的 setattr（raising=False）是 no-op（fmc 并未匯入該名稱），
+    已刪除以免誤導讀者以為需要雙重 patch。"""
     path = tmp_path / "financial_cache.json"
     monkeypatch.setattr(fc, "CACHE_PATH", path)
-    import src.finmind_client as fmc
-    monkeypatch.setattr(fmc, "CACHE_PATH", path, raising=False)
     return path
 
 
@@ -226,6 +325,29 @@ def test_stale_cache_used_when_all_sources_fail(tmp_cache, monkeypatch):
     assert out is not None
     assert out["source"] == "cache-stale"
     assert out["eps"] == 3.0
+
+
+def test_no_spurious_save_when_av_meta_untouched(tmp_cache, monkeypatch):
+    """🔴 P2-1：AV 層走 early-return（tw_suffix 已存在且本檔無資料）、
+    meta 與配額都沒動時，不得觸發多餘的 save_cache——
+    否則 Actions 每日 commit 會出現無意義快取 diff。"""
+    from src.finmind_client import FinMindClient
+    seed = {"meta": {"tw_suffix": ".TPE",
+                     "av_quota": {"date": fc._today(), "used": 3}},
+            "stocks": {}}
+    tmp_cache.write_text(json.dumps(seed), encoding="utf-8")
+    before = tmp_cache.read_bytes()
+
+    client = FinMindClient(token="t")
+    monkeypatch.setattr(client, "_get_financial_from_finmind", lambda code, days=730: None)
+    monkeypatch.setattr(client, "_get_financial_from_yfinance", lambda code: None)
+    monkeypatch.setenv("ALPHA_VANTAGE_API_KEY", "dummy")
+    # tw_suffix=.TPE → _resolve_tw_symbol 直接回傳 symbol；本檔 AV 也無資料
+    client._get_av_client = lambda: _make_null_av()
+
+    out = client.get_financial_statements("2427")
+    assert out is None                       # 五層全滅、且無任何 stock 快取
+    assert tmp_cache.read_bytes() == before  # 快取檔完全未被回寫
 
 
 def test_all_layers_fail_returns_none(tmp_cache, monkeypatch):

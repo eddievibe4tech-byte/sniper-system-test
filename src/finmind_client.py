@@ -8,10 +8,22 @@ import requests
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 
-from src.financial_cache import (load_cache, save_cache, fresh_entry,
+# 🔴 P0-1 修正（PR #133 review）：雙風格 import shim
+# package 風格（python -m src.main / pytest rootdir）與 flat 風格
+# （scripts/check_finmind_bulk.py 把 src/ 塞進 sys.path 後
+#  `from finmind_client import ...`）兩種呼叫方式都要能解析；
+# 若只寫 `from src.x import`，flat 載入時 repo 根不在 sys.path →
+# ModuleNotFoundError: No module named 'src'（CI finmind-bulk-guard 紅燈根因）。
+try:
+    from src.financial_cache import (load_cache, save_cache, fresh_entry,
+                                     quota_remaining, consume_quota,
+                                     TZ_TAIPEI as _CACHE_TZ)
+    from src.alpha_vantage_client import AlphaVantageClient
+except ImportError:  # flat 風格：src/ 目錄本身在 sys.path 上
+    from financial_cache import (load_cache, save_cache, fresh_entry,
                                  quota_remaining, consume_quota,
                                  TZ_TAIPEI as _CACHE_TZ)
-from src.alpha_vantage_client import AlphaVantageClient
+    from alpha_vantage_client import AlphaVantageClient
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +33,11 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────
 
 def _av_call(cache: Dict, av: AlphaVantageClient, symbol: str) -> Optional[Dict]:
-    """帶配額管控的 AV 呼叫：免費版 25 次/日，超過安全上限直接跳過"""
+    """帶配額管控的 AV 呼叫：免費版 25 次/日，超過安全上限直接跳過。
+
+    🔴 P2-4（PR #133 review）註記：採「先計次再請求」——請求失敗／限流
+    亦計次，屬保守保護額度的刻意設計，並非 bug，未來維護者請勿「修正」。
+    """
     if quota_remaining(cache) <= 0:
         logger.warning("Alpha Vantage 當日配額用盡，跳過 %s", symbol)
         return None
@@ -29,11 +45,40 @@ def _av_call(cache: Dict, av: AlphaVantageClient, symbol: str) -> Optional[Dict]
     return av.get_quarterly_financials(symbol)
 
 
+# 🔴 P1 修正（PR #133 review）：tw_unsupported 自癒 TTL——
+# get_quarterly_financials() 回傳 None 涵蓋兩種語意：真無資料（可永久標記）
+# 與暫時性失敗（限流 Note／網路抖動，不該永久標記）。若探測日剛好被限流，
+# flag 又隨快取 commit 進 repo，AV 層會對所有台股「靜靜退場 forever」。
+# 折衷修法：flag 記錄標記日期，超過 _UNSUPPORTED_TTL_DAYS 天自動重探一次。
+_UNSUPPORTED_TTL_DAYS = 30
+
+
+def _unsupported_flag_active(meta: Dict) -> bool:
+    """tw_unsupported 是否仍在效期內；超過 30 天視為過期並清除（下次重探）"""
+    if not meta.get("tw_unsupported"):
+        return False
+    try:
+        marked_at = datetime.fromisoformat(meta.get("tw_unsupported_at", ""))
+        if marked_at.tzinfo is None:
+            marked_at = marked_at.replace(tzinfo=_CACHE_TZ)
+        age_days = (datetime.now(_CACHE_TZ) - marked_at).total_seconds() / 86400
+    except Exception:
+        age_days = 0.0   # 舊格式／缺日期 → 保守視為剛標記，等下次到期再重探
+    if age_days >= _UNSUPPORTED_TTL_DAYS:
+        meta.pop("tw_unsupported", None)
+        meta.pop("tw_unsupported_at", None)
+        logger.info("tw_unsupported 已過 %d 天效期 → 清除標記，允許重新探測",
+                    _UNSUPPORTED_TTL_DAYS)
+        return False
+    return True
+
+
 def _resolve_tw_symbol(cache: Dict, av: AlphaVantageClient, code: str):
     """回傳 (symbol, 探測結果)；台股後綴探測一次即快取進 cache meta，
-    避免每檔都浪費配額（AV 對台股覆蓋率不保證）。"""
+    避免每檔都浪費配額（AV 對台股覆蓋率不保證）。
+    標記 tw_unsupported 時一併寫入 tw_unsupported_at，配合上方 TTL 自癒。"""
     meta = cache.setdefault("meta", {})
-    if meta.get("tw_unsupported"):
+    if _unsupported_flag_active(meta):
         return None, None
     if meta.get("tw_suffix"):
         return f"{code}{meta['tw_suffix']}", None
@@ -42,7 +87,9 @@ def _resolve_tw_symbol(cache: Dict, av: AlphaVantageClient, code: str):
         if res:
             meta["tw_suffix"] = suf
             return f"{code}{suf}", res
-    meta["tw_unsupported"] = True   # AV 無台股資料 → 之後直接跳過，不燒配額
+    # AV 本輪三後綴全滅 → 標記跳過以省配額，但附帶日期供 30 天後自癒重探
+    meta["tw_unsupported"] = True
+    meta["tw_unsupported_at"] = datetime.now(_CACHE_TZ).isoformat()
     return None, None
 
 
@@ -63,6 +110,16 @@ class FinMindClient:
             'User-Agent': 'SniperSystem/1.0',
             'Content-Type': 'application/json'
         })
+        # 🔴 P2-2 修正（PR #133 review）：AV client 提升為實例層 lazy init，
+        # 同一 run 內多檔股票共用同一 requests.Session（連線复用），
+        # 不再於 get_financial_statements() 迴圈內逐檔新建。
+        self._av_client: Optional[AlphaVantageClient] = None
+
+    def _get_av_client(self) -> AlphaVantageClient:
+        """取得（並复用）Alpha Vantage 客戶端實例"""
+        if self._av_client is None:
+            self._av_client = AlphaVantageClient()
+        return self._av_client
     
     def _make_request(self, dataset: str, stock_id: str, days: int = 60, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Optional[List[Dict]]:
         """
@@ -370,10 +427,18 @@ class FinMindClient:
             return self._persist(cache, code, result, expected_source='yfinance')
 
         # 3) Alpha Vantage（配額＋台股後綴探測管控）
-        av = AlphaVantageClient()
+        av = self._get_av_client()   # P2-2：實例層复用，不再逐檔新建 Session
         if av.enabled:
+            meta_before = dict(cache.get("meta", {}))
+            quota_before = cache.get("meta", {}).get("av_quota", {}).get("used", 0)
             sym, probed = _resolve_tw_symbol(cache, av, code)
-            cache_dirty = True   # _av_call/_resolve_tw_symbol 會更新配額與 meta
+            # 🔴 P2-1 修正（PR #133 review）：cache_dirty 只在「確實有變更」時設定——
+            # _resolve_tw_symbol 走 early-return（tw_suffix/tw_unsupported 已存在、
+            # 效期內）且本檔未發請求時，meta 與配額都沒動，不該觸發多餘的 save_cache。
+            # （跨日首次讀取時 quota_remaining() 會重置 av_quota.date，屬合理變更。）
+            meta_after = cache.get("meta", {})
+            quota_after = meta_after.get("av_quota", {}).get("used", 0)
+            cache_dirty = (quota_after != quota_before) or (meta_before != dict(meta_after))
             av_result = probed if probed else (_av_call(cache, av, sym) if sym else None)
             if av_result:
                 return self._persist(cache, code, av_result, expected_source='alphavantage')
