@@ -96,9 +96,17 @@ class USClient:
             return {"value": round(float(df["Close"].iloc[-1]), 2), "source": "yfinance"}
 
         # 來源 2：yfinance fast_info（不走歷史資料，較不易被限流）
+        # 🔧 相容性修正：部分版本 fast_info 是 FastInfo 物件、無 .get()（會拋 AttributeError），
+        # 改用 getattr 取屬性，同時兼容 last_price / lastPrice 兩種鍵名
         try:
             fi = yf.Ticker(US_INDEX["vix"]).fast_info
-            price = fi.get("lastPrice") or fi.get("last_price")
+            price = getattr(fi, "last_price", None) or getattr(fi, "lastPrice", None)
+            if price is None:
+                # 兼容以 dict 形式實作的 fast_info
+                try:
+                    price = fi.get("lastPrice") or fi.get("last_price")
+                except Exception:
+                    price = None
             if price:
                 return {"value": round(float(price), 2), "source": "yfinance_fast"}
         except Exception as e:
@@ -121,7 +129,9 @@ class USClient:
             r.raise_for_status()
             for line in reversed(r.text.strip().splitlines()[1:]):
                 parts = line.split(",")
-                if len(parts) == 2 and parts[1] not in (".", ""):
+                # 🔧 Future-proof：FRED 未來若在日期/數值後新增備註欄或時間戳，
+                # 仍能以 >=2 解析（只要求「日期 + 數值」存在），避免最後一個來源無故失效
+                if len(parts) >= 2 and parts[1] not in (".", ""):
                     return {"value": round(float(parts[1]), 2), "source": "fred"}
         except Exception as e:
             logger.warning("FRED VIX 失敗：%s", e)

@@ -39,6 +39,26 @@ class _NoFastInfo:
         raise RuntimeError("fast_info unavailable")
 
 
+class _AttrFastInfo:
+    """模擬新版 yfinance：fast_info 是 FastInfo 物件，無 .get()，只有 last_price 屬性"""
+
+    def __init__(self, price):
+        self.last_price = price
+
+    @property
+    def text(self):  # 避免誤當 response 使用
+        raise AttributeError("no text")
+
+
+class _TickerWithAttrFastInfo:
+    def __init__(self, symbol):
+        pass
+
+    @property
+    def fast_info(self):
+        return _AttrFastInfo(19.42)
+
+
 # ── 1. min_rows 修正（核心 bug）──────────────────────────────
 
 def test_get_vix_uses_min_rows_not_60():
@@ -102,6 +122,50 @@ def test_get_vix_falls_back_to_fred(monkeypatch):
     monkeypatch.setattr(c.session, "get", lambda url, timeout=None, **kw: _BadCboe(url))
     out = c.get_vix()
     assert out["value"] == 18.73 and out["source"] == "fred"
+
+
+def test_get_vix_fast_info_object_without_get(monkeypatch):
+    """相容性回歸：fast_info 為 FastInfo 物件（無 .get()）時，getattr 仍能取到 last_price"""
+    c = USClient()
+    c.get_history = lambda *a, **k: None
+    monkeypatch.setattr("yfinance.Ticker", lambda s: _TickerWithAttrFastInfo(s))
+
+    def _fail(url, timeout=None, **kw):
+        raise OSError("network down")  # CBOE/FRED 都失靈，確保走 fast_info 分支
+
+    monkeypatch.setattr(c.session, "get", _fail)
+    out = c.get_vix()
+    assert out == {"value": 19.42, "source": "yfinance_fast"}
+
+
+def test_get_vix_fred_extra_columns_future_proof(monkeypatch):
+    """Future-proof 回歸：FRED CSV 多一個備註欄（3 欄）仍應正確解析第 2 欄數值"""
+    c = USClient()
+    c.get_history = lambda *a, **k: None
+    monkeypatch.setattr("yfinance.Ticker", lambda s: _NoFastInfo())
+
+    class _WideCsv(_Resp):
+        @property
+        def text(self):
+            # 尾部缺值(.)跳過；最後一筆有效列多了一個備註欄 → len(parts)==3
+            return ("DATE,VIXCLS,NOTE\n"
+                    "2026-09-28,17.90,ok\n"
+                    "2026-09-29,.,missing\n"
+                    "2026-09-30,20.15,updated\n")
+
+    def _get(url, timeout=None, **kw):
+        if "cboe" in url:
+            r = _BadCboeResp(url)
+            return r
+        return _WideCsv(url)
+
+    class _BadCboeResp(_WideCsv):
+        def json(self):
+            raise ValueError("not json")
+
+    monkeypatch.setattr(c.session, "get", _get)
+    out = c.get_vix()
+    assert out["value"] == 20.15 and out["source"] == "fred"
 
 
 def test_get_vix_returns_none_when_all_sources_fail(monkeypatch):
