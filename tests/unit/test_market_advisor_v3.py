@@ -149,17 +149,37 @@ class TestVixWarning:
         return out["warnings"]
 
     def test_vix_none_triggers_manual_check_warning(self, monkeypatch, tmp_path):
-        # 🔴 修正（#129）：us 檔存在但 VIX=None → 代表四來源全失敗，
+        # 🔴 修正（#129）：新版格式（有 vix_source）但 VIX=None → 代表今日四來源全失敗，
         # 海選端已自動零候選，警告文案改為明確提示「本日不產出美股買入訊號」
         warns = self._warnings_for(monkeypatch, tmp_path,
-                                   {"vix": None, "candidates": [{"symbol": "AAPL", "scenario": "動量突破",
-                                                                 "recommendation": "謹慎買入", "rsi": 60}]})
+                                   {"vix": None, "vix_source": None,
+                                    "updated_at": "2026-10-01T00:00:00",
+                                    "candidates": [{"symbol": "AAPL", "scenario": "動量突破",
+                                                    "recommendation": "謹慎買入", "rsi": 60}]})
         assert any("VIX" in w and "不產出美股買入訊號" in w for w in warns)
+        # 🆕 #134：警告應附上 updated_at 讓 operator 看出資料新鮮度
+        assert any("2026-10-01" in w for w in warns if "不產出美股買入訊號" in w)
 
     def test_us_file_missing_also_warns(self, monkeypatch, tmp_path):
         warns = self._warnings_for(monkeypatch, tmp_path, None)
         assert any("VIX 缺失" in w for w in warns)
 
     def test_vix_present_no_warning(self, monkeypatch, tmp_path):
-        warns = self._warnings_for(monkeypatch, tmp_path, {"vix": 15.2, "candidates": []})
+        warns = self._warnings_for(monkeypatch, tmp_path,
+                                   {"vix": 15.2, "vix_source": "yfinance", "candidates": []})
         assert not any("VIX 缺失" in w for w in warns)
+        assert not any("舊版格式" in w for w in warns)
+
+    def test_legacy_format_without_vix_source_says_stale_not_all_failed(self, monkeypatch, tmp_path):
+        # 🆕 修正（#134）：#131 合併前舊程式寫出的數據檔完全沒有 vix_source 欄位，
+        # 此時 VIX=None 的成因是「資料過期」而非「今日四來源全失敗」——
+        # 警告必須區分成因並指引手動觸發 US workflow，不得誤報四來源全失敗。
+        warns = self._warnings_for(monkeypatch, tmp_path,
+                                   {"vix": None, "market_scenario": {"scenario": "資料不足"},
+                                    "updated_at": "2026-09-30T22:02:04", "candidates": []})
+        assert any("舊版格式" in w and "vix_source" in w for w in warns)
+        assert any("Daily US Momentum Analysis" in w for w in warns)
+        # 誠實原則：不得把「舊檔」誤報成「今日四來源全失敗／不產出買入訊號」
+        assert not any("四來源全失敗" in w and "不產出美股買入訊號" in w for w in warns)
+        # 來源透明化：附上新鮮度資訊
+        assert any("2026-09-30" in w for w in warns if "舊版格式" in w)
