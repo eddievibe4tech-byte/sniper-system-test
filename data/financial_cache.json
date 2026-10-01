@@ -1,0 +1,131 @@
+{
+  "meta": {},
+  "stocks": {
+    "2330": {
+      "revenue": 4440492429000.0,
+      "gross_margin": 64.23,
+      "net_margin": 50.37,
+      "eps": 86.26,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:03.009824+08:00"
+    },
+    "2308": {
+      "revenue": 654539408000.0,
+      "gross_margin": 35.53,
+      "net_margin": 13.99,
+      "eps": 31.42,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:06.943785+08:00"
+    },
+    "2454": {
+      "revenue": 593617995000.0,
+      "gross_margin": 46.28,
+      "net_margin": 16.43,
+      "eps": 60.55,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:11.014567+08:00"
+    },
+    "2881": {
+      "revenue": 441005006000.0,
+      "gross_margin": null,
+      "net_margin": null,
+      "eps": 10.7,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:16.693573+08:00"
+    },
+    "2317": {
+      "revenue": 9310748978000.0,
+      "gross_margin": 6.12,
+      "net_margin": 2.65,
+      "eps": 15.17,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:23.102887+08:00"
+    },
+    "2382": {
+      "revenue": 2979709572000.0,
+      "gross_margin": 5.54,
+      "net_margin": 2.99,
+      "eps": 22.95,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:27.957945+08:00"
+    },
+    "3711": {
+      "revenue": 711209799000.0,
+      "gross_margin": 19.49,
+      "net_margin": 8.78,
+      "eps": 13.82,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:35.307698+08:00"
+    },
+    "3017": {
+      "revenue": 184870812000.0,
+      "gross_margin": 28.87,
+      "net_margin": 17.38,
+      "eps": 75.02,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:39.463896+08:00"
+    },
+    "1504": {
+      "revenue": 60708072000.0,
+      "gross_margin": 24.12,
+      "net_margin": 11.19,
+      "eps": 2.76,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:44.941929+08:00"
+    },
+    "1519": {
+      "revenue": 24140594000.0,
+      "gross_margin": 42.65,
+      "net_margin": 19.65,
+      "eps": 15.28,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:48.660259+08:00"
+    },
+    "2303": {
+      "revenue": 250707149000.0,
+      "gross_margin": 30.6,
+      "net_margin": 33.22,
+      "eps": 6.65,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:03:55.166453+08:00"
+    },
+    "2882": {
+      "revenue": 380432470000.0,
+      "gross_margin": null,
+      "net_margin": null,
+      "eps": 8.48,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:04:01.322460+08:00"
+    },
+    "2412": {
+      "revenue": 244927513000.0,
+      "gross_margin": 36.49,
+      "net_margin": 16.98,
+      "eps": 5.09,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:04:09.366859+08:00"
+    },
+    "2002": {
+      "revenue": 316891045000.0,
+      "gross_margin": 4.27,
+      "net_margin": -0.34,
+      "eps": -0.21,
+      "fiscal_quarter": "2026-06-30",
+      "source": "FinMind",
+      "fetched_at": "2026-10-01T09:04:16.408838+08:00"
+    }
+  }
+}
