@@ -157,11 +157,18 @@ def main():
             warnings.append(f"⚠️ 財報 3 日內不進新倉：{', '.join(guards)}")
     # 🆕 VIX 缺失：動量突破情境判定用了保守預設值，需人工確認後再執行
     # 🔴 修正（#129）：海選端已改為「VIX 缺失 → 情境＝資料不足 → 零候選」，
-    # 此處區分兩種情況：完全無數據檔 vs. 四來源全失敗（後者已自動不出買入訊號，僅提示原因）。
+    # 此處區分三種情況：完全無數據檔 vs. 舊版格式（#131 合併前產出、無 vix_source 欄位，
+    # 屬「資料過期」而非今日抓取失敗）vs. 新版格式下四來源全失敗。
+    # 🆕 修正（#134）：舊版格式若直接誤報「四來源全失敗」會混淆成因；
+    # 並附上 updated_at 讓 operator 一眼看出資料新鮮度（來源透明化原則）。
+    _stale_note = f"（最後更新：{us.get('updated_at') or '未知'}）" if us else ""
     if not us:
         warnings.append("⚠️ 美股 VIX 缺失：動量突破訊號請先人工確認 VIX<20 再執行")
+    elif "vix_source" not in us:
+        warnings.append(f"⚠️ 美股數據檔為舊版格式（無 vix_source 欄位）{_stale_note}："
+                        "非今日四來源抓取失敗，請先手動觸發 Daily US Momentum Analysis 更新資料後重跑")
     elif us.get("vix") is None or (us.get("market_scenario") or {}).get("scenario") == "資料不足":
-        warnings.append("⚠️ 美股 VIX 四來源全失敗：本日不產出美股買入訊號（collect_opportunities 已自動排除）")
+        warnings.append(f"⚠️ 美股 VIX 四來源全失敗{_stale_note}：本日不產出美股買入訊號（collect_opportunities 已自動排除）")
     if crypto and (crypto.get("fear_greed_index") or {}).get("value", 0) > 75:
         warnings.append("🔴 加密 FNG>75 極度貪婪：不追高")
 
