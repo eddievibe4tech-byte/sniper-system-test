@@ -50,6 +50,14 @@ jobs:
         run: |
           python -m src.market_advisor || echo "⚠️ advisor 失敗（不中斷主流程）"
 
+      # 🌍 宏觀資產配置引擎（Macro Allocator）：產出 data/macro_allocation.json 供前端 loadMacro() 讀取。
+      #    失敗不中斷主流程；regime 狀態檔 macro_regime_state.json 屬本地髒檔，已在 .gitignore 排除、不回 commit。
+      - name: Run Macro Allocator
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          python -m src.macro_allocator || echo "⚠️ macro allocator 失敗（不中斷主流程）"
+
       # ❌ 已刪除重複的 Generate Static Review Report 步驟（避免每天執行兩次分析）
 
       - name: Validate telemetry.json before commit
@@ -77,6 +85,9 @@ jobs:
           # 🔴 Alpha Vantage Fallback：財報快取必須 commit 回 repo——Actions runner 免洗，
           #    不推回 repo 的話每天冷啟動、天天燒 AV 配額（免費版僅 25 次/日）
           [ -f data/financial_cache.json ] && git add data/financial_cache.json || echo "⚠️ 無 financial_cache.json"
+          # 🌍 Macro Allocator 輸出：macro_allocation.json 必須 tracked——前端 loadMacro() 直接 fetch 此檔，
+          #    不 commit 回 repo 的話 Pages 永遠顯示「尚無宏觀配置資料」
+          [ -f data/macro_allocation.json ] && git add data/macro_allocation.json || echo "⚠️ 無 macro_allocation.json"
 
           git commit -m "🎯 Auto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main

@@ -11,3 +11,6 @@ __pycache__/
 # 且 log 誤導性印出「⚠️ 無 financial_cache.json」。本地髒檔疑慮由
 # _persist/cache_dirty 的「無變更不回寫」設計控管，勿改用 git add -f。
 htmlcov/
+
+# 巨觀配置引擎狀態（regime 歷史）不入库；macro_allocation.json 必須 tracked 供 Pages 前端讀取
+macro_regime_state.json
