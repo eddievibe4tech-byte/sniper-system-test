@@ -111,6 +111,15 @@
             </div>
         </div>
 
+        <!-- 🌍 宏觀資產配置 (Macro Allocator) — Issue #136 -->
+        <div class="bg-white border rounded-lg p-4 mb-6">
+            <h2 class="text-xl font-semibold mb-2">🌍 宏觀資產配置 (Macro Allocator)</h2>
+            <p class="text-xs text-gray-500 mb-3">確定性規則計算權重（SAA→TAA），AI 僅負責文字解讀；非投資建議。</p>
+            <div id="macro-box" class="text-sm text-gray-700 space-y-3">
+                <p class="text-gray-500">載入中...</p>
+            </div>
+        </div>
+
         <!-- 🎯 今日 AI 狙擊分析 -->
         <div class="bg-white border rounded-lg p-4 mb-6">
             <h2 class="text-xl font-semibold mb-4">🎯 今日 AI 狙擊分析</h2>
@@ -1808,6 +1817,8 @@
             await loadUS();
             // 6. 載入今日 5,000 元配置建議（v2 統一分配器）
             await loadAdvice();
+            // 7. 載入宏觀資產配置（Issue #136 Macro Allocator）
+            await loadMacro();
         });
 
         // ⚡ 載入明日突破觀察表格
@@ -1909,6 +1920,66 @@
                 el.innerHTML = html;
             } catch (e) {
                 el.innerHTML = '<p class="text-gray-500">暫無建議資料</p>';
+            }
+        }
+
+        // 🌍 載入宏觀資產配置（Issue #136：data/macro_allocation.json）
+        //    呈現：體制指示燈、SAA vs TAA 權重對比長條圖、再平衡行動清單、AI 策略師解讀
+        async function loadMacro() {
+            const el = document.getElementById('macro-box');
+            try {
+                const res = await fetch(BASE + 'data/macro_allocation.json?v=' + Date.now());
+                if (!res.ok) throw new Error(res.status);
+                const m = await res.json();
+                const syms = Object.keys(m.taa_weights || {});
+                if (syms.length === 0) throw new Error('empty');
+
+                // 1) 體制指示燈＋輸入值
+                let html = `<div class="flex flex-wrap items-center gap-3">` +
+                    `<span class="text-lg font-bold">${escapeHTML(m.regime_light || '⚪')} ${escapeHTML(m.regime || '-')}</span>` +
+                    `<span class="text-xs text-gray-500">今日原始訊號：${escapeHTML(m.raw_regime || '-')}（新体制須連續 ${m.confirm_days_required || 3} 天才切換，防 Whipsaw）</span>` +
+                    `<span class="text-xs text-gray-600 ml-auto">VIX ${m.inputs?.vix ?? '-'}｜SPY vs MA200 ${m.inputs?.spy_trend ?? '-'}%</span></div>`;
+
+                // 2) SAA vs TAA 權重對比長條圖（純 CSS，不依賴 Chart.js CDN）
+                html += '<div class="space-y-1.5">';
+                syms.sort((a, b) => (m.taa_weights[b] || 0) - (m.taa_weights[a] || 0)).forEach(s => {
+                    const saa = (m.saa_weights[s] || 0) * 100;
+                    const taa = (m.taa_weights[s] || 0) * 100;
+                    const delta = taa - saa;
+                    const dColor = delta > 1 ? 'text-green-700' : delta < -1 ? 'text-red-600' : 'text-gray-500';
+                    const dTxt = delta > 1 ? `▲+${delta.toFixed(1)}%` : delta < -1 ? `▼${delta.toFixed(1)}%` : `${delta >= 0 ? '+' : ''}${delta.toFixed(1)}%`;
+                    html += `<div class="flex items-center gap-2 text-xs">` +
+                        `<span class="w-10 font-mono font-bold">${escapeHTML(s)}</span>` +
+                        `<span class="w-20 text-gray-500 truncate">${escapeHTML((m.names || {})[s] || '')}</span>` +
+                        `<div class="flex-1 bg-gray-100 rounded h-4 relative overflow-hidden">` +
+                        `<div class="absolute inset-y-0 left-0 bg-blue-200 opacity-60" style="width:${saa}%"></div>` +
+                        `<div class="absolute inset-y-0 left-0 bg-blue-600 rounded" style="width:${taa}%"></div></div>` +
+                        `<span class="w-14 text-right font-mono">${taa.toFixed(1)}%</span>` +
+                        `<span class="w-16 text-right font-mono ${dColor}">${dTxt}</span></div>`;
+                });
+                html += `<div class="text-[10px] text-gray-400 pt-1">淺色＝戰略基礎權重 SAA｜深色＝系統建議戰術權重 TAA</div></div>`;
+
+                // 3) 再平衡行動清單
+                const acts = m.actions || [];
+                if (acts.length === 0) {
+                    html += '<p class="text-gray-500 text-xs">✅ 目前持倉於 5% 容忍區間內：無需再平衡（零摩擦成本）。</p>';
+                } else {
+                    html += '<div class="space-y-1">' + acts.map(a => {
+                        const icon = a.action === '買入' ? '🟢' : a.action === '賣出' ? '🔴' : '⚪';
+                        return `<div class="text-xs border-l-2 ${a.action === '買入' ? 'border-green-500' : a.action === '賣出' ? 'border-red-500' : 'border-gray-300'} pl-2 py-0.5">` +
+                            `<b>${icon} ${escapeHTML(a.action)} ${escapeHTML(a.symbol)}</b>：$${Number(a.amount).toLocaleString()} → 目標權重 ${escapeHTML(a.target_weight || '-')}` +
+                            (a.tax_note ? `<div class="text-gray-500 pl-4">${escapeHTML(a.tax_note)}</div>` : '') + '</div>';
+                    }).join('') + '</div>';
+                }
+
+                // 4) AI 策略師解讀（Groq；僅解讀確定性數字，不參與計算）
+                if (m.ai_rationale) {
+                    html += `<div class="bg-purple-50 border border-purple-200 rounded p-2 text-xs"><b>🤖 AI 策略師解讀：</b>${escapeHTML(m.ai_rationale)}</div>`;
+                }
+                html += `<div class="text-[10px] text-gray-400">${escapeHTML(m.disclaimer || '')}｜更新：${escapeHTML((m.updated_at || '').slice(0, 16).replace('T', ' ') || '-')}</div>`;
+                el.innerHTML = html;
+            } catch (e) {
+                el.innerHTML = '<p class="text-gray-500">尚無宏觀配置資料（每日 workflow 產出 macro_allocation.json 後自動顯示）。</p>';
             }
         }
     </script>

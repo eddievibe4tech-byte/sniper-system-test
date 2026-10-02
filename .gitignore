@@ -1,13 +1,1 @@
-# Python compiled files
-__pycache__/
-*.pyc
-
-# Testing and coverage
-.coverage
-# 🔴 P0-2 修正（PR #133 review）：data/financial_cache.json 不得 ignore——
-# 該檔必須是 tracked 檔案，workflow 的 `git add` 才能把它 commit 回 repo、
-# 讓快取跨 Actions run 存活（runner 免洗）。若 ignore：git add 直接報錯
-# → 觸發 `|| echo` 分支 → 快取永不持久化 → 每日冷啟動燒 AV 配額，
-# 且 log 誤導性印出「⚠️ 無 financial_cache.json」。本地髒檔疑慮由
-# _persist/cache_dirty 的「無變更不回寫」設計控管，勿改用 git add -f。
-htmlcov/
+(empty)
