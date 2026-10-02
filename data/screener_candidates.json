@@ -1,47 +1,27 @@
 {
   "candidates": [
     {
-      "code": "3017",
-      "name": "奇鋐",
-      "industry": "電腦及週邊設備業",
-      "revenue_yoy": 54.34,
+      "code": "2330",
+      "name": "台積電",
+      "industry": "電子工業",
+      "revenue_yoy": 53.32,
       "inst_buy_days": 3,
-      "current_price": 3555.0,
-      "ma20": 3366.75,
-      "screened_at": "2026-09-26"
+      "current_price": 2500.0,
+      "ma20": 2448.25,
+      "screened_at": "2026-10-02"
     },
     {
-      "code": "2890",
-      "name": "永豐金",
-      "industry": "金融保險",
-      "revenue_yoy": 49.48,
+      "code": "2303",
+      "name": "聯電",
+      "industry": "電子工業",
+      "revenue_yoy": 30.71,
       "inst_buy_days": 3,
-      "current_price": 45.15,
-      "ma20": 43.65,
-      "screened_at": "2026-09-26"
-    },
-    {
-      "code": "4938",
-      "name": "和碩",
-      "industry": "電腦及週邊設備業",
-      "revenue_yoy": 34.11,
-      "inst_buy_days": 3,
-      "current_price": 91.3,
-      "ma20": 90.91,
-      "screened_at": "2026-09-26"
-    },
-    {
-      "code": "2884",
-      "name": "玉山金",
-      "industry": "金融保險",
-      "revenue_yoy": 19.29,
-      "inst_buy_days": 3,
-      "current_price": 45.6,
-      "ma20": 44.29,
-      "screened_at": "2026-09-26"
+      "current_price": 161.5,
+      "ma20": 147.4,
+      "screened_at": "2026-10-02"
     }
   ],
-  "updated_at": "2026-09-26T05:44:21.812348",
+  "updated_at": "2026-10-02T11:18:22.385510",
   "rules_applied": "STRICT",
   "error": null
 }
