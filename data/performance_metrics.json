@@ -1,19 +1,19 @@
 {
-  "total_predictions": 402,
-  "verified_count": 168,
-  "correct_count": 101,
-  "incorrect_count": 67,
+  "total_predictions": 416,
+  "verified_count": 182,
+  "correct_count": 112,
+  "incorrect_count": 70,
   "pending_count": 198,
-  "accuracy_rate": 60.1,
+  "accuracy_rate": 61.5,
   "current_version": 1,
-  "last_updated": "2026-10-01T22:14:46.780980+08:00",
+  "last_updated": "2026-10-02T22:14:09.781818+08:00",
   "version_stats": [
     {
       "version": 1,
-      "predictions": 402,
-      "verified": 168,
-      "correct": 101,
-      "accuracy": 60.1
+      "predictions": 416,
+      "verified": 182,
+      "correct": 112,
+      "accuracy": 61.5
     }
   ],
   "model_stats": {
@@ -24,10 +24,10 @@
       "accuracy": null
     },
     "groq": {
-      "predictions": 402,
-      "verified": 168,
-      "correct": 101,
-      "accuracy": 60.1
+      "predictions": 416,
+      "verified": 182,
+      "correct": 112,
+      "accuracy": 61.5
     }
   }
 }
