@@ -3,8 +3,9 @@
 //! 架構分層（機構級「資料與展示分離」合規要求）：
 //! - `api`     : Rust Core — HTTP / GitHub Contents API / CoinGecko / 解析
 //! - `models`  : FFI 邊界序列化契約（derive Serialize/Deserialize）
-//! - `error`   : thiserror 領域錯誤 + anyhow 邊界彙整
+//! - `error`   : thiserror 領域錯誤 + into_user_facing() 淨化摘要
 //! - `webview_guard`: OPPO ColorOS WebView 版本防護
+//!
 //! JS 端只透過 invoke() 呼叫下方 `#[tauri::command]`，API Key 永不進入 WebView 環境。
 
 mod api;
@@ -37,9 +38,14 @@ impl AppState {
 async fn fetch_dashboard(state: State<'_, AppState>) -> Result<DashboardPayload, String> {
     let client = state.inner().client.clone();
 
+    // P2-3：兩個資料源以 join! 平行請求，行動網路下延遲約減半；
+    //       各自 map_err 保留降級語意（單源失敗 → 部分資料 + 淨化摘要）。
+    let (metrics_res, signals_res) =
+        tokio::join!(api::get_metrics(&client), api::get_signals(&client));
+
     let mut errors = Vec::new();
 
-    let metrics = match api::get_metrics(&client).await {
+    let metrics = match metrics_res {
         Ok(m) => Some(m),
         Err(e) => {
             errors.push(e.into_user_facing());
@@ -47,7 +53,7 @@ async fn fetch_dashboard(state: State<'_, AppState>) -> Result<DashboardPayload,
         }
     };
 
-    let signals = match api::get_signals(&client).await {
+    let signals = match signals_res {
         Ok(s) => s,
         Err(e) => {
             errors.push(e.into_user_facing());
@@ -86,11 +92,15 @@ fn check_webview(user_agent: String) -> Result<String, String> {
         .map_err(|e| e.into_user_facing())
 }
 
-/// 🔐 HMAC 簽章範例（未來串接 MAX 交易所 API 用）：
+/// 🔐 HMAC 簽章佔位（未來串接 MAX 交易所 API 用）：
 /// secret 僅存在於 Rust 側（env/安全存儲），JS 永遠拿不到金鑰本身。
-/// 這裡先以純 Rust 實作（不引入 hmac crate 以保持本 PR 依賴精簡），
-/// 正式接 MAX 時應改用 `hmac` + `sha2` crate 的常數時間實作。
-#[tauri::command]
+///
+/// ⚠️ PR #142 Code Review P1-1（簽章預言機風險）：
+///    本函數以非密碼學雜湊 + secret 前綴模擬簽章，**不得**註冊於 invoke_handler —
+///    一旦 MAX_API_SECRET 真實設定，任何能在 WebView 內執行的程式碼（含潛在 XSS）
+///    皆可呼叫此 command 取得「簽章」。待引入 `hmac` + `sha2` crate 的
+///    RFC 2104 常數時間實作並通過安全審查後，才可重新註冊。
+#[allow(dead_code)]
 fn sign_payload_placeholder(message: String) -> Result<String, String> {
     let secret = std::env::var("MAX_API_SECRET")
         .map_err(|_| "尚未設定交易金鑰（MAX_API_SECRET）".to_string())?;
@@ -101,7 +111,9 @@ fn sign_payload_placeholder(message: String) -> Result<String, String> {
     Ok(digest[..32].to_string())
 }
 
-/// 精簡 FNV-1a 擴充雜湊（僅供佔位演示，非密碼學安全 — 見上方 ⚠️）
+/// 精簡 FNV-1a 擴充雜湊（僅供 sign_payload_placeholder 佔位演示，
+/// 非密碼學安全 — 見上方 P1-1 說明；本函數未註冊至 IPC）
+#[allow(dead_code)]
 fn simple_hash(data: &[u8]) -> String {
     let mut h: u128 = 0xcbf29ce484222325;
     for b in data {
@@ -116,11 +128,12 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(AppState::new())
+        // P1-1：sign_payload_placeholder 已從 IPC 註冊移除（簽章預言機風險），
+        // 待 hmac+sha2 的 RFC 2104 實作通過安全審查後再重新註冊。
         .invoke_handler(tauri::generate_handler![
             fetch_dashboard,
             crypto_price,
-            check_webview,
-            sign_payload_placeholder
+            check_webview
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

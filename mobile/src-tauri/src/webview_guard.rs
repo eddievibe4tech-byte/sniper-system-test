@@ -58,4 +58,12 @@ mod tests {
         assert_eq!(parse_webview_major("Mozilla/5.0 (Macintosh)"), None);
         assert!(check_webview_version("Mozilla/5.0 (Macintosh)").is_ok());
     }
+
+    #[test]
+    fn boundary_major_equals_min_is_allowed() {
+        // P3-2：鎖定「major == MIN_WEBVIEW_MAJOR（等於基線 100）→ 放行」語意
+        let ua = "... Chrome/100.0.4896.58 Mobile Safari/537.36";
+        assert_eq!(parse_webview_major(ua), Some(MIN_WEBVIEW_MAJOR));
+        assert!(check_webview_version(ua).is_ok());
+    }
 }

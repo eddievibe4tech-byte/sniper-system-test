@@ -9,15 +9,38 @@ use base64::Engine as _;
 use serde_json::Value;
 
 use crate::error::DataError;
-use crate::models::{DrawdownStats, MetricsSummary, RiskRewardStats, SignalRow};
+use crate::models::{MetricsSummary, SignalRow};
 
 const REPO_OWNER: &str = "eddievibe4tech-byte";
 const REPO_NAME: &str = "sniper-system-test";
 const BRANCH: &str = "main";
 
-/// 取得單一檔案（GitHub Contents API，base64 content）。
-/// Token 存在時帶上以拉高 rate limit；不存在則匿名（60 req/hr 對儀表板足夠）。
+/// 取得單一檔案。主路徑走 raw.githubusercontent.com（P2-1）：
+/// - 純 JSON 輸出，免去 Contents API 的 base64 解碼；
+/// - 不佔用 GitHub REST API 匿名配額（60 req/hr），對儀表板高頻刷新更友善。
+///
+/// raw 回非成功狀態時 fallback 到 GitHub Contents API（Token 存在則帶上拉高配額）。
 async fn fetch_file(client: &reqwest::Client, path: &str) -> Result<Value, DataError> {
+    let raw_url = format!(
+        "https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}/{BRANCH}/{path}"
+    );
+    let resp = client
+        .get(&raw_url)
+        .header("User-Agent", "sniper-mobile-tauri")
+        .send()
+        .await?;
+    if resp.status().is_success() {
+        return resp.json::<Value>().await.map_err(Into::into);
+    }
+    // raw CDN 異常（5xx / 限流）→ Contents API fallback
+    fetch_file_via_contents_api(client, path).await
+}
+
+/// Fallback：GitHub Contents API（base64 content → JSON）。
+async fn fetch_file_via_contents_api(
+    client: &reqwest::Client,
+    path: &str,
+) -> Result<Value, DataError> {
     let url = format!(
         "https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}?ref={BRANCH}"
     );
@@ -53,25 +76,18 @@ async fn fetch_file(client: &reqwest::Client, path: &str) -> Result<Value, DataE
 pub async fn get_metrics(client: &reqwest::Client) -> Result<MetricsSummary, DataError> {
     let raw = fetch_file(client, "data/performance_metrics.json").await?;
 
-    // accuracy_rate 欄位可能是數字或「資料不足」字串 → 先手動寬容取出，
-    // 再從 Value 樹移除該欄位避免 serde 型別錯誤（比字串替換更穩健）。
+    // P2-2：risk_reward / drawdown 由 serde `#[serde(default)]` + Option 直接處理，
+    //       不再手動二次解析；僅保留 accuracy_rate 的寬容處理（數字或「資料不足」字串），
+    //       從 Value 樹移除該欄位後一次 from_value（比字串替換更穩健）。
     let accuracy_rate = raw.get("accuracy_rate").and_then(Value::as_f64);
-    let mut obj = raw.clone();
+    let mut obj = raw;
     if let Some(map) = obj.as_object_mut() {
         map.remove("accuracy_rate");
     }
 
     let mut metrics: MetricsSummary =
-        serde_json::from_value(obj.clone()).map_err(|_| DataError::Decode)?;
+        serde_json::from_value(obj).map_err(|_| DataError::Decode)?;
     metrics.accuracy_rate = accuracy_rate;
-    metrics.risk_reward = obj
-        .get("risk_reward")
-        .cloned()
-        .and_then(|v| serde_json::from_value::<RiskRewardStats>(v).ok());
-    metrics.drawdown = obj
-        .get("drawdown")
-        .cloned()
-        .and_then(|v| serde_json::from_value::<DrawdownStats>(v).ok());
     Ok(metrics)
 }
 
@@ -157,9 +173,12 @@ pub async fn get_crypto_price_tw(
         return Err(DataError::RemoteStatus(status.as_u16(), "coingecko".into()));
     }
     let body: Value = resp.json().await?;
+    // P1-2：嚴格 key 匹配 — 若回傳 map 的 key 與請求 id 不一致（別名/大小寫邊界），
+    //       絕不 fallback 到 values().next()，避免把「另一個資產的價格」掛在用戶
+    //       請求的 symbol 下（金融儀表板中錯誤價格比無價更危險）→ 直接 Decode 錯誤。
     let price = body
         .as_object()
-        .and_then(|map| map.get(&symbol.to_lowercase()).or_else(|| map.values().next()))
+        .and_then(|map| map.get(&symbol.to_lowercase()))
         .and_then(|v| v.get("twd"))
         .and_then(Value::as_f64)
         .ok_or(DataError::Decode)?;
