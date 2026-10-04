@@ -187,12 +187,16 @@ gh run watch --repo eddievibe4tech-byte/sniper-system-test \
 
 ### 版本對照表（tag ↔ tauri.conf.json ↔ Cargo.toml）
 
-| Git Tag | `tauri.conf.json` version | `src-tauri/Cargo.toml` version | 說明 |
-|:---|:---|:---|:---|
-| `v0.1.0` | `0.1.0` | `0.1.0` | 首版行動儀表板（IPC 四命令 + WebView 偵測 + R/R・MDD 卡片） |
+| Git Tag | `tauri.conf.json` version | `src-tauri/Cargo.toml` version | 實測驗證 | 說明 |
+|:---|:---|:---|:---|:---|
+| `v0.1.0` | `0.1.0` | `0.1.0` | ✅ [Run 37190977771](https://github.com/eddievibe4tech-byte/sniper-system-test/actions/runs/37190977771) 全綠（2026-10-04）；[Release v0.1.0](https://github.com/eddievibe4tech-byte/sniper-system-test/releases/tag/v0.1.0) 自動建立，APK asset `app-universal-release-unsigned.apk`（約 22.1 MB）上傳成功 | 首版行動儀表板（IPC 四命令 + WebView 偵測 + R/R・MDD 卡片） |
 
 > 規則：三者必須一致，未來每次發版依序遞增（`v0.2.0 → 0.2.0 → 0.2.0`），
 > 並在本表新增一列，作為可追溯的版本基準。
+>
+> ⚠️ **簽名狀態**：因 Repo Secrets 尚未設定 `KEYSTORE_BASE64` / `KEYSTORE_PASSWORD`，
+> Release 上的 APK 為 **unsigned**（供 CI 管線驗證用，無法直接安裝）。正式安裝版本
+> 須先依「第四章風險控管」建立 keystore 並在 Secrets 設定後重新打 tag 發布。
 
 ## IPC 命令契約
 | command | 輸入 | 輸出 |
