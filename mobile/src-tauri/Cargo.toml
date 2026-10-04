@@ -1,0 +1,38 @@
+[package]
+name = "sniper-mobile"
+version = "0.1.0"
+description = "狙擊手投資儀表板 — Tauri 2.0 Mobile (Rust Core)"
+edition = "2021"
+
+# 🏛 機構級原則：API Key、HMAC 簽章、資料解析全部留在 Rust 側，
+#    JavaScript 環境只透過 tauri::command 取得「已淨化的顯示數據」。
+[lib]
+name = "sniper_mobile_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# 🔴 指南要求：嚴格錯誤處理 — thiserror（領域錯誤）＋ anyhow（邊界彙整）
+thiserror = "2"
+anyhow = "1"
+# GitHub Contents API content 欄位為 base64 — 手動解碼用
+base64 = "0.22"
+# HTTPS 客戶端：reqwest 走 rustls，避免 Android 側 OpenSSL 交叉編譯地獄
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+# 本地加密存儲（SQLite）— 之後可啟用：
+# rusqlite = { version = "0.32", features = ["bundled"] }
+# sqlx = { version = "0.8", features = ["runtime-tokio-rustls", "sqlite"] }
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
