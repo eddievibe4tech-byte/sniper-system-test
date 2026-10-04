@@ -11,6 +11,7 @@ Rust (Tauri 2.0) + Svelte 5 (runes) 行動端儀表板。
 - [測試](#測試)
 - [打包 APK](#打包-apk)
 - [CI/CD](#cicd)
+- [APK 版本發布流程（Tag SOP）](#apk-版本發布流程tag-sop)
 - [故障排除](#故障排除)
 
 ## 環境建置
@@ -142,6 +143,42 @@ src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-rele
 - **`gen/android` 不入庫**：刻意設計，CI 每次從頭 `cargo tauri android init` 以驗證建置可重現性（代價 +2~3 分鐘，由 rust-cache 緩解）。
 - **冷編譯時間**：首次 CI（無 cache）預期 20-30 分鐘；cache 生效後壓到 5-8 分鐘。
 - ⚠️ `-unsigned.apk` 在部分裝置（如 OPPO ColorOS）會被拒絕安裝，需 debug 簽名版或完成 release 簽名。
+
+## APK 版本發布流程（Tag SOP）
+
+> 設計行為提醒：**合併 PR 到 main 不會觸發 `build-android`**（workflow 的 `push` 僅監聽 `tags: v*`），
+> PR Run 中該 Job 顯示 `⏭️ skipped` 屬預期的成本控管設計，並非故障。正式 APK 一律以「推 tag」產出。
+
+### 事件 × Job 對照表
+
+| 觸發事件 | static-check | build-android |
+|:---|:---|:---|
+| Pull Request | ✅ 執行 | ⏭️ 跳過 |
+| Push 一般 commit 到 main | ❌ 不觸發 workflow | ❌ 不觸發 workflow |
+| Push Tag `v*` | ⏭️ 跳過 | ✅ 執行（產出 APK/AAB） |
+| `workflow_dispatch` 手動觸發 | ⏭️ 跳過 | ✅ 執行（緊急 hotfix 驗證用） |
+
+### 一鍵打 tag 發布
+
+```bash
+git checkout main && git pull          # 確保 tag 打在最新 main HEAD
+# 先同步 mobile/src-tauri/tauri.conf.json 與 Cargo.toml 的 version 欄位（見下方版本對照表）
+git tag -a v0.1.0 -m "release: sniper-mobile v0.1.0 (APK)"
+git push origin v0.1.0                 # 推 tag → build-android 自動交叉編譯產出 APK
+gh run watch --repo eddievibe4tech-byte/sniper-system-test \
+  --workflow build-android.yml         # 於 CLI 監看編譯進度
+```
+
+完成後在該 Run 頁面 **Artifacts** 區下載 `sniper-mobile-v0.1.0`（含 APK/AAB，保留 30 天）。
+
+### 版本對照表（tag ↔ tauri.conf.json ↔ Cargo.toml）
+
+| Git Tag | `tauri.conf.json` version | `src-tauri/Cargo.toml` version | 說明 |
+|:---|:---|:---|:---|
+| `v0.1.0` | `0.1.0` | `0.1.0` | 首版行動儀表板（IPC 四命令 + WebView 偵測 + R/R・MDD 卡片） |
+
+> 規則：三者必須一致，未來每次發版依序遞增（`v0.2.0 → 0.2.0 → 0.2.0`），
+> 並在本表新增一列，作為可追溯的版本基準。
 
 ## IPC 命令契約
 | command | 輸入 | 輸出 |

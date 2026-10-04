@@ -6,6 +6,8 @@ name: Build Android APK
 #   - PR 走 static-check 快速反饋；Tag push / 手動觸發才做完整交叉編譯產出 APK
 #   - gen/android 不入庫，CI 每次 cargo tauri android init 重建，驗證建置可重現性
 #   - Keystore Secrets 有設定時自動啟用 release 簽名，未設定則跳過（開發期 debug 簽名）
+#   - 合併到 main 不再觸發任何 Run（push 僅監聽 tag）；正式 APK 以推 tag 產出，
+#     版本對照表與一鍵打 tag SOP 見 mobile/README.md「APK 版本發布流程」章節
 on:
   push:
     tags:
