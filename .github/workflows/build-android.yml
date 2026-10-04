@@ -18,8 +18,11 @@ on:
       - '.github/workflows/build-android.yml'
   workflow_dispatch:
 
+# 🔑 Issue #147 第一步：GITHUB_TOKEN 預設唯讀，softprops/action-gh-release 建立
+#    Release 會因無法寫入而失敗 (403 Forbidden)。contents 必須為 write。
 permissions:
-  contents: read
+  contents: write   # 允許建立 Release 與上傳 APK Assets
+  actions: read     # 保留讀取 workflow run 紀錄（Release notes 產生所需）
 
 jobs:
   # ═══════════════════════════════════════════════════════
@@ -163,6 +166,8 @@ jobs:
           {
             echo "TAURI_SIGNING_PRIVATE_KEY=$GITHUB_WORKSPACE/mobile/release.jks"
             echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}"
+            # Release 步驟以此旗標決定是否標為 Pre-release（未簽名＝測試版）
+            echo "RELEASE_SIGNED=true"
           } >> $GITHUB_ENV
 
       # ── 編譯 APK ──
@@ -171,14 +176,43 @@ jobs:
           NDK_HOME: ${{ env.NDK_HOME }}
         run: cargo tauri android build --apk
 
-      # ── 上傳產物 ──
+      # ── 上傳產物（Issue #147 第二步·新增步驟 1）──
+      #    保留 Artifacts 供內部短期備份／手機測試（含手動觸發的測試版）
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: sniper-mobile-${{ github.ref_name }}
+          name: sniper-mobile-${{ github.run_number }}
           path: |
             mobile/src-tauri/gen/android/app/build/outputs/apk/**/*.apk
             mobile/src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
           retention-days: 30
           # 注意：未簽名的 APK 會被 ColorOS (OPPO A5 Pro) 拒絕安裝；
           #       正式發布請先於 Repo Secrets 設定 KEYSTORE_BASE64 / KEYSTORE_PASSWORD。
+
+      # ── 自動建立 GitHub Release 並掛載 APK（Issue #147 第二步·新增步驟 2）──
+      #    僅在推 v* Tag 時發佈，保持 Release 版面乾淨：
+      #    手動觸發 (workflow_dispatch) 只產出 Artifacts 供開發測試，不進 Release。
+      - name: Publish to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          # 匹配所有簽名與未簽名的 APK（release keystore 有設定時一併掛上）
+          files: |
+            mobile/src-tauri/gen/android/app/build/outputs/apk/universal/release/*.apk
+          # 自動產生 Release Notes（包含 PR 合併紀錄）
+          generate_release_notes: true
+          # 🚨 找不到 APK 檔案則讓 CI 紅燈，避免發出「空包彈」Release
+          fail_on_unmatched_files: true
+          # 尚未設定 KEYSTORE_BASE64 時產出的是 Unsigned APK，ColorOS 會拒絕安裝。
+          # 以獨立旗標 RELEASE_SIGNED 判定（於 keystore 解碼步驟寫入），
+          # 未簽名版本一律標為 Pre-release。
+          prerelease: ${{ env.RELEASE_SIGNED != 'true' }}
+          body: |
+            ## ⚠️ 安裝注意事項
+            - 若本 Release 附帶之 APK 為 **Unsigned**（Repo 尚未設定 `KEYSTORE_BASE64` /
+              `KEYSTORE_PASSWORD` Secrets），OPPO ColorOS 等系統將直接拒絕安裝，
+              僅供開發除錯；正式安裝請改用本地 `cargo tauri android dev`（Debug 金鑰）。
+            - 版本號對應：Tag 版本應與 `mobile/src-tauri/tauri.conf.json` 之 `version`
+              欄位一致（推 tag 前請先更新，見 mobile/README.md SOP）。
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

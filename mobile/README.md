@@ -155,8 +155,20 @@ src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-rele
 |:---|:---|:---|
 | Pull Request | ✅ 執行 | ⏭️ 跳過 |
 | Push 一般 commit 到 main | ❌ 不觸發 workflow | ❌ 不觸發 workflow |
-| Push Tag `v*` | ⏭️ 跳過 | ✅ 執行（產出 APK/AAB） |
-| `workflow_dispatch` 手動觸發 | ⏭️ 跳過 | ✅ 執行（緊急 hotfix 驗證用） |
+| Push Tag `v*` | ⏭️ 跳過 | ✅ 執行（產出 APK/AAB **＋自動發佈 GitHub Release**） |
+| `workflow_dispatch` 手動觸發 | ⏭️ 跳過 | ✅ 執行（僅 Artifacts，**不進 Release**；緊急 hotfix 驗證用） |
+
+### 兩階段發布模式（Issue #147）
+
+1. **開發與測試階段（Artifacts）**：Actions 頁面 → `Build Android APK` → `Run workflow`。
+   編譯結果放在該 Run 下方 **Artifacts** 區下載測試；不會在 Release 頁面留下紀錄，版面保持乾淨。
+2. **正式發布階段（Release）**：依下方 SOP 推 `v*` tag。CI 完成後自動於 Repo **Releases**
+   頁面建立對應版本，APK 作為 Assets 永久掛載（`softprops/action-gh-release@v2`，
+   `generate_release_notes: true`、`fail_on_unmatched_files: true`）。
+   - Workflow `permissions.contents` 必須為 `write`（預設唯讀會導致 403 Forbidden）。
+   - 未設定 `KEYSTORE_BASE64` Secrets 時產出 Unsigned APK，Release 自動標為 **Pre-release**
+     （旗標 `RELEASE_SIGNED`），並在說明中標示「此為 Unsigned 測試版」（ColorOS 拒絕安裝）。
+   - ⚠️ 公開 Repo 之 Release 任何人可下載反編譯；涉及商業機密請轉 Private 或維持 Pre-release。
 
 ### 一鍵打 tag 發布
 
@@ -164,12 +176,14 @@ src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-rele
 git checkout main && git pull          # 確保 tag 打在最新 main HEAD
 # 先同步 mobile/src-tauri/tauri.conf.json 與 Cargo.toml 的 version 欄位（見下方版本對照表）
 git tag -a v0.1.0 -m "release: sniper-mobile v0.1.0 (APK)"
-git push origin v0.1.0                 # 推 tag → build-android 自動交叉編譯產出 APK
+git push origin v0.1.0                 # 推 tag → build-android 交叉編譯 ＋ 發佈 Release
 gh run watch --repo eddievibe4tech-byte/sniper-system-test \
   --workflow build-android.yml         # 於 CLI 監看編譯進度
 ```
 
-完成後在該 Run 頁面 **Artifacts** 區下載 `sniper-mobile-v0.1.0`（含 APK/AAB，保留 30 天）。
+完成後：
+- **Artifacts**：該 Run 頁面下方 `sniper-mobile-<run_number>`（含 APK/AAB，保留 30 天，短期備份）。
+- **Release**：Repo Releases 頁面自動建立 `v0.1.0`，APK 掛為 Assets 永久供下載。
 
 ### 版本對照表（tag ↔ tauri.conf.json ↔ Cargo.toml）
 
