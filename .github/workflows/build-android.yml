@@ -6,10 +6,17 @@ name: Build Android APK
 #   - PR 走 static-check 快速反饋；Tag push / 手動觸發才做完整交叉編譯產出 APK
 #   - gen/android 不入庫，CI 每次 cargo tauri android init 重建，驗證建置可重現性
 #   - Keystore Secrets 有設定時自動啟用 release 簽名，未設定則跳過（開發期 debug 簽名）
-#   - 合併到 main 不再觸發任何 Run（push 僅監聽 tag）；正式 APK 以推 tag 產出，
+#   - ⚠️ 依建議修正：Secrets 僅在默認分支 (main) 的運行中可見，PR 分支上的 workflow
+#     修改無法完成簽名端到端驗證——因此 push 同時監聽 main 分支，合併後直接於 main
+#     重跑簽名管線；正式可安裝 APK 仍以推 v* tag 產出 Release，
 #     版本對照表與一鍵打 tag SOP 見 mobile/README.md「APK 版本發布流程」章節
 on:
   push:
+    branches:
+      - main        # ⚠️ 必須保留：GitHub Secrets 僅在默認分支（main）的運行的環境
+                    #    對非受信任分支不可見。若只在 tag/dispatch 觸發，PR 分支上的
+                    #    workflow 修改永遠無法完成簽名端到端驗證——合併進 main 後
+                    #    直接於 main 重跑本 workflow 即可驗證簽名管線。
     tags:
       - 'v*'
   pull_request:
@@ -27,9 +34,10 @@ permissions:
 jobs:
   # ═══════════════════════════════════════════════════════
   # PR 快速反饋：不做 Android 交叉編譯，只跑 lint + typecheck
+  # （push 到 main 時也先跑一輪靜態檢查作為守門）
   # ═══════════════════════════════════════════════════════
   static-check:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -78,10 +86,17 @@ jobs:
         run: cargo test --lib
 
   # ═══════════════════════════════════════════════════════
-  # 完整 APK 編譯（tag push / 手動觸發）
+  # 完整 APK 編譯（tag push / 手動觸發 / push 到 main）
+  #   ⚠️ 依建議修正：GitHub Secrets 僅在默認分支 (main) 的運行中可見，
+  #   PR 分支上的 workflow 修改看不到 Secrets、無法端到端驗證簽名管線。
+  #   因此合併進 main 後直接於 main 重跑本 job 即可完成簽名驗證；
+  #   Release 發佈步驟仍以 tag 觸發為限（见 Publish to GitHub Release 的 if）。
   # ═══════════════════════════════════════════════════════
   build-android:
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 360
     defaults:
@@ -156,25 +171,48 @@ jobs:
       - name: Init Tauri Android project
         run: cargo tauri android init
 
-      # ── 選擇性：使用 release keystore 簽名（Secrets 未設定時自動跳過）──
-      - name: Decode release keystore (if secret set)
+      # ── Issue #151：使用 release keystore 簽名（Secrets 未設定時自動跳過）──
+      #    ⚠️ 修正既有 bug：TAURI_SIGNING_PRIVATE_KEY 是 Tauri **Updater** 的 minisign
+      #    金鑰，與 APK 簽名無關；誤設不會產生 signed APK，只會造成混淆。
+      #    Android APK 正式簽名的正確做法是把 keystore 寫進 Gradle Properties
+      #    （cargo tauri android build 會以 -P 傳遞給 gen/android 的 signingConfig）。
+      - name: Decode release keystore & wire Gradle signing (if secret set)
         if: env.KEYSTORE_BASE64 != ''
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > $GITHUB_WORKSPACE/mobile/release.jks
           {
-            echo "TAURI_SIGNING_PRIVATE_KEY=$GITHUB_WORKSPACE/mobile/release.jks"
-            echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}"
-            # Release 步驟以此旗標決定是否標為 Pre-release（未簽名＝測試版）
-            echo "RELEASE_SIGNED=true"
-          } >> $GITHUB_ENV
+            echo "storeFile=$GITHUB_WORKSPACE/mobile/release.jks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEYSTORE_KEY_ALIAS"
+            echo "keyPassword=$KEYSTORE_KEY_PASSWORD"
+          } > $GITHUB_WORKSPACE/mobile/gradle.properties
+          # Release 步驟以此旗標決定是否標為 Pre-release（未簽名＝測試版）
+          echo "RELEASE_SIGNED=true" >> $GITHUB_ENV
 
       # ── 編譯 APK ──
       - name: Build Android APK
         env:
           NDK_HOME: ${{ env.NDK_HOME }}
         run: cargo tauri android build --apk
+
+      # ── Issue #151：簽名驗證閘門（fail fast）──
+      #    Secrets 已設定但產物仍是 unsigned（例如 keystore 密碼錯誤導致 Gradle
+      #    靜默回退），必須讓 CI 紅燈，避免再發出「標記為正式版卻裝不了」的 Release。
+      - name: Verify APK signature (fail-fast gate)
+        if: env.RELEASE_SIGNED == 'true'
+        run: |
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)"
+          [ -n "$APKSIGNER" ] || { echo "::error::找不到 apksigner"; exit 1; }
+          APK=$(find mobile/src-tauri/gen/android/app/build/outputs/apk -name "*release*.apk" | head -1)
+          [ -n "$APK" ] || { echo "::error::找不到 release APK"; exit 1; }
+          echo "驗證 $APK"
+          "$APKSIGNER" verify --verbose "$APK" | tee /tmp/verify.log
+          grep -q "Verified using v1 scheme" /tmp/verify.log || { echo "::error::APK 未通過簽名驗證"; exit 1; }
 
       # ── 上傳產物（Issue #147 第二步·新增步驟 1）──
       #    保留 Artifacts 供內部短期備份／手機測試（含手動觸發的測試版）
