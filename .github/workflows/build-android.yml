@@ -176,13 +176,19 @@ jobs:
       #    金鑰，與 APK 簽名無關；誤設不會產生 signed APK，只會造成混淆。
       #    Android APK 正式簽名的正確做法是把 keystore 寫進 Gradle Properties
       #    （cargo tauri android build 會以 -P 傳遞給 gen/android 的 signingConfig）。
+      #    ⚠️ Issue #153 修正：Repo 實際設定的 Secrets 名稱是 ANDROID_* 前綴
+      #    （ANDROID_KEYSTORE_BASE64 / ANDROID_KEYSTORE_PASSWORD / ANDROID_KEY_ALIAS /
+      #    ANDROID_KEY_PASSWORD），workflow 引用錯誤名稱導致簽名步驟永遠 skipped、
+      #    Release 持續產出 unsigned APK（Run 37195223388 / 37196655213 / 37197592390
+      #    之 Decode/Verify 步驟皆為 skipped）。此處以「新名優先、舊名 fallback」
+      #    同時兼容兩套命名，避免再次錯配。
       - name: Decode release keystore & wire Gradle signing (if secret set)
         if: env.KEYSTORE_BASE64 != ''
         env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
-          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 || secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS || secrets.KEYSTORE_KEY_ALIAS }}
+          KEYSTORE_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || secrets.KEYSTORE_KEY_PASSWORD }}
         run: |
           echo "$KEYSTORE_BASE64" | base64 -d > $GITHUB_WORKSPACE/mobile/release.jks
           {
@@ -241,14 +247,16 @@ jobs:
           generate_release_notes: true
           # 🚨 找不到 APK 檔案則讓 CI 紅燈，避免發出「空包彈」Release
           fail_on_unmatched_files: true
-          # 尚未設定 KEYSTORE_BASE64 時產出的是 Unsigned APK，ColorOS 會拒絕安裝。
+          # 尚未設定 keystore Secrets 時產出的是 Unsigned APK，ColorOS 會拒絕安裝。
           # 以獨立旗標 RELEASE_SIGNED 判定（於 keystore 解碼步驟寫入），
           # 未簽名版本一律標為 Pre-release。
           prerelease: ${{ env.RELEASE_SIGNED != 'true' }}
           body: |
             ## ⚠️ 安裝注意事項
-            - 若本 Release 附帶之 APK 為 **Unsigned**（Repo 尚未設定 `KEYSTORE_BASE64` /
-              `KEYSTORE_PASSWORD` Secrets），OPPO ColorOS 等系統將直接拒絕安裝，
+            - 若本 Release 附帶之 APK 為 **Unsigned**（Repo 尚未正確設定 keystore
+              Secrets：`ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` /
+              `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`，且名稱須與本 workflow
+              引用一致——見 Issue #153），OPPO ColorOS 等系統將直接拒絕安裝，
               僅供開發除錯；正式安裝請改用本地 `cargo tauri android dev`（Debug 金鑰）。
             - 版本號對應：Tag 版本應與 `mobile/src-tauri/tauri.conf.json` 之 `version`
               欄位一致（推 tag 前請先更新，見 mobile/README.md SOP）。
