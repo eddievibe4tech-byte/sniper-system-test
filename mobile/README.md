@@ -138,6 +138,7 @@ src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-rele
 詳情見 `.github/workflows/build-android.yml`。
 
 - **APK 產出流程**：推 tag（`git tag v0.1.0 && git push --tags`）或到 Actions 頁面手動 `Run workflow`，下載 artifact 中的 APK 傳到手機安裝測試。
+  ✅ 已實測通過（2026-10-04）：`build-android` Job 於 main 手動觸發成功產出 APK（run ID 37186618338，耗時約 11 分鐘；未設定 keystore Secrets 時簽名步驟自動跳過）。
 - **`gen/android` 不入庫**：刻意設計，CI 每次從頭 `cargo tauri android init` 以驗證建置可重現性（代價 +2~3 分鐘，由 rust-cache 緩解）。
 - **冷編譯時間**：首次 CI（無 cache）預期 20-30 分鐘；cache 生效後壓到 5-8 分鐘。
 - ⚠️ `-unsigned.apk` 在部分裝置（如 OPPO ColorOS）會被拒絕安裝，需 debug 簽名版或完成 release 簽名。
