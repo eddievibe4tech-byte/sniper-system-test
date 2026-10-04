@@ -125,7 +125,10 @@ src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-rele
    ```bash
    cargo tauri android build --apk
    ```
-4. CI 正式簽名：將 `.jks` base64 編碼後存入 Repo Secrets `KEYSTORE_BASE64`，並設定 `KEYSTORE_PASSWORD`；推 tag 即自動簽名。
+4. CI 正式簽名（Issue #151）：將 `.jks` base64 編碼後存入 Repo Secrets `KEYSTORE_BASE64`，
+   並設定 `KEYSTORE_PASSWORD` / `KEYSTORE_KEY_ALIAS` / `KEYSTORE_KEY_PASSWORD` 共四個 Secrets；
+   推 tag 即自動以 Gradle Properties（storeFile/storePassword/keyAlias/keyPassword）注入簽名，
+   並於編譯後執行 `apksigner verify` fail-fast 閘門確保產物確實為 signed。
    ⚠️ Keystore 一經發布不可遺失——遺失後該簽名的 App 永遠無法更新，請離線備份 `.jks` 與密碼。
 
 ## CI/CD
@@ -190,6 +193,7 @@ gh run watch --repo eddievibe4tech-byte/sniper-system-test \
 | Git Tag | `tauri.conf.json` version | `src-tauri/Cargo.toml` version | 實測驗證 | 說明 |
 |:---|:---|:---|:---|:---|
 | `v0.1.0` | `0.1.0` | `0.1.0` | ✅ [Run 37190977771](https://github.com/eddievibe4tech-byte/sniper-system-test/actions/runs/37190977771) 全綠（2026-10-04）；[Release v0.1.0](https://github.com/eddievibe4tech-byte/sniper-system-test/releases/tag/v0.1.0) 自動建立，APK asset `app-universal-release-unsigned.apk`（約 22.1 MB）上傳成功 | 首版行動儀表板（IPC 四命令 + WebView 偵測 + R/R・MDD 卡片） |
+| `v0.1.1` | `0.1.1` | `0.1.1` | ⏳ CI 管線就緒（Gradle Properties 簽名注入 + apksigner verify fail-fast 閘門，PR #152）；待 Repo Secrets 設定 keystore 後推 tag 發布可安裝之正式版 | Issue #151：修正 TAURI_SIGNING_PRIVATE_KEY 誤用（屬 Updater minisign 金鑰），改以 storeFile/storePassword/keyAlias/keyPassword 注入 Gradle signingConfig |
 
 > 規則：三者必須一致，未來每次發版依序遞增（`v0.2.0 → 0.2.0 → 0.2.0`），
 > 並在本表新增一列，作為可追溯的版本基準。
