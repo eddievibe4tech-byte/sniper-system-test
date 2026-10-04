@@ -56,11 +56,13 @@ def test_default_true_when_no_cache(isolated_cap_file):
 
 
 def test_mark_then_unsupported(isolated_cap_file):
-    screener.mark_bulk_unsupported()
+    screener.mark_bulk_unsupported()          # 無參數 → 兩旗標同時標記
     assert screener.bulk_supported() is False
     with open(isolated_cap_file, encoding="utf-8") as f:
         data = json.load(f)
-    assert data["bulk"] is False
+    # P1-1 新 schema：不再寫 "bulk" 鍵
+    assert data["bulk_institutional"] is False
+    assert data["bulk_revenue"] is False
     assert "detected_at" in data
 
 
@@ -84,12 +86,18 @@ def test_cache_hit_skips_bulk_probe_inst(isolated_cap_file):
 
 
 def test_first_failure_records_capability(isolated_cap_file):
-    """無快取 → 探測批量 → 失敗（None）→ 自動記檔"""
+    """無快取 → 探測批量 → 失敗（None）→ 僅標記對應 dataset 旗標（P1-1 故障隔離）"""
     assert screener.bulk_supported() is True
     fm = FakeFinMind(bulk_response=None)
     screener.fetch_revenue_yoy_map(fm, ["2330"])
-    assert screener.bulk_supported() is False  # 已記檔
-    # 之後再抓一次：批量探測不重複發生
+
+    # 營收旗標已記檔；投信旗標不受波及（故障隔離核心語意）
+    assert screener.bulk_supported("TaiwanStockMonthRevenue") is False
+    assert screener.bulk_supported("TaiwanStockInstitutionalInvestorsBuySell") is True
+    # 無參數 = 任一通道仍可用 → True（供全域守門使用）
+    assert screener.bulk_supported() is True
+
+    # 之後再抓一次：營收批量探測不重複發生
     fm2 = FakeFinMind(bulk_response=None)
     screener.fetch_revenue_yoy_map(fm2, ["2330"])
     assert all(stock_id for _, stock_id in fm2.calls)
@@ -98,4 +106,15 @@ def test_first_failure_records_capability(isolated_cap_file):
 def test_inst_bulk_failure_records_capability(isolated_cap_file):
     fm = FakeFinMind(bulk_response=None)
     assert screener.fetch_inst_streak(fm, ["2330"], 2) is None
+
+    # 僅投信旗標記檔；營收旗標保持可用（故障隔離）
+    assert screener.bulk_supported("TaiwanStockInstitutionalInvestorsBuySell") is False
+    assert screener.bulk_supported("TaiwanStockMonthRevenue") is True
+
+
+def test_legacy_bulk_key_backcompat(isolated_cap_file):
+    """#95 舊格式快取檔（僅 "bulk" 鍵）→ 兩旗標同步沿用（升級不中斷）"""
+    isolated_cap_file.write_text(json.dumps({"bulk": False}), encoding="utf-8")
+    assert screener.bulk_supported("TaiwanStockMonthRevenue") is False
+    assert screener.bulk_supported("TaiwanStockInstitutionalInvestorsBuySell") is False
     assert screener.bulk_supported() is False

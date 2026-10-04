@@ -13,6 +13,14 @@
 久了會麻痺「真正的錯誤」。首次確認批量不可用後記錄至
 data/finmind_capabilities.json，之後直接跳過探測、走個股模式。
 未來升級付費 Token 只要刪除該檔即恢復探測。
+
+🟠 P1-1（#93 PR #139 review）：能力快取拆為兩個獨立旗標（故障隔離）——
+投信買賣超（TaiwanStockInstitutionalInvestorsBuySell）與月營收
+（TaiwanStockMonthRevenue）是兩個獨立 dataset，各自記檔互不波及：
+- bulk_supported(dataset) → 只看對應旗標；
+- bulk_supported()（無參數）→ 「任一」通道可用即 True（全域守門語意）；
+- mark_bulk_unsupported(dataset) → 只標記對應旗標；無參數 → 同時標記兩者；
+- 舊格式快取檔（僅 "bulk" 鍵）→ 兩旗標同步沿用其值（相容升級）。
 """
 import json
 import os
@@ -20,6 +28,19 @@ import time
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 from finmind_client import FinMindClient
+
+# 🆕 #93：真·全市場海選——TWSE T86 / TWSE-TPEx 月營收開放資料（快速通道）
+try:
+    from twse_open_data import TwseOpenDataClient
+except ImportError:  # 相容於 src. 包路徑
+    try:
+        from src.twse_open_data import TwseOpenDataClient
+    except ImportError:
+        TwseOpenDataClient = None  # type: ignore
+
+# 🆕 #93：環境開關——TWSE 端點回應不穩（issue 風險章節），先以開關控制上線，
+# 預設关闭（維持 #92 宇宙行為不變）；設 SCREENER_TWSE_OPEN_DATA=1 啟用全市場快速通道。
+ENABLE_TWSE_FULL_MARKET = os.getenv("SCREENER_TWSE_OPEN_DATA", "0") == "1"
 
 # 嚴格條件（多頭市場）
 STRICT_RULES = {
@@ -65,22 +86,60 @@ def _latest_rev_month(today):
 CAP_FILE = os.path.join(os.path.dirname(__file__), "..", "data",
                         "finmind_capabilities.json")
 
+# P1-1：批量能力拆為兩個獨立旗標（故障隔離）——投信買賣超與月營收是
+# 兩個獨立 dataset，任一端點暫時故障不应永久禁用另一條批量探測。
+BULK_FLAG_INST = "bulk_institutional"
+BULK_FLAG_REV = "bulk_revenue"
 
-def bulk_supported() -> bool:
-    """批量快路是否已知可用（無快取檔 → 預設可用，維持原探測行為）"""
+
+def _cap_flags() -> Dict[str, bool]:
+    """讀取能力快取；無檔案 → 兩旗標預設 True（維持原探測行為）。
+
+    相容舊格式：僅有 "bulk" 鍵的舊快取檔 → 兩旗標同步沿用其值。
+    """
     try:
         with open(CAP_FILE, encoding="utf-8") as f:
-            return bool(json.load(f).get("bulk", True))
+            data = json.load(f)
     except Exception:
-        return True
+        return {BULK_FLAG_INST: True, BULK_FLAG_REV: True}
+    legacy = data.get("bulk", True)
+    return {
+        BULK_FLAG_INST: bool(data.get(BULK_FLAG_INST, legacy)),
+        BULK_FLAG_REV: bool(data.get(BULK_FLAG_REV, legacy)),
+    }
 
 
-def mark_bulk_unsupported():
-    """記錄「批量不可用」；寫檔失敗不影響主流程（下次 run 再探一次）"""
+def bulk_supported(dataset: Optional[str] = None) -> bool:
+    """批量快路是否已知可用（無快取檔 → 預設 True，維持原探測行為）。
+
+    P1-1：dataset 指定 FinMind dataset 名稱時只看對應旗標；不指定 →
+    任一批量通道仍可用即回 True（供 check_finmind_bulk 等全域守門）。
+    """
+    flags = _cap_flags()
+    if dataset == "TaiwanStockInstitutionalInvestorsBuySell":
+        return flags[BULK_FLAG_INST]
+    if dataset == "TaiwanStockMonthRevenue":
+        return flags[BULK_FLAG_REV]
+    return flags[BULK_FLAG_INST] or flags[BULK_FLAG_REV]
+
+
+def mark_bulk_unsupported(dataset: Optional[str] = None):
+    """記錄「批量不可用」；P1-1：依 dataset 只標記對應旗標（故障隔離）。
+
+    dataset 未指定 → 同時標記兩者（維持 #95 全批次探測腳本行為）。
+    寫檔失敗不影響主流程（下次 run 再探一次）。
+    """
+    flags = _cap_flags()
+    if dataset == "TaiwanStockInstitutionalInvestorsBuySell":
+        flags[BULK_FLAG_INST] = False
+    elif dataset == "TaiwanStockMonthRevenue":
+        flags[BULK_FLAG_REV] = False
+    else:
+        flags[BULK_FLAG_INST] = flags[BULK_FLAG_REV] = False
     try:
         os.makedirs(os.path.dirname(CAP_FILE), exist_ok=True)
         with open(CAP_FILE, "w", encoding="utf-8") as f:
-            json.dump({"bulk": False,
+            json.dump({**flags,
                        "detected_at": datetime.now().isoformat()}, f)
     except Exception as e:
         print(f"⚠️ 能力快取寫入失敗（下次 run 會重新探測）：{e}")
@@ -137,9 +196,9 @@ def fetch_revenue_yoy_map(finmind, codes: List[str]) -> Dict[str, float]:
     🟢 #95：能力快取命中「批量不可用」時直接跳過探測，消除每次 run 的 400 噪音。
     """
     bulk_ok = True
-    if not bulk_supported():
+    if not bulk_supported("TaiwanStockMonthRevenue"):  # P1-1：獨立旗標
         # 已知批量不可用（免費 Token）→ 不再打端點產生 400 log 噪音
-        print("ℹ️ 批量已知不可用（免費 Token），直接個股模式")
+        print("ℹ️ 批量營收已知不可用（免費 Token），直接個股模式")
         bulk_ok = False
     else:
         # 快路：批量（免費版可能 400 → None）
@@ -149,7 +208,8 @@ def fetch_revenue_yoy_map(finmind, codes: List[str]) -> Dict[str, float]:
         if rev_now and rev_past:
             return {c: (rev_now[c] - rev_past[c]) / rev_past[c] * 100
                     for c in rev_now if rev_past.get(c)}
-        mark_bulk_unsupported()  # 🟢 #95：首次確認不可用 → 記檔，之後跳過探測
+        # P1-1：只標記「營收」旗標——投信批量不受波及（故障隔離）
+        mark_bulk_unsupported("TaiwanStockMonthRevenue")
     # 保底：個股（daily analysis 證明穩定）
     if bulk_ok:
         print("⚠️ 批量營收不可用（FinMind 400），降級為個股模式...")
@@ -171,7 +231,7 @@ def fetch_inst_streak(finmind, codes, lookback) -> Optional[Dict[str, int]]:
     觸發上層個股保底，不再把「FinMind 拒答」誤算成「全市場連買 0 天」。
     🟢 #95：能力快取命中時完全跳過探測（一次端點都不打），直接回 None。
     """
-    if not bulk_supported():
+    if not bulk_supported("TaiwanStockInstitutionalInvestorsBuySell"):  # P1-1
         return None
     days, d = [], datetime.now()
     while len(days) < lookback:
@@ -185,7 +245,8 @@ def fetch_inst_streak(finmind, codes, lookback) -> Optional[Dict[str, int]]:
                                      start_date=day, end_date=day)
         if data is None:
             ok = False
-            mark_bulk_unsupported()  # 🟢 #95：首次確認不可用 → 記檔，之後跳過探測
+            # P1-1：只標記「投信」旗標——營收批量探測不受波及（故障隔離）
+            mark_bulk_unsupported("TaiwanStockInstitutionalInvestorsBuySell")
             break
         net = {r["stock_id"]: r.get("Investment_Trust_net", 0) for r in data}
         for c in codes:
@@ -208,8 +269,8 @@ def fetch_inst_streak_map(finmind, codes) -> Dict[str, int]:
     bulk = fetch_inst_streak(finmind, codes, 10)
     if bulk is not None:
         return bulk
-    if not bulk_supported():
-        print("ℹ️ 批量已知不可用（免費 Token），直接個股模式")
+    if not bulk_supported("TaiwanStockInstitutionalInvestorsBuySell"):  # P1-1
+        print("ℹ️ 批量投信已知不可用（免費 Token），直接個股模式")
     else:
         print("⚠️ 批量投信不可用，降級為個股模式...")
     out = {}
@@ -261,8 +322,34 @@ def get_universe(finmind: FinMindClient) -> List[Dict]:
     FinMind 免費版批量不可用 → 個股保底模式下 3,629 檔不現實；
     ~34 檔 × 0.3s ≈ 10 秒，完全可行。名稱/產業由 TaiwanStockInfo
     （靜態參考表，批量可用）補全，查不到的以代碼佔位。
+
+    🆕 #93：ENABLE_TWSE_FULL_MARKET=True 時改用全市場宇宙，
+    關卡 1/2 資料改由 TWSE/TPEx 開放資料批量提供（見 _screen_with_rules），
+    不再受「個股保底只能跑小宇宙」限制。
+    P1-2：宇宙來源改為「FinMind 股票清單 ∪ TWSE STOCK_DAY_ALL 每日成交
+    全市場名單」——即使 FinMind Token 失效，仍能從證交所端點獨立建構
+    全市場宇宙（完全脫離 FinMind 的 fallback）。
     """
-    info = {s["stock_id"]: s for s in get_all_taiwan_stocks(finmind)}
+    all_stocks = get_all_taiwan_stocks(finmind)
+    if ENABLE_TWSE_FULL_MARKET:
+        # P1-2：FinMind 清單不足或失敗 → TWSE 開放資料股票清單補強
+        if len(all_stocks) < 500 and TwseOpenDataClient is not None:
+            with TwseOpenDataClient() as twse:
+                twse_list = twse.fetch_stock_list_twse() or []
+            known = {s["stock_id"] for s in all_stocks}
+            merged = all_stocks + [s for s in twse_list
+                                   if s["stock_id"] not in known]
+            print(f"🌐 P1-2：FinMind 清單 {len(all_stocks)} 檔 → "
+                  f"TWSE 開放資料補強後 {len(merged)} 檔")
+            all_stocks = merged
+        # P2-4：降級必須明確 log，避免使用者誤以為全市場已啟用
+        if len(all_stocks) >= 500:
+            print(f"🌐 #93 真·全市場海選啟用：宇宙 {len(all_stocks)} 檔"
+                  f"（TWSE/TPEx 開放資料快速通道）")
+            return all_stocks
+        print(f"⚠️ 股票清單僅 {len(all_stocks)} 檔（<500，FinMind 與 TWSE "
+              f"開放資料皆未取得全市場名單），降級為小宇宙模式")
+    info = {s["stock_id"]: s for s in all_stocks}
     codes = list(dict.fromkeys(load_pool_codes() + CURATED_UNIVERSE))
     universe = [info.get(c, {"stock_id": c, "stock_name": c, "industry": "未知"})
                 for c in codes]
@@ -270,23 +357,110 @@ def get_universe(finmind: FinMindClient) -> List[Dict]:
     return universe
 
 
+# ---------------------------------------------------------------------------
+# 🆕 #93：TWSE/TPEx 開放資料快速通道（批量、全市場）
+# ---------------------------------------------------------------------------
+def recent_trading_dates(count: int, until: Optional[datetime] = None) -> List[str]:
+    """取最近 count 個「平日」（由新到舊，YYYYMMDD）。
+
+    注意：不處理農曆春节等休市日——遇休市日 T86 回空資料，該日 net=0
+    會自然中斷連買計數（保守語意，不會虛報連買）。
+    """
+    d = until or datetime.now()
+    days = []
+    while len(days) < count:
+        d -= timedelta(days=1)
+        if d.weekday() < 5:
+            days.append(d.strftime("%Y%m%d"))
+    return days
+
+
+def _twse_yyyymm(today, back_months: int) -> str:
+    """today 往前 back_months 個月 → 'YYYYMM'"""
+    y, m = today.year, today.month - back_months
+    while m <= 0:
+        m += 12
+        y -= 1
+    return f"{y}{m:02d}"
+
+
+def fetch_revenue_yoy_map_opendata(twse: TwseOpenDataClient,
+                                   today: Optional[datetime] = None) -> Dict[str, float]:
+    """關卡 1（#93 快速通道）：TWSE B2i + TPEx 月營收同名月份 YoY
+
+    月營收約次月 10 日出齊 → cur=最新已公布月、prev=同月去年。
+    抓不到任何資料 → raise RuntimeError（上層降級至 FinMind 個股保底）。
+    """
+    today = today or datetime.now()
+    offset = 1 if today.day >= 10 else 2
+    cur = _twse_yyyymm(today, offset)
+    prev = _twse_yyyymm(today, offset + 12)
+    raw = twse.revenue_yoy_map(cur, prev)
+    yoy = {c: v for c, v in raw.items() if v is not None}
+    if not yoy:
+        raise RuntimeError(f"TWSE/TPEx 月營收 {cur}/{prev} 抓取失敗或為空")
+    print(f"  📊 開放資料營收 YoY：{cur} vs {prev} → 取得 {len(yoy)} 檔")
+    return yoy
+
+
+def fetch_inst_streak_map_opendata(twse: TwseOpenDataClient,
+                                   lookback: int = 10) -> Optional[Dict[str, int]]:
+    """關卡 2（#93 快速通道）：TWSE T86 每日全市場投信買賣超 → 連買天數
+
+    任一日抓取失敗 → None（上層降級；不把「端點掛」誤算成「連買 0 天」，
+    語意同 #90/#92）。回傳 map 涵蓋全市場上市股（櫃買股不在 T86，
+    由上層 .get(c, 0) 處理→ naturally 不通過關卡 2，屬已知限制）。
+    """
+    dates = recent_trading_dates(lookback)
+    streak = twse.inst_buy_streak_map(dates)
+    if streak is None:
+        return None
+    positive = {c: n for c, n in streak.items() if n > 0}
+    print(f"  📊 T86 投信連買（{dates[-1]}~{dates[0]}）：連買>0 共 {len(positive)} 檔")
+    return streak
+
+
 def _screen_with_rules(finmind: FinMindClient, rules: Dict, info: Dict) -> List[Dict]:
     """使用指定規則進行海選
 
     🔴 修正（#92）：關卡 1/2 改用雙路 map（批量快路 → 個股保底），
     僅在批量與個股皆失敗時才 raise RuntimeError（誠實紅燈語意不變）。
+    🆕 #93：ENABLE_TWSE_FULL_MARKET=True 時，關卡 1/2 優先走 TWSE/TPEx
+    開放資料快速通道（全市場、批量）；任一通道失敗 → 降級回既有
+    FinMind 批量→個股保底路徑（驗收標準 2）。關卡 3 MA20 仍為個股查詢，
+    以 max_price_checks 上限控制成本。
     """
     print(f"🔍 啟動海選引擎（營收>{rules['revenue_yoy_min']}%, 投信>{rules['inst_buy_days_min']}天，MA20={rules['price_above_ma20']}）...")
 
     codes = [s["stock_id"] for s in info.values()]
 
-    # 關卡 1：營收 YoY（批量快路 → 個股保底，不再因批量 400 直接 raise）
-    yoy = fetch_revenue_yoy_map(finmind, codes)
+    twse_client = None
+    if ENABLE_TWSE_FULL_MARKET and TwseOpenDataClient is not None:
+        twse_client = TwseOpenDataClient()
+
+    # 關卡 1：營收 YoY
+    #   #93 快速通道（TWSE B2i + TPEx）→ 失敗降級 #92 雙路（FinMind 批量→個股）
+    yoy: Optional[Dict[str, float]] = None
+    if twse_client is not None:
+        try:
+            yoy = fetch_revenue_yoy_map_opendata(twse_client)
+        except Exception as e:
+            print(f"⚠️ #93 開放資料營收通道失敗（{e}），降級 FinMind 模式...")
+            yoy = None
+    if yoy is None:
+        yoy = fetch_revenue_yoy_map(finmind, codes)
     pool = [c for c in codes if yoy.get(c, -999) >= rules["revenue_yoy_min"]]
     print(f"  關卡 1 營收 YoY>{rules['revenue_yoy_min']}%：剩 {len(pool)} 檔")
 
-    # 關卡 2：投信連買（同樣雙路）
-    streak = fetch_inst_streak_map(finmind, pool)
+    # 關卡 2：投信連買
+    #   #93 快速通道（T86）→ 失敗降級 #92 雙路（FinMind 批量→個股）
+    streak: Optional[Dict[str, int]] = None
+    if twse_client is not None:
+        streak = fetch_inst_streak_map_opendata(twse_client)
+        if streak is None:
+            print("⚠️ #93 T86 連買通道失敗，降級 FinMind 模式...")
+    if streak is None:
+        streak = fetch_inst_streak_map(finmind, pool)
     pool = [c for c in pool if streak.get(c, 0) >= rules["inst_buy_days_min"]]
     print(f"  關卡 2 投信連買>={rules['inst_buy_days_min']}天：剩 {len(pool)} 檔")
 
