@@ -125,8 +125,12 @@ src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-rele
    ```bash
    cargo tauri android build --apk
    ```
-4. CI 正式簽名（Issue #151）：將 `.jks` base64 編碼後存入 Repo Secrets `KEYSTORE_BASE64`，
-   並設定 `KEYSTORE_PASSWORD` / `KEYSTORE_KEY_ALIAS` / `KEYSTORE_KEY_PASSWORD` 共四個 Secrets；
+4. CI 正式簽名（Issue #151 / #153）：將 `.jks` base64 編碼後存入 Repo Secrets，
+   **名稱必須與 `build-android.yml` 引用完全一致**——本 Repo 實際採用 `ANDROID_*` 前綴命名：
+   `ANDROID_KEYSTORE_BASE64` / `ANDROID_KEYSTORE_PASSWORD` / `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD`。
+   （#153 教訓：workflow 曾引用舊名 `KEYSTORE_*`，與 Repo 已設定的 `ANDROID_KEYSTORE_*`
+   錯配導致簽名步驟永遠 skipped、Release 持續產出 unsigned APK；現行 workflow 以
+   `ANDROID_*` 優先、`KEYSTORE_*` fallback 兼容兩套命名。）
    推 tag 即自動以 Gradle Properties（storeFile/storePassword/keyAlias/keyPassword）注入簽名，
    並於編譯後執行 `apksigner verify` fail-fast 閘門確保產物確實為 signed。
    ⚠️ Keystore 一經發布不可遺失——遺失後該簽名的 App 永遠無法更新，請離線備份 `.jks` 與密碼。
@@ -193,14 +197,16 @@ gh run watch --repo eddievibe4tech-byte/sniper-system-test \
 | Git Tag | `tauri.conf.json` version | `src-tauri/Cargo.toml` version | 實測驗證 | 說明 |
 |:---|:---|:---|:---|:---|
 | `v0.1.0` | `0.1.0` | `0.1.0` | ✅ [Run 37190977771](https://github.com/eddievibe4tech-byte/sniper-system-test/actions/runs/37190977771) 全綠（2026-10-04）；[Release v0.1.0](https://github.com/eddievibe4tech-byte/sniper-system-test/releases/tag/v0.1.0) 自動建立，APK asset `app-universal-release-unsigned.apk`（約 22.1 MB）上傳成功 | 首版行動儀表板（IPC 四命令 + WebView 偵測 + R/R・MDD 卡片） |
-| `v0.1.1` | `0.1.1` | `0.1.1` | ⏳ CI 管線就緒（Gradle Properties 簽名注入 + apksigner verify fail-fast 閘門，PR #152）；經實查 Repo Secrets 仍缺 KEYSTORE_* 四項，待 #153 完成金鑰生成與 Secrets 設定後推 tag 發布可安裝之正式版 | Issue #151：修正 TAURI_SIGNING_PRIVATE_KEY 誤用（屬 Updater minisign 金鑰），改以 storeFile/storePassword/keyAlias/keyPassword 注入 Gradle signingConfig；#153 追蹤 Secrets 設定與 v0.1.1 端到端發布 |
+| `v0.1.1` | `0.1.1` | `0.1.1` | ⏳ CI 管線就緒（Gradle Properties 簽名注入 + apksigner verify fail-fast 閘門，PR #152）；經實查 Repo 已設定 `ANDROID_KEYSTORE_*` 四項 Secrets，但 workflow 引用之 `KEYSTORE_*` 名稱錯配導致簽名步驟永遠 skipped（Run 37196655213 / 37197592390 之 Decode/Verify 皆 skipped、產物仍 unsigned），待 #153 後續 PR 統一命名並端到端驗證後推 tag 發布可安裝之正式版 | Issue #151：修正 TAURI_SIGNING_PRIVATE_KEY 誤用（屬 Updater minisign 金鑰），改以 storeFile/storePassword/keyAlias/keyPassword 注入 Gradle signingConfig；#153 追蹤 Secrets 設定與 v0.1.1 端到端發布 |
 
 > 規則：三者必須一致，未來每次發版依序遞增（`v0.2.0 → 0.2.0 → 0.2.0`），
 > 並在本表新增一列，作為可追溯的版本基準。
 >
-> ⚠️ **簽名狀態**：因 Repo Secrets 尚未設定 `KEYSTORE_BASE64` / `KEYSTORE_PASSWORD`，
-> Release 上的 APK 為 **unsigned**（供 CI 管線驗證用，無法直接安裝）。正式安裝版本
-> 須先依「第四章風險控管」建立 keystore 並在 Secrets 設定後重新打 tag 發布。
+> ⚠️ **簽名狀態**：Repo Secrets 雖已設定 keystore 四項，但採 `ANDROID_KEYSTORE_*` 命名，
+> 與 workflow 原引用之 `KEYSTORE_*` 錯配（Issue #153），Release 上的 APK 目前仍為
+> **unsigned**（供 CI 管線驗證用，無法直接安裝）。正式安裝版本須先完成 #153：
+> 統一 Secrets 命名（現行 workflow 已改為 `ANDROID_*` 優先 + `KEYSTORE_*` fallback）
+> 並以 dispatch Run 驗證 apksigner fail-fast 閘門全綠後，重新打 tag 發布。
 
 ## IPC 命令契約
 | command | 輸入 | 輸出 |
