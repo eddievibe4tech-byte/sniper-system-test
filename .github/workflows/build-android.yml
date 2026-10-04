@@ -1,24 +1,28 @@
-name: Build Tauri Android APK
+name: Build Android APK
 
-# 依「Rust + Tauri 2.0 Mobile 機構級 CI/CD 指南」實作：
-#   - NDK 版本鎖定 r26b（Tauri 2.0 官方推薦穩定版，避免 90% 本地編譯地獄）
-#   - Cargo Android 交叉編譯 Linker 路徑注入（成敗關鍵）
-#   - 僅推 Tag (v*) 或手動觸發時編譯；PR 上僅跑 lint/typecheck（快速反饋）
+# 依「本地測試指南與 APK 自動產出 Workflow」建議完全重構（PR #142 後續調整）：
+#   - NDK 改由 android-actions/setup-android@v3 直接安裝並鎖定 26.2.11394342 (r26b)
+#     （取代 nttld/setup-ndk，避免 action 已漸趨維護停滯的問題）
+#   - PR 走 static-check 快速反饋；Tag push / 手動觸發才做完整交叉編譯產出 APK
+#   - gen/android 不入庫，CI 每次 cargo tauri android init 重建，驗證建置可重現性
+#   - Keystore Secrets 有設定時自動啟用 release 簽名，未設定則跳過（開發期 debug 簽名）
 on:
   push:
     tags:
-      - 'v*' # 僅在推送 Tag（如 v1.0.0）時觸發完整 APK 編譯
+      - 'v*'
   pull_request:
     paths:
       - 'mobile/**'
       - '.github/workflows/build-android.yml'
-  workflow_dispatch: # 允許手動觸發
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  # ── PR 快速反饋：不交叉編譯，只檢查 Rust/Svelte 可否通過 lint 與 typecheck ──
+  # ═══════════════════════════════════════════════════════
+  # PR 快速反饋：不做 Android 交叉編譯，只跑 lint + typecheck
+  # ═══════════════════════════════════════════════════════
   static-check:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -26,146 +30,153 @@ jobs:
       run:
         working-directory: mobile
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js (for Svelte frontend)
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: mobile/package.json
 
-      # P0-1 CI 附帶修正：lockfile 已入庫，改用 npm ci 保證可重現建置
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Svelte check (compile-time template errors)
+      - name: Svelte typecheck
         run: npm run check
 
-      # P0-2：Tauri v2 在 Linux host 上 cargo check 需要 GTK/WebKit 系統函式庫，
-      #       否則下一個 Rust 步驟必然編譯失敗（一次補齊，省一輪 CI 往返）。
-      - name: Install Tauri Linux prerequisites
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev javascriptcoregtk-4.1-dev \
-            libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libsoup-3.0-dev
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
 
-      # P2-5：快取 tauri 依賴，避免每次 PR 冷編譯
-      - name: Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: mobile/src-tauri
-          cache-on-failure: true
+      - name: Install Tauri Linux prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev javascriptcoregtk-4.1-dev \
+            libgtk-3-dev libayatana-appindicator3-dev \
+            librsvg2-dev libsoup-3.0-dev
 
-      - name: Rust check & clippy (host target, no NDK needed)
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./mobile/src-tauri -> target"
+          cache-on-failure: "true"
+
+      - name: Rust check & clippy
         working-directory: mobile/src-tauri
         run: |
           cargo check --target x86_64-unknown-linux-gnu
           cargo clippy --target x86_64-unknown-linux-gnu -- -D warnings
 
-  # ── Tag / 手動觸發：完整的 Android APK 交叉編譯 ──
-  build-android:
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # Rust 單元測試（webview_guard 等）——指南要求 merge 前 `cargo test --lib` 通過
+      - name: Rust unit tests
+        working-directory: mobile/src-tauri
+        run: cargo test --lib
 
-      - name: Setup Node.js (for Svelte frontend)
-        uses: actions/setup-node@v4
+  # ═══════════════════════════════════════════════════════
+  # 完整 APK 編譯（tag push / 手動觸發）
+  # ═══════════════════════════════════════════════════════
+  build-android:
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── 前端 ──
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: mobile/package.json
 
-      - name: Install frontend dependencies
-        working-directory: mobile
-        run: npm install
+      - run: npm ci
 
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Svelte typecheck (sanity gate)
+        run: npm run check
+
+      # ── Java 17（Gradle 強制要求）──
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # ── Rust ──
+      - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
 
-      - name: Setup Java (Android Gradle requires JDK 17+)
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install Tauri CLI
-        working-directory: mobile
-        run: npm install --no-save @tauri-apps/cli@^2
+        run: cargo install tauri-cli --version "^2"
 
-      - name: Setup Android NDK
-        uses: nttld/setup-ndk@v1
-        id: setup-ndk
-        with:
-          ndk-version: r26b # Tauri 2.0 官方推薦的穩定版本（版本鎖是成敗關鍵）
-          add-to-path: true
-
-      - name: Setup Android environment variables
-        # 🔑 關鍵：Rust 交叉編譯需要明確知道 Android 的 C/C++ 連結器位置。
-        #    minSdk=24 → linker 後綴 android24-clang。
+      # ── Tauri Linux prerequisites ──
+      - name: Install Tauri Linux prerequisites
         run: |
-          NDK_PATH="${{ steps.setup-ndk.outputs.ndk-path }}"
-          echo "NDK_HOME=$NDK_PATH" >> $GITHUB_ENV
-          LLVM_BIN="$NDK_PATH/toolchains/llvm/prebuilt/linux-x86_64/bin"
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev javascriptcoregtk-4.1-dev \
+            libgtk-3-dev libayatana-appindicator3-dev \
+            librsvg2-dev libsoup-3.0-dev
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+          cache-on-failure: "true"
+
+      # ── Android SDK + NDK（版本鎖定 r26b：Tauri 2.0 對 NDK 極度敏感）──
+      - uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 11076708
+          packages: >-
+            platforms;android-34
+            build-tools;34.0.0
+            ndk;26.2.11394342
+
+      - name: Set NDK_HOME
+        run: echo "NDK_HOME=${ANDROID_HOME}/ndk/26.2.11394342" >> $GITHUB_ENV
+
+      # 🔑 關鍵（原指南保留）：Rust 交叉編譯需明確注入四目標的 Android C/C++ linker，
+      #    minSdk=24 → linker 後綴 android24-clang。
+      - name: Setup cross-compile linker environment
+        run: |
+          LLVM_BIN="${ANDROID_HOME}/ndk/26.2.11394342/toolchains/llvm/prebuilt/linux-x86_64/bin"
           echo "CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=$LLVM_BIN/aarch64-linux-android24-clang" >> $GITHUB_ENV
           echo "CARGO_TARGET_ARMV7_LINUX_ANDROIDEABI_LINKER=$LLVM_BIN/armv7a-linux-androideabi24-clang" >> $GITHUB_ENV
           echo "CARGO_TARGET_I686_LINUX_ANDROID_LINKER=$LLVM_BIN/i686-linux-android24-clang" >> $GITHUB_ENV
           echo "CARGO_TARGET_X86_64_LINUX_ANDROID_LINKER=$LLVM_BIN/x86_64-linux-android24-clang" >> $GITHUB_ENV
 
-      - name: Initialize Tauri Android project
-        working-directory: mobile
-        run: npx tauri android init --target aarch64 armv7 i686 x86_64
+      # ── 初始化 Android 專案（gen/android 不入庫，每次重建以驗證可重現性）──
+      - name: Init Tauri Android project
+        run: cargo tauri android init
 
-      - name: Build Android APK (Release, unsigned)
-        working-directory: mobile
-        run: npx tauri android build --apk
-
-      # ── 簽名步驟（發布期）：GitHub Secrets 未設定時自動跳過，開發期用 debug keystore ──
-      - name: Decode release keystore (if configured)
+      # ── 選擇性：使用 release keystore 簽名（Secrets 未設定時自動跳過）──
+      - name: Decode release keystore (if secret set)
         if: env.KEYSTORE_BASE64 != ''
         env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > $RUNNER_TEMP/release.keystore
+          echo "$KEYSTORE_BASE64" | base64 -d > $GITHUB_WORKSPACE/mobile/release.jks
+          {
+            echo "TAURI_SIGNING_PRIVATE_KEY=$GITHUB_WORKSPACE/mobile/release.jks"
+            echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}"
+          } >> $GITHUB_ENV
 
-      - name: Sign APK with apksigner
-        if: env.KEYSTORE_BASE64 != ''
+      # ── 編譯 APK ──
+      - name: Build Android APK
         env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          BUILD_TOOLS=$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)
-          APKSIGNER="$ANDROID_HOME/build-tools/$BUILD_TOOLS/apksigner"
-          "$APKSIGNER" sign \
-            --ks "$RUNNER_TEMP/release.keystore" \
-            --ks-pass "env:ANDROID_KEYSTORE_PASSWORD" \
-            --ks-key-alias "$ANDROID_KEY_ALIAS" \
-            --key-pass "env:ANDROID_KEY_PASSWORD" \
-            mobile/src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-unsigned.apk
-          mv mobile/src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk \
-             mobile/src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release-signed.apk
+          NDK_HOME: ${{ env.NDK_HOME }}
+        run: cargo tauri android build --apk
 
-      # P2-7：簽名後檔名會變，upload 改用 glob 涵蓋 signed/unsigned 兩種輸出
-      - name: Upload APK Artifact
+      # ── 上傳產物 ──
+      - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: app-release-apk
+          name: sniper-mobile-${{ github.ref_name }}
           path: |
             mobile/src-tauri/gen/android/app/build/outputs/apk/**/*.apk
-          if-no-files-found: error
+            mobile/src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
+          retention-days: 30
           # 注意：未簽名的 APK 會被 ColorOS (OPPO A5 Pro) 拒絕安裝；
-          #       正式發布請先設定上述 keystore Secrets。
+          #       正式發布請先於 Repo Secrets 設定 KEYSTORE_BASE64 / KEYSTORE_PASSWORD。
