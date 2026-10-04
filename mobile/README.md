@@ -193,7 +193,7 @@ gh run watch --repo eddievibe4tech-byte/sniper-system-test \
 | Git Tag | `tauri.conf.json` version | `src-tauri/Cargo.toml` version | 實測驗證 | 說明 |
 |:---|:---|:---|:---|:---|
 | `v0.1.0` | `0.1.0` | `0.1.0` | ✅ [Run 37190977771](https://github.com/eddievibe4tech-byte/sniper-system-test/actions/runs/37190977771) 全綠（2026-10-04）；[Release v0.1.0](https://github.com/eddievibe4tech-byte/sniper-system-test/releases/tag/v0.1.0) 自動建立，APK asset `app-universal-release-unsigned.apk`（約 22.1 MB）上傳成功 | 首版行動儀表板（IPC 四命令 + WebView 偵測 + R/R・MDD 卡片） |
-| `v0.1.1` | `0.1.1` | `0.1.1` | ⏳ CI 管線就緒（Gradle Properties 簽名注入 + apksigner verify fail-fast 閘門，PR #152）；待 Repo Secrets 設定 keystore 後推 tag 發布可安裝之正式版 | Issue #151：修正 TAURI_SIGNING_PRIVATE_KEY 誤用（屬 Updater minisign 金鑰），改以 storeFile/storePassword/keyAlias/keyPassword 注入 Gradle signingConfig |
+| `v0.1.1` | `0.1.1` | `0.1.1` | ⏳ CI 管線就緒（Gradle Properties 簽名注入 + apksigner verify fail-fast 閘門，PR #152）；經實查 Repo Secrets 仍缺 KEYSTORE_* 四項，待 #153 完成金鑰生成與 Secrets 設定後推 tag 發布可安裝之正式版 | Issue #151：修正 TAURI_SIGNING_PRIVATE_KEY 誤用（屬 Updater minisign 金鑰），改以 storeFile/storePassword/keyAlias/keyPassword 注入 Gradle signingConfig；#153 追蹤 Secrets 設定與 v0.1.1 端到端發布 |
 
 > 規則：三者必須一致，未來每次發版依序遞增（`v0.2.0 → 0.2.0 → 0.2.0`），
 > 並在本表新增一列，作為可追溯的版本基準。
