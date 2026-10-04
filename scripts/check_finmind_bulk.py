@@ -61,6 +61,10 @@ def check_live(client):
     """
     ok = True
     # 批量：選配。400/None 只警告（screener 有個股保底），不 fail
+    # P1-1 語意註記：此處 bulk_supported() 無參數呼叫，探測的是「任一」
+    # 批量通道仍可用（INST or REV）——本腳本的探測是全域性的（兩個 dataset
+    # 都會實際打一次），失敗時 mark_bulk_unsupported() 無參數同時標記兩旗標，
+    # 故以「任一可用」作為是否繼續探測的守門條件是正確語意。
     if not bulk_supported():
         print("[bulk-optional] 已知不可用（能力快取命中）→ 跳過探測，"
               "screener 走個股模式（預期行為）")
