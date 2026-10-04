@@ -6,10 +6,17 @@ name: Build Android APK
 #   - PR 走 static-check 快速反饋；Tag push / 手動觸發才做完整交叉編譯產出 APK
 #   - gen/android 不入庫，CI 每次 cargo tauri android init 重建，驗證建置可重現性
 #   - Keystore Secrets 有設定時自動啟用 release 簽名，未設定則跳過（開發期 debug 簽名）
-#   - 合併到 main 不再觸發任何 Run（push 僅監聽 tag）；正式 APK 以推 tag 產出，
+#   - ⚠️ 依建議修正：Secrets 僅在默認分支 (main) 的運行中可見，PR 分支上的 workflow
+#     修改無法完成簽名端到端驗證——因此 push 同時監聽 main 分支，合併後直接於 main
+#     重跑簽名管線；正式可安裝 APK 仍以推 v* tag 產出 Release，
 #     版本對照表與一鍵打 tag SOP 見 mobile/README.md「APK 版本發布流程」章節
 on:
   push:
+    branches:
+      - main        # ⚠️ 必須保留：GitHub Secrets 僅在默認分支（main）的運行的環境
+                    #    對非受信任分支不可見。若只在 tag/dispatch 觸發，PR 分支上的
+                    #    workflow 修改永遠無法完成簽名端到端驗證——合併進 main 後
+                    #    直接於 main 重跑本 workflow 即可驗證簽名管線。
     tags:
       - 'v*'
   pull_request:
@@ -27,9 +34,10 @@ permissions:
 jobs:
   # ═══════════════════════════════════════════════════════
   # PR 快速反饋：不做 Android 交叉編譯，只跑 lint + typecheck
+  # （push 到 main 時也先跑一輪靜態檢查作為守門）
   # ═══════════════════════════════════════════════════════
   static-check:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -78,10 +86,17 @@ jobs:
         run: cargo test --lib
 
   # ═══════════════════════════════════════════════════════
-  # 完整 APK 編譯（tag push / 手動觸發）
+  # 完整 APK 編譯（tag push / 手動觸發 / push 到 main）
+  #   ⚠️ 依建議修正：GitHub Secrets 僅在默認分支 (main) 的運行中可見，
+  #   PR 分支上的 workflow 修改看不到 Secrets、無法端到端驗證簽名管線。
+  #   因此合併進 main 後直接於 main 重跑本 job 即可完成簽名驗證；
+  #   Release 發佈步驟仍以 tag 觸發為限（见 Publish to GitHub Release 的 if）。
   # ═══════════════════════════════════════════════════════
   build-android:
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 360
     defaults:
