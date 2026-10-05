@@ -10727,8 +10727,14 @@
         "volatility": 19.73,
         "rsi": 59.42
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.04,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 2475.0
     },
     {
@@ -10772,8 +10778,14 @@
         "volatility": 56.59,
         "rsi": 57.14
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.97,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 1910.0
     },
     {
@@ -10817,8 +10829,14 @@
         "volatility": 55.19,
         "rsi": 74.44
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.27,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 5285.0
     },
     {
@@ -10862,8 +10880,14 @@
         "volatility": 25.77,
         "rsi": 49.06
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.33,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 150.0
     },
     {
@@ -10907,8 +10931,14 @@
         "volatility": 23.27,
         "rsi": 40.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.4,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 250.5
     },
     {
@@ -10952,8 +10982,14 @@
         "volatility": 33.22,
         "rsi": 45.11
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.22,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 338.5
     },
     {
@@ -10997,8 +11033,14 @@
         "volatility": 52.98,
         "rsi": 73.82
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 6.15,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 699.0
     },
     {
@@ -11042,8 +11084,14 @@
         "volatility": 57.84,
         "rsi": 49.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.84,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 3555.0
     },
     {
@@ -11087,8 +11135,14 @@
         "volatility": 20.49,
         "rsi": 31.68
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.73,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 68.5
     },
     {
@@ -11132,8 +11186,14 @@
         "volatility": 32.99,
         "rsi": 29.91
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.14,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 699.0
     },
     {
@@ -11177,8 +11237,14 @@
         "volatility": 57.59,
         "rsi": 70.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.97,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 154.0
     },
     {
@@ -11222,8 +11288,14 @@
         "volatility": 31.06,
         "rsi": 37.84
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.9,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 110.5
     },
     {
@@ -11267,8 +11339,14 @@
         "volatility": 8.36,
         "rsi": 85.71
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 145.0
     },
     {
@@ -11312,8 +11390,14 @@
         "volatility": 8.28,
         "rsi": 30.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 18.65
     },
     {
@@ -11357,8 +11441,14 @@
         "volatility": 19.73,
         "rsi": 59.42
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.04,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 2475.0
     },
     {
@@ -11402,8 +11492,14 @@
         "volatility": 56.59,
         "rsi": 57.14
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.97,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 1910.0
     },
     {
@@ -11447,8 +11543,14 @@
         "volatility": 55.19,
         "rsi": 74.44
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.27,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 5285.0
     },
     {
@@ -11492,8 +11594,14 @@
         "volatility": 25.77,
         "rsi": 49.06
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.33,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 150.0
     },
     {
@@ -11537,8 +11645,14 @@
         "volatility": 23.27,
         "rsi": 40.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.4,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 250.5
     },
     {
@@ -11582,8 +11696,14 @@
         "volatility": 33.22,
         "rsi": 45.11
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.22,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 338.5
     },
     {
@@ -11627,8 +11747,14 @@
         "volatility": 52.98,
         "rsi": 73.82
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 6.15,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 699.0
     },
     {
@@ -11672,8 +11798,14 @@
         "volatility": 57.84,
         "rsi": 49.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.84,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 3555.0
     },
     {
@@ -11717,8 +11849,14 @@
         "volatility": 20.49,
         "rsi": 31.68
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.73,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 68.5
     },
     {
@@ -11762,8 +11900,14 @@
         "volatility": 32.99,
         "rsi": 29.91
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.14,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 699.0
     },
     {
@@ -11807,8 +11951,14 @@
         "volatility": 57.59,
         "rsi": 70.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.97,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 154.0
     },
     {
@@ -11852,8 +12002,14 @@
         "volatility": 31.06,
         "rsi": 37.84
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.9,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 110.5
     },
     {
@@ -11897,8 +12053,14 @@
         "volatility": 8.36,
         "rsi": 85.71
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 145.0
     },
     {
@@ -11942,8 +12104,14 @@
         "volatility": 8.28,
         "rsi": 30.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 18.65
     },
     {
@@ -11987,8 +12155,14 @@
         "volatility": 19.73,
         "rsi": 59.42
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.04,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 2475.0
     },
     {
@@ -12032,8 +12206,14 @@
         "volatility": 56.59,
         "rsi": 57.14
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.97,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 1910.0
     },
     {
@@ -12077,8 +12257,14 @@
         "volatility": 55.19,
         "rsi": 74.44
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.27,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 5285.0
     },
     {
@@ -12122,8 +12308,14 @@
         "volatility": 25.77,
         "rsi": 49.06
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.33,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 150.0
     },
     {
@@ -12167,8 +12359,14 @@
         "volatility": 23.27,
         "rsi": 40.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.4,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 250.5
     },
     {
@@ -12212,8 +12410,14 @@
         "volatility": 33.22,
         "rsi": 45.11
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.22,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 338.5
     },
     {
@@ -12257,8 +12461,14 @@
         "volatility": 52.98,
         "rsi": 73.82
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 6.15,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 699.0
     },
     {
@@ -12302,8 +12512,14 @@
         "volatility": 57.84,
         "rsi": 49.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.84,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 3555.0
     },
     {
@@ -12347,8 +12563,14 @@
         "volatility": 20.49,
         "rsi": 31.68
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.73,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 68.5
     },
     {
@@ -12392,8 +12614,14 @@
         "volatility": 32.99,
         "rsi": 29.91
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.14,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 699.0
     },
     {
@@ -12437,8 +12665,14 @@
         "volatility": 57.59,
         "rsi": 70.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.97,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 154.0
     },
     {
@@ -12482,8 +12716,14 @@
         "volatility": 31.06,
         "rsi": 37.84
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.9,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 110.5
     },
     {
@@ -12527,8 +12767,14 @@
         "volatility": 8.36,
         "rsi": 85.71
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 145.0
     },
     {
@@ -12572,8 +12818,14 @@
         "volatility": 8.28,
         "rsi": 30.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 18.65
     },
     {
@@ -12617,8 +12869,14 @@
         "volatility": 19.73,
         "rsi": 59.42
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.04,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 2475.0
     },
     {
@@ -12662,8 +12920,14 @@
         "volatility": 56.59,
         "rsi": 57.14
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.97,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 1910.0
     },
     {
@@ -12707,8 +12971,14 @@
         "volatility": 55.19,
         "rsi": 74.44
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.27,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 5285.0
     },
     {
@@ -12752,8 +13022,14 @@
         "volatility": 25.77,
         "rsi": 49.06
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.33,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 150.0
     },
     {
@@ -12797,8 +13073,14 @@
         "volatility": 23.27,
         "rsi": 40.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.4,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 250.5
     },
     {
@@ -12842,8 +13124,14 @@
         "volatility": 33.22,
         "rsi": 45.11
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.22,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 338.5
     },
     {
@@ -12887,8 +13175,14 @@
         "volatility": 52.98,
         "rsi": 73.82
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 6.15,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 699.0
     },
     {
@@ -12932,8 +13226,14 @@
         "volatility": 57.84,
         "rsi": 49.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.84,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 3555.0
     },
     {
@@ -12977,8 +13277,14 @@
         "volatility": 20.49,
         "rsi": 31.68
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.73,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 68.5
     },
     {
@@ -13022,8 +13328,14 @@
         "volatility": 32.99,
         "rsi": 29.91
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.14,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 699.0
     },
     {
@@ -13067,8 +13379,14 @@
         "volatility": 57.59,
         "rsi": 70.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.97,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 154.0
     },
     {
@@ -13112,8 +13430,14 @@
         "volatility": 31.06,
         "rsi": 37.84
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.9,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 110.5
     },
     {
@@ -13157,8 +13481,14 @@
         "volatility": 8.36,
         "rsi": 85.71
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 145.0
     },
     {
@@ -13202,8 +13532,14 @@
         "volatility": 8.28,
         "rsi": 30.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.34,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 18.65
     },
     {
@@ -13247,8 +13583,14 @@
         "volatility": 19.73,
         "rsi": 59.42
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.04,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 2475.0
     },
     {
@@ -13292,8 +13634,14 @@
         "volatility": 56.59,
         "rsi": 57.14
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.97,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 1910.0
     },
     {
@@ -13337,8 +13685,14 @@
         "volatility": 55.19,
         "rsi": 74.44
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.27,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 5285.0
     },
     {
@@ -13382,8 +13736,14 @@
         "volatility": 25.77,
         "rsi": 49.06
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.33,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 150.0
     },
     {
@@ -13427,8 +13787,14 @@
         "volatility": 23.27,
         "rsi": 40.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.4,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 250.5
     },
     {
@@ -13472,8 +13838,14 @@
         "volatility": 33.22,
         "rsi": 45.11
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.22,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 338.5
     },
     {
@@ -13517,8 +13889,14 @@
         "volatility": 52.98,
         "rsi": 73.82
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 6.15,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 699.0
     },
     {
@@ -13562,8 +13940,14 @@
         "volatility": 57.84,
         "rsi": 49.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.84,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 3555.0
     },
     {
@@ -13607,8 +13991,14 @@
         "volatility": 20.49,
         "rsi": 31.68
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.73,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 68.5
     },
     {
@@ -13652,8 +14042,14 @@
         "volatility": 32.99,
         "rsi": 29.91
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.14,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 699.0
     },
     {
@@ -13697,8 +14093,14 @@
         "volatility": 57.59,
         "rsi": 70.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.97,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 154.0
     },
     {
@@ -13742,8 +14144,14 @@
         "volatility": 31.06,
         "rsi": 37.84
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.9,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 110.5
     },
     {
@@ -13787,8 +14195,14 @@
         "volatility": 8.36,
         "rsi": 85.71
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 145.0
     },
     {
@@ -13832,8 +14246,14 @@
         "volatility": 8.28,
         "rsi": 30.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.34,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 18.65
     },
     {
@@ -13877,8 +14297,14 @@
         "volatility": 19.73,
         "rsi": 59.42
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.04,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 2475.0
     },
     {
@@ -13922,8 +14348,14 @@
         "volatility": 56.59,
         "rsi": 57.14
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.97,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 1910.0
     },
     {
@@ -13967,8 +14399,14 @@
         "volatility": 55.19,
         "rsi": 74.44
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.27,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 5285.0
     },
     {
@@ -14012,8 +14450,14 @@
         "volatility": 25.77,
         "rsi": 49.06
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.33,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 150.0
     },
     {
@@ -14057,8 +14501,14 @@
         "volatility": 23.27,
         "rsi": 40.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.4,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 250.5
     },
     {
@@ -14102,8 +14552,14 @@
         "volatility": 33.22,
         "rsi": 45.11
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.22,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 338.5
     },
     {
@@ -14147,8 +14603,14 @@
         "volatility": 52.98,
         "rsi": 73.82
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 6.15,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 699.0
     },
     {
@@ -14192,8 +14654,14 @@
         "volatility": 57.84,
         "rsi": 49.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.84,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 3555.0
     },
     {
@@ -14237,8 +14705,14 @@
         "volatility": 20.49,
         "rsi": 31.68
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.73,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 68.5
     },
     {
@@ -14282,8 +14756,14 @@
         "volatility": 32.99,
         "rsi": 29.91
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.14,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 699.0
     },
     {
@@ -14327,8 +14807,14 @@
         "volatility": 57.59,
         "rsi": 70.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.97,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 154.0
     },
     {
@@ -14372,8 +14858,14 @@
         "volatility": 31.06,
         "rsi": 37.84
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.9,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 110.5
     },
     {
@@ -14417,8 +14909,14 @@
         "volatility": 8.36,
         "rsi": 85.71
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 145.0
     },
     {
@@ -14462,8 +14960,14 @@
         "volatility": 8.28,
         "rsi": 30.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.34,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 18.65
     },
     {
@@ -14507,8 +15011,14 @@
         "volatility": 19.73,
         "rsi": 59.42
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.04,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 2475.0
     },
     {
@@ -14552,8 +15062,14 @@
         "volatility": 56.59,
         "rsi": 57.14
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.97,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 1910.0
     },
     {
@@ -14597,8 +15113,14 @@
         "volatility": 55.19,
         "rsi": 74.44
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.27,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 5285.0
     },
     {
@@ -14642,8 +15164,14 @@
         "volatility": 25.77,
         "rsi": 49.06
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.33,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 150.0
     },
     {
@@ -14687,8 +15215,14 @@
         "volatility": 23.27,
         "rsi": 40.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.4,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 250.5
     },
     {
@@ -14732,8 +15266,14 @@
         "volatility": 33.22,
         "rsi": 45.11
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.22,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 338.5
     },
     {
@@ -14777,8 +15317,14 @@
         "volatility": 52.98,
         "rsi": 73.82
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 6.15,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 699.0
     },
     {
@@ -14822,8 +15368,14 @@
         "volatility": 57.84,
         "rsi": 49.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.84,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 3555.0
     },
     {
@@ -14867,8 +15419,14 @@
         "volatility": 20.49,
         "rsi": 31.68
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.73,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 68.5
     },
     {
@@ -14912,8 +15470,14 @@
         "volatility": 32.99,
         "rsi": 29.91
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.14,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 699.0
     },
     {
@@ -14957,8 +15521,14 @@
         "volatility": 57.59,
         "rsi": 70.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.97,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 154.0
     },
     {
@@ -15002,8 +15572,14 @@
         "volatility": 31.06,
         "rsi": 37.84
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.9,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 110.5
     },
     {
@@ -15047,8 +15623,14 @@
         "volatility": 8.36,
         "rsi": 85.71
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 145.0
     },
     {
@@ -15092,8 +15674,14 @@
         "volatility": 8.28,
         "rsi": 30.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.34,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 18.65
     },
     {
@@ -15137,8 +15725,14 @@
         "volatility": 19.73,
         "rsi": 59.42
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.04,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 2475.0
     },
     {
@@ -15182,8 +15776,14 @@
         "volatility": 56.59,
         "rsi": 57.14
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 4.97,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 1910.0
     },
     {
@@ -15227,8 +15827,14 @@
         "volatility": 55.19,
         "rsi": 74.44
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.27,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 5285.0
     },
     {
@@ -15272,8 +15878,14 @@
         "volatility": 25.77,
         "rsi": 49.06
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.33,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 150.0
     },
     {
@@ -15317,8 +15929,14 @@
         "volatility": 23.27,
         "rsi": 40.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.4,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 250.5
     },
     {
@@ -15362,8 +15980,14 @@
         "volatility": 33.22,
         "rsi": 45.11
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -2.22,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 338.5
     },
     {
@@ -15407,8 +16031,14 @@
         "volatility": 52.98,
         "rsi": 73.82
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 6.15,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 699.0
     },
     {
@@ -15452,8 +16082,14 @@
         "volatility": 57.84,
         "rsi": 49.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.84,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 3555.0
     },
     {
@@ -15497,8 +16133,14 @@
         "volatility": 20.49,
         "rsi": 31.68
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.73,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 68.5
     },
     {
@@ -15542,8 +16184,14 @@
         "volatility": 32.99,
         "rsi": 29.91
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -1.14,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 699.0
     },
     {
@@ -15587,8 +16235,14 @@
         "volatility": 57.59,
         "rsi": 70.0
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": -0.97,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 154.0
     },
     {
@@ -15632,8 +16286,14 @@
         "volatility": 31.06,
         "rsi": 37.84
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.9,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 110.5
     },
     {
@@ -15677,8 +16337,14 @@
         "volatility": 8.36,
         "rsi": 85.71
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 0.34,
+        "was_correct": true,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 1,
       "entry_price": 145.0
     },
     {
@@ -15722,8 +16388,14 @@
         "volatility": 8.28,
         "rsi": 30.43
       },
-      "actual_result": null,
-      "accuracy": null,
+      "actual_result": {
+        "profit_pct": 1.34,
+        "was_correct": false,
+        "horizon_days": 5,
+        "auto": true,
+        "verified_at": "2026-10-05T22:14:55.649870+08:00"
+      },
+      "accuracy": 0,
       "entry_price": 18.65
     },
     {
@@ -18875,11 +19547,641 @@
       "actual_result": null,
       "accuracy": null,
       "entry_price": 19.0
+    },
+    {
+      "id": "20261005-2330",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "2330",
+      "stock_name": "台積電",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2330",
+        "name": "台積電",
+        "industry": "半導體",
+        "regime": "震盪",
+        "revenue_yoy": 10.1,
+        "gross_margin": 64.23,
+        "net_margin": 50.37,
+        "eps": 86.26,
+        "inst_buy_days": 4,
+        "margin_change": -804,
+        "change_5d": 4.04,
+        "volatility": 19.7,
+        "ma5": 2508.0,
+        "ma20": 2457.5,
+        "rsi": 73.91,
+        "macd": 31.18,
+        "price_above_ma20": true,
+        "current_price": 2575.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 65,
+        "recommendation": "謹慎買入",
+        "reason": "基本面穩健籌碼強，但RSI超買震盪市需防回調",
+        "stock_code": "2330",
+        "stock_name": "台積電",
+        "industry": "半導體",
+        "close_price": 2575.0,
+        "change_5d": 4.04,
+        "volatility": 19.7,
+        "rsi": 73.91
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 2575.0
+    },
+    {
+      "id": "20261005-2308",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "2308",
+      "stock_name": "台達電",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2308",
+        "name": "台達電",
+        "industry": "電子",
+        "regime": "震盪",
+        "revenue_yoy": -3.71,
+        "gross_margin": 35.53,
+        "net_margin": 13.99,
+        "eps": 31.42,
+        "inst_buy_days": 4,
+        "margin_change": -349,
+        "change_5d": 4.97,
+        "volatility": 54.86,
+        "ma5": 1904.0,
+        "ma20": 1804.75,
+        "rsi": 80.8,
+        "macd": 56.9,
+        "price_above_ma20": true,
+        "current_price": 2005.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 45,
+        "recommendation": "觀望",
+        "reason": "RSI超買波動高，籌碼佳但短線追高風險大",
+        "stock_code": "2308",
+        "stock_name": "台達電",
+        "industry": "電子",
+        "close_price": 2005.0,
+        "change_5d": 4.97,
+        "volatility": 54.86,
+        "rsi": 80.8
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 2005.0
+    },
+    {
+      "id": "20261005-2454",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "2454",
+      "stock_name": "聯發科",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2454",
+        "name": "聯發科",
+        "industry": "半導體",
+        "regime": "震盪",
+        "revenue_yoy": 32.41,
+        "gross_margin": 46.28,
+        "net_margin": 16.43,
+        "eps": 60.55,
+        "inst_buy_days": 0,
+        "margin_change": 96,
+        "change_5d": -2.27,
+        "volatility": 55.82,
+        "ma5": 4985.0,
+        "ma20": 4806.5,
+        "rsi": 66.48,
+        "macd": 200.84,
+        "price_above_ma20": true,
+        "current_price": 5165.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 55,
+        "recommendation": "觀望",
+        "reason": "基本面強但籌碼無支撐，高波動震盪市觀望為宜",
+        "stock_code": "2454",
+        "stock_name": "聯發科",
+        "industry": "半導體",
+        "close_price": 5165.0,
+        "change_5d": -2.27,
+        "volatility": 55.82,
+        "rsi": 66.48
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 5165.0
+    },
+    {
+      "id": "20261005-2881",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "2881",
+      "stock_name": "富邦金",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2881",
+        "name": "富邦金",
+        "industry": "金融",
+        "regime": "震盪",
+        "revenue_yoy": 280.36,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": 10.7,
+        "inst_buy_days": 0,
+        "margin_change": -217,
+        "change_5d": 1.33,
+        "volatility": 22.93,
+        "ma5": 151.1,
+        "ma20": 151.03,
+        "rsi": 56.86,
+        "macd": 1.1,
+        "price_above_ma20": true,
+        "current_price": 152.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 35,
+        "recommendation": "觀望",
+        "reason": "技術面偏多籌碼弱，基本面數據不足（缺失欄位：毛利率、淨利率）",
+        "stock_code": "2881",
+        "stock_name": "富邦金",
+        "industry": "金融",
+        "close_price": 152.0,
+        "change_5d": 1.33,
+        "volatility": 22.93,
+        "rsi": 56.86
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 152.0
+    },
+    {
+      "id": "20261005-2317",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "2317",
+      "stock_name": "鴻海",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2317",
+        "name": "鴻海",
+        "industry": "電子",
+        "regime": "震盪",
+        "revenue_yoy": -2.61,
+        "gross_margin": 6.12,
+        "net_margin": 2.65,
+        "eps": 15.17,
+        "inst_buy_days": 3,
+        "margin_change": -542,
+        "change_5d": 1.4,
+        "volatility": 16.03,
+        "ma5": 252.2,
+        "ma20": 251.45,
+        "rsi": 60.71,
+        "macd": 0.51,
+        "price_above_ma20": true,
+        "current_price": 254.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 50,
+        "recommendation": "觀望",
+        "reason": "技術偏多但基本面偏弱，震盪市觀望為宜",
+        "stock_code": "2317",
+        "stock_name": "鴻海",
+        "industry": "電子",
+        "close_price": 254.0,
+        "change_5d": 1.4,
+        "volatility": 16.03,
+        "rsi": 60.71
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 254.0
+    },
+    {
+      "id": "20261005-2382",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "2382",
+      "stock_name": "廣達",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2382",
+        "name": "廣達",
+        "industry": "電子",
+        "regime": "震盪",
+        "revenue_yoy": 15.75,
+        "gross_margin": 5.54,
+        "net_margin": 2.99,
+        "eps": 22.95,
+        "inst_buy_days": 0,
+        "margin_change": 425,
+        "change_5d": -2.22,
+        "volatility": 30.0,
+        "ma5": 333.4,
+        "ma20": 338.07,
+        "rsi": 41.54,
+        "macd": -0.9,
+        "price_above_ma20": false,
+        "current_price": 331.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 15,
+        "recommendation": "避開",
+        "reason": "技術籌碼皆弱，僅EPS支撐，震盪市風險高",
+        "stock_code": "2382",
+        "stock_name": "廣達",
+        "industry": "電子",
+        "close_price": 331.0,
+        "change_5d": -2.22,
+        "volatility": 30.0,
+        "rsi": 41.54
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 331.0
+    },
+    {
+      "id": "20261005-3711",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "3711",
+      "stock_name": "日月光投控",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "3711",
+        "name": "日月光投控",
+        "industry": "半導體",
+        "regime": "震盪",
+        "revenue_yoy": 11.47,
+        "gross_margin": 19.49,
+        "net_margin": 8.78,
+        "eps": 13.82,
+        "inst_buy_days": 3,
+        "margin_change": 79,
+        "change_5d": 6.15,
+        "volatility": 43.59,
+        "ma5": 711.0,
+        "ma20": 654.95,
+        "rsi": 81.0,
+        "macd": 33.89,
+        "price_above_ma20": true,
+        "current_price": 742.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 15,
+        "recommendation": "觀望",
+        "reason": "RSI超買81、波動率43%偏高，短線追高風險大",
+        "stock_code": "3711",
+        "stock_name": "日月光投控",
+        "industry": "半導體",
+        "close_price": 742.0,
+        "change_5d": 6.15,
+        "volatility": 43.59,
+        "rsi": 81.0
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 742.0
+    },
+    {
+      "id": "20261005-3017",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "3017",
+      "stock_name": "奇鋐",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "3017",
+        "name": "奇鋐",
+        "industry": "電子",
+        "regime": "震盪",
+        "revenue_yoy": 4.79,
+        "gross_margin": 28.87,
+        "net_margin": 17.38,
+        "eps": 75.02,
+        "inst_buy_days": 1,
+        "margin_change": -282,
+        "change_5d": 0.84,
+        "volatility": 54.56,
+        "ma5": 3474.0,
+        "ma20": 3395.0,
+        "rsi": 58.57,
+        "macd": 46.63,
+        "price_above_ma20": true,
+        "current_price": 3585.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 35,
+        "recommendation": "觀望",
+        "reason": "技術面強但波動過高，籌碼支撐不足，宜觀望",
+        "stock_code": "3017",
+        "stock_name": "奇鋐",
+        "industry": "電子",
+        "close_price": 3585.0,
+        "change_5d": 0.84,
+        "volatility": 54.56,
+        "rsi": 58.57
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 3585.0
+    },
+    {
+      "id": "20261005-1504",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "1504",
+      "stock_name": "東元",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "1504",
+        "name": "東元",
+        "industry": "重電",
+        "regime": "震盪",
+        "revenue_yoy": -2.18,
+        "gross_margin": 24.12,
+        "net_margin": 11.19,
+        "eps": 2.76,
+        "inst_buy_days": 0,
+        "margin_change": -581,
+        "change_5d": 0.73,
+        "volatility": 17.56,
+        "ma5": 69.08,
+        "ma20": 69.77,
+        "rsi": 46.99,
+        "macd": -0.7,
+        "price_above_ma20": false,
+        "current_price": 69.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 30,
+        "recommendation": "觀望",
+        "reason": "基本面疲弱、技術面偏弱、籌碼無亮點，震盪市觀望",
+        "stock_code": "1504",
+        "stock_name": "東元",
+        "industry": "重電",
+        "close_price": 69.0,
+        "change_5d": 0.73,
+        "volatility": 17.56,
+        "rsi": 46.99
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 69.0
+    },
+    {
+      "id": "20261005-1519",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "1519",
+      "stock_name": "華城",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "1519",
+        "name": "華城",
+        "industry": "重電",
+        "regime": "震盪",
+        "revenue_yoy": -6.51,
+        "gross_margin": 42.65,
+        "net_margin": 19.65,
+        "eps": 15.28,
+        "inst_buy_days": 0,
+        "margin_change": -7,
+        "change_5d": -1.14,
+        "volatility": 19.24,
+        "ma5": 690.4,
+        "ma20": 709.3,
+        "rsi": 38.95,
+        "macd": -11.42,
+        "price_above_ma20": false,
+        "current_price": 691.0,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 35,
+        "recommendation": "觀望",
+        "reason": "技術面全面偏弱，基本面尚可，震盪市觀望為宜",
+        "stock_code": "1519",
+        "stock_name": "華城",
+        "industry": "重電",
+        "close_price": 691.0,
+        "change_5d": -1.14,
+        "volatility": 19.24,
+        "rsi": 38.95
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 691.0
+    },
+    {
+      "id": "20261005-2303",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "2303",
+      "stock_name": "聯電",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2303",
+        "name": "聯電",
+        "industry": "半導體",
+        "regime": "震盪",
+        "revenue_yoy": 5.04,
+        "gross_margin": 30.6,
+        "net_margin": 33.22,
+        "eps": 6.65,
+        "inst_buy_days": 0,
+        "margin_change": -9367,
+        "change_5d": -0.97,
+        "volatility": 58.27,
+        "ma5": 156.7,
+        "ma20": 148.78,
+        "rsi": 61.76,
+        "macd": 7.18,
+        "price_above_ma20": true,
+        "current_price": 152.5,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 40,
+        "recommendation": "觀望",
+        "reason": "技術面偏多但籌碼弱、波動高，震盪市觀望",
+        "stock_code": "2303",
+        "stock_name": "聯電",
+        "industry": "半導體",
+        "close_price": 152.5,
+        "change_5d": -0.97,
+        "volatility": 58.27,
+        "rsi": 61.76
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 152.5
+    },
+    {
+      "id": "20261005-2882",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "2882",
+      "stock_name": "國泰金",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2882",
+        "name": "國泰金",
+        "industry": "金融",
+        "regime": "震盪",
+        "revenue_yoy": 17.31,
+        "gross_margin": null,
+        "net_margin": null,
+        "eps": 8.48,
+        "inst_buy_days": 0,
+        "margin_change": 25,
+        "change_5d": 0.9,
+        "volatility": 21.1,
+        "ma5": 111.2,
+        "ma20": 111.75,
+        "rsi": 52.94,
+        "macd": 0.12,
+        "price_above_ma20": false,
+        "current_price": 111.5,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 30,
+        "recommendation": "觀望",
+        "reason": "價壓MA20、籌碼無亮點，震盪市觀望",
+        "stock_code": "2882",
+        "stock_name": "國泰金",
+        "industry": "金融",
+        "close_price": 111.5,
+        "change_5d": 0.9,
+        "volatility": 21.1,
+        "rsi": 52.94
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 111.5
+    },
+    {
+      "id": "20261005-2412",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "2412",
+      "stock_name": "中華電",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2412",
+        "name": "中華電",
+        "industry": "電信",
+        "regime": "震盪",
+        "revenue_yoy": 17.22,
+        "gross_margin": 36.49,
+        "net_margin": 16.98,
+        "eps": 5.09,
+        "inst_buy_days": 2,
+        "margin_change": 11,
+        "change_5d": 0.34,
+        "volatility": 9.81,
+        "ma5": 144.9,
+        "ma20": 142.93,
+        "rsi": 70.83,
+        "macd": 2.05,
+        "price_above_ma20": true,
+        "current_price": 145.5,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 45,
+        "recommendation": "觀望",
+        "reason": "RSI超買籌碼偏弱，基本面穩健但短線追高風險",
+        "stock_code": "2412",
+        "stock_name": "中華電",
+        "industry": "電信",
+        "close_price": 145.5,
+        "change_5d": 0.34,
+        "volatility": 9.81,
+        "rsi": 70.83
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 145.5
+    },
+    {
+      "id": "20261005-2002",
+      "timestamp": "2026-10-05T22:15:16.049917+08:00",
+      "stock_code": "2002",
+      "stock_name": "中鋼",
+      "prompt_version": 1,
+      "model": "qwen/qwen3.6-27b",
+      "regime": "震盪",
+      "input": {
+        "code": "2002",
+        "name": "中鋼",
+        "industry": "傳產",
+        "regime": "震盪",
+        "revenue_yoy": -5.96,
+        "gross_margin": 4.27,
+        "net_margin": -0.34,
+        "eps": -0.21,
+        "inst_buy_days": 0,
+        "margin_change": 433,
+        "change_5d": 1.34,
+        "volatility": 12.59,
+        "ma5": 18.97,
+        "ma20": 18.87,
+        "rsi": 50.0,
+        "macd": -0.03,
+        "price_above_ma20": true,
+        "current_price": 18.9,
+        "data_source": "finmind"
+      },
+      "prediction": {
+        "ev_score": 30,
+        "recommendation": "觀望",
+        "reason": "基本面疲弱EPS為負，技術面略偏多，籌碼無支撐",
+        "stock_code": "2002",
+        "stock_name": "中鋼",
+        "industry": "傳產",
+        "close_price": 18.9,
+        "change_5d": 1.34,
+        "volatility": 12.59,
+        "rsi": 50.0
+      },
+      "actual_result": null,
+      "accuracy": null,
+      "entry_price": 18.9
     }
   ],
   "metadata": {
     "created_at": "2024-01-01T00:00:00+08:00",
-    "total_records": 416,
+    "total_records": 430,
     "description": "儲存所有分析預測結果與準確性追蹤",
     "skipped_stocks": []
   }
