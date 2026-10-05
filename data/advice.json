@@ -1,23 +1,22 @@
 {
-  "updated_at": "2026-10-05T14:16:35.471344",
+  "updated_at": "2026-10-05T22:03:05.892238",
   "capital": 5000,
   "tw_regime": "震盪",
-  "vix": 15.31,
+  "vix": 15.52,
   "fng": 70,
   "plan": [
     {
       "prio": 1,
       "market": "美股",
       "label": "動量突破 NVDA",
-      "detail": "VIX=15.31；RSI=63.01；跌破 MA50 或 -8% 停損",
+      "detail": "VIX=15.52；RSI=67.01；跌破 MA50 或 -8% 停損",
       "alloc": 2500
     },
     {
-      "prio": 2,
-      "market": "台股",
-      "code": "2330",
-      "label": "Alpha 候選 台積電",
-      "detail": "YoY=53.32%、投信連買3天；乖離+2.1%溫和，可於 2448.25 上方限價",
+      "prio": 1,
+      "market": "美股",
+      "label": "動量突破 AMD",
+      "detail": "VIX=15.52；RSI=69.24；跌破 MA50 或 -8% 停損",
       "alloc": 2500
     }
   ],
