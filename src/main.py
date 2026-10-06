@@ -139,6 +139,25 @@ def generate_rule_based_analysis(stock_data: Dict) -> Dict:
 # ==========================================
 # 🆕 (#158) 鐵律：訊號衝突降級與時間維度標籤邏輯
 # ==========================================
+def _safe_float(val, default: float = 0.0) -> float:
+    """Code Review (#159) 防護性修正：安全轉換數值。
+
+    AI (Groq) 偶爾可能在數值欄位輸出 "N/A"、"資料不足" 或帶單位的 "75%"，
+    直接 float() 會拋出 ValueError 導致整個每日批次分析迴圈中斷。
+    本函數容錯處理：移除 % 符號與空白，轉換失敗一律回傳預設值。
+    """
+    try:
+        if val is None:
+            return default
+        if isinstance(val, str):
+            val = val.strip().replace('%', '').replace(',', '')
+            if not val:
+                return default
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+
 def apply_signal_conflict_logic(stock: dict) -> dict:
     """
     解決長線基本面與短線技術面的訊號衝突。
@@ -152,15 +171,17 @@ def apply_signal_conflict_logic(stock: dict) -> dict:
         原地修改後的 stock dict，新增 signal_tag；衝突降級時另新增
         original_recommendation 並以風控理由覆蓋 reason。
     """
-    # 1. 取得關鍵指標
-    ev_score = float(stock.get('ev_score', 50) or 50)
+    # 1. 取得關鍵指標（🛡️ Code Review：改用 _safe_float 防止 AI 輸出異常字串導致批次中斷）
+    ev_score = _safe_float(stock.get('ev_score'), 50.0)
     rec = stock.get('recommendation', '觀望')
 
-    current_price = float(stock.get('current_price', 0) or 0)
-    ma20 = float(stock.get('ma20', 0) or 0)
+    current_price = _safe_float(stock.get('current_price'), 0.0)
+    ma20 = _safe_float(stock.get('ma20'), 0.0)
 
     # 定義基本面強與技術面弱的條件
-    is_fundamental_strong = (ev_score >= 70) or (rec == '積極買入')
+    # 🛡️ Code Review：改用包含檢查——AI 可能輸出「強烈買入」/「買入」/「Buy」等變體字眼，
+    # 精確匹配 == '積極買入' 會導致降級邏輯漏判。「避開買入」之类否定詞不在現行枚舉中，不須排除。
+    is_fundamental_strong = (ev_score >= 70) or ('買入' in str(rec))
     is_technical_weak = (ma20 > 0 and current_price < ma20)  # 跌破 MA20
 
     # 2. 衝突降級邏輯 (最高優先權)
