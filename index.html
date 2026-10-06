@@ -348,6 +348,9 @@
             const container = document.getElementById('action-list-content');
             if (!container || !stocks || stocks.length === 0) return;
 
+            // 🎨 UI 細節：數值缺失時 fmtNum() 回傳 '-'，避免畫面出現 '$-'
+            const fmtPrice = (v) => (v === '-' || v == null || v === '' ? '-' : '$' + v);
+
             const buys = [];
             const sells = [];
 
@@ -433,7 +436,7 @@
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="font-bold text-gray-800 text-sm">${escapeHTML(item.name)} (${escapeHTML(item.code)})</span>
                                         <span class="font-bold ${item.type === 'stop_loss' ? 'text-red-600' : 'text-green-600'}">
-                                            損益：${item.pnl}% (成本 $${item.cost} ➔ 現價 $${item.price})
+                                            損益：${item.pnl}% (成本 ${fmtPrice(item.cost)} ➔ 現價 ${fmtPrice(item.price)})
                                         </span>
                                     </div>
                                     <p class="text-gray-700 font-medium">${item.action}</p>
@@ -456,11 +459,11 @@
                                 <div class="bg-white p-2.5 rounded border border-green-100 text-xs">
                                     <div class="flex justify-between items-center mb-1">
                                         <span class="font-bold text-gray-800 text-sm">${escapeHTML(item.name)} (${escapeHTML(item.code)})</span>
-                                        <span class="text-green-700 font-bold">現價 $${item.price}</span>
+                                        <span class="text-green-700 font-bold">現價 ${fmtPrice(item.price)}</span>
                                     </div>
                                     <div class="text-gray-600 space-y-0.5">
-                                        <p>• 建議買入區間：<b>$${item.zone}</b></p>
-                                        <p>• 防守停損價：<b class="text-red-500">$${item.stopLoss}</b>｜首批停利：<b class="text-green-600">$${item.tp1}</b></p>
+                                        <p>• 建議買入區間：<b>${item.zone === '-' ? '-' : '$' + item.zone}</b></p>
+                                        <p>• 防守停損價：<b class="text-red-500">${fmtPrice(item.stopLoss)}</b>｜首批停利：<b class="text-green-600">${fmtPrice(item.tp1)}</b></p>
                                     </div>
                                 </div>
                             `).join('')}
