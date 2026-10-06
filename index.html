@@ -26,6 +26,9 @@
     </style>
 </head>
 <body class="bg-gray-100 p-4 md:p-8">
+    <!-- 🚨 今日緊急行動看板 (Action Banner) — Sprint 1.1 (#160) -->
+    <div id="action-alert-banner" class="hidden mb-6 p-4 rounded-lg shadow-md border-l-4 max-w-4xl mx-auto"></div>
+
     <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-6">
         <div class="flex justify-between items-center mb-6">
             <div>
@@ -142,6 +145,8 @@
                 </button>
             </div>
             
+            <div id="sector-warnings"></div>
+
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200" id="analysis-table-element">
                     <thead class="bg-gray-50">
@@ -380,6 +385,11 @@
 
                     // 渲染表格（統一管線：排序與篩選同時生效）
                     applyTablePipeline();
+
+                    // 🆕 Sprint 1.4 (#160)：啟動今日緊急行動看板（以全量資料判定，不受篩選影響）
+                    if (deep.all_results && deep.all_results.length > 0) {
+                        renderActionBanner(deep.all_results);
+                    }
                     // ❌ 已移除：calculateAccuracyStats(metricsData, telemetryData); - 移至變數宣告後
                 } else {
                     document.getElementById('analysis-table').innerHTML = '<tr><td colspan="10" class="px-4 py-4 text-center text-gray-500">暫無分析數據</td></tr>';
@@ -1251,11 +1261,126 @@
         //    避免快速切換排序/篩選時用舊資料繪製新 Canvas 的競態條件。
         let __tableRenderGeneration = 0;
 
+        // ==========================================
+        // 🆕 Sprint 1 (#160) 全局工具函數：部位計算、智慧單、行動看板
+        // ==========================================
+        window.stockDataMap = {}; // 用於安全傳遞股票資料，避免 HTML 跳脫問題
+
+        // 1. 部位規模計算機（固定風險法）
+        function calcPosition(code, price, stopLoss) {
+            const risk = parseFloat(document.getElementById(`risk-${code}`).value) || 0;
+            const unitEl = document.getElementById(`unit-${code}`);
+            const unit = unitEl ? parseInt(unitEl.value) : 1000;
+            const resultEl = document.getElementById(`pos-result-${code}`);
+            if (!resultEl) return;
+
+            if (!(price > 0) || !(stopLoss > 0) || price <= stopLoss) {
+                resultEl.innerHTML = `<span class="text-red-600">⚠️ 停損價異常，無法計算</span>`;
+                resultEl.classList.remove('hidden'); return;
+            }
+            if (risk <= 0) {
+                resultEl.innerHTML = `<span class="text-red-600">⚠️ 請輸入有效的最大虧損金額</span>`;
+                resultEl.classList.remove('hidden'); return;
+            }
+            const riskPerShare = price - stopLoss;
+            const shares = Math.floor((risk / riskPerShare) / unit) * unit;
+            const cost = shares * price;
+            const actualRisk = shares * riskPerShare;
+
+            resultEl.innerHTML = shares === 0
+                ? `風險 ${risk} 元不足以買進 1 個交易單位（每股風險 ${riskPerShare.toFixed(1)} 元 × ${unit} 股），請改用零股或提高風險額度`
+                : `建議買進：<b class="text-blue-700">${shares.toLocaleString()}</b> 股<br>` +
+                  `預估成本：<b>${cost.toLocaleString()}</b> 元<br>` +
+                  `若觸發停損，實際虧損：<b class="text-red-600">${actualRisk.toFixed(0)}</b> 元`;
+            resultEl.classList.remove('hidden');
+        }
+
+        // 2. 券商智慧單產生器
+        function copySmartOrder(code) {
+            const data = window.stockDataMap[code];
+            if (!data || !data.tp) return alert('資料載入中，請稍候...');
+            const tp = data.tp;
+
+            const entry = Array.isArray(tp.entry_zone) && tp.entry_zone.length >= 2
+                ? `${fmtNum(tp.entry_zone[0])} ~ ${fmtNum(tp.entry_zone[1])}` : '市價';
+            const sl = tp.stop_loss ? fmtNum(tp.stop_loss) : '無';
+            const tp1 = tp.take_profit_1 ? fmtNum(tp.take_profit_1) : '無';
+
+            const text = `【${code} ${data.name} 智慧單參數】\n` +
+                         `1. 進場觸發：限價買進 ${entry}\n` +
+                         `2. OCO 停損停利：\n` +
+                         `   - 觸發停損：市價賣出 <= ${sl}\n` +
+                         `   - 觸發停利：限價賣出 >= ${tp1}`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ 已複製智慧單參數！請貼上至券商 APP 預約掛單。');
+            }).catch(() => alert('複製失敗，請手動複製：\n\n' + text));
+        }
+
+        // 3. 今日行動看板渲染
+        function renderActionBanner(allResults) {
+            const banner = document.getElementById('action-alert-banner');
+            if (!banner) return;
+            const perfectBuys = (allResults || []).filter(r =>
+                r.trading_plan?.entry_type === 'now' &&
+                // Sprint 1 防呆：後端 JSON 無 buy_readiness_score 欄位，
+                // 一律以前端 calculateBuyReadinessScore（與 position_manager 同邏輯）現算
+                (calculateBuyReadinessScore(r, r.trading_plan)?.score || 0) >= 80 &&
+                r.signal_tag !== '長線配置/短期觀望'
+            );
+
+            if (perfectBuys.length === 0) {
+                banner.className = 'mb-6 p-4 rounded-lg shadow-sm bg-gray-50 border-l-4 border-gray-300 text-gray-600 max-w-4xl mx-auto';
+                banner.innerHTML = '✅ 今日紀律持倉，無緊急行動。';
+                banner.classList.remove('hidden'); return;
+            }
+
+            const names = perfectBuys.slice(0, 3).map(r => `${r.code} ${r.name}`).join('、');
+            banner.className = 'mb-6 p-4 rounded-lg shadow-md bg-yellow-50 border-l-4 border-yellow-400 max-w-4xl mx-auto';
+            banner.innerHTML = `<div class="flex items-center gap-2"><span class="text-xl">🎯</span><span class="font-semibold text-yellow-800">今日完美買點觸發：${escapeHTML(names)} (現價已落入進場區間，準備度>=80)</span></div>`;
+            banner.classList.remove('hidden');
+        }
+
+        // ==========================================
+        // 🆕 Sprint 2 (#160) 族群暴露上限警示（前端 JS 快速版）
+        // ==========================================
+        // 產業字典（使用者可自行擴充 Top 50 熱門股）
+        const SECTOR_MAP = {
+            '2330': '半導體', '2308': '半導體', '2454': '半導體',
+            '3017': 'AI伺服器', '3711': 'AI伺服器', '2382': 'AI伺服器',
+            '2383': '光通訊', '3044': '光通訊'
+        };
+
+        function checkSectorExposure(allResults) {
+            const counts = {};
+            (allResults || []).forEach(r => {
+                // 只統計被評為「買入」的股票
+                if (r.recommendation === '積極買入' || r.recommendation === '謹慎買入') {
+                    const sector = SECTOR_MAP[r.code] || '其他';
+                    counts[sector] = (counts[sector] || 0) + 1;
+                }
+            });
+
+            return Object.entries(counts)
+                .filter(([sector, count]) => count >= 3 && sector !== '其他')
+                .map(([sector, count]) => `⚠️ 族群集中警示：${sector} 已有 ${count} 檔入選，建議僅擇最優 1 檔，避免單一回撤風險。`);
+        }
+
         function renderAnalysisTable(data) {
             const tableBody = document.getElementById('analysis-table');
 
             // 🆕 遞增世代：即使空資料也作廢所有舊排程（其 canvas 將被 innerHTML 清空銷毀）
             const thisGeneration = ++__tableRenderGeneration;
+
+            // 🆕 Sprint 2 (#160)：族群暴露上限警示 — 每次渲染同步更新（篩選/排序時即時反映）
+            const sectorWarnEl = document.getElementById('sector-warnings');
+            if (sectorWarnEl) {
+                const sectorWarnings = checkSectorExposure(window.analysisData || data);
+                sectorWarnEl.innerHTML = sectorWarnings.length > 0
+                    ? `<div class="mb-4 p-3 bg-orange-50 border-l-4 border-orange-400 text-sm text-orange-800">` +
+                      sectorWarnings.map(w => `<div>${escapeHTML(w)}</div>`).join('') + `</div>`
+                    : '';
+            }
 
             if (!data || data.length === 0) {
                 // 改善空狀態提示：篩選為空是「正常訊號」，避免誤以為系統壞掉
@@ -1283,6 +1408,9 @@
                     ? `<span class="text-xs text-gray-400 ml-2">(原AI建議: ${escapeHTML(r.original_recommendation)})</span>`
                     : '';
                 const signalTagBadge = `<span class="ml-2 px-2.5 py-1 text-[11px] font-bold tracking-wider rounded-full border ${tagColorClass}" title="時間維度標籤">[ ${escapeHTML(signalTag)} ]</span>`;
+
+                // 🆕 Sprint 1 (#160)：存入全域 Map，供智慧單按鈕呼叫（避免 HTML 跳脫問題）
+                window.stockDataMap[r.code] = { tp: r.trading_plan, name: r.name };
                 
                 // 摘要行
                 const summaryRow = `
@@ -1421,6 +1549,34 @@
                                 ${renderEntryTriggers(r, tp)}
                                 ${renderPositionStrategy(r, tp, localStorage.getItem(`holding_cost_${r.code}`))}
                                 ${renderBuyReadinessScore(r, tp)}
+
+                                <!-- 🆕 Sprint 1 (#160) 實戰工具箱 (部位計算 + 智慧單) -->
+                                <div class="mt-6 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-3">
+                                    <div class="bg-blue-50 p-3 rounded-lg">
+                                        <h5 class="text-sm font-bold text-blue-800 mb-2">💰 部位規模計算 (固定風險法)</h5>
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <label class="text-xs text-gray-600">單筆最大虧損：</label>
+                                            <input type="number" id="risk-${r.code}" value="2000" class="w-20 px-2 py-1 border rounded text-sm" onclick="event.stopPropagation()" /> 元
+                                        </div>
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <label class="text-xs text-gray-600">交易單位：</label>
+                                            <select id="unit-${r.code}" class="px-2 py-1 border rounded text-sm" onclick="event.stopPropagation()">
+                                                <option value="1000">整股 (1000股)</option>
+                                                <option value="1">零股 (1股)</option>
+                                            </select>
+                                        </div>
+                                        <button onclick="calcPosition('${r.code}', ${r.current_price || 0}, ${tp?.stop_loss || 0})"
+                                                class="w-full bg-blue-600 text-white text-xs py-1.5 rounded hover:bg-blue-700">計算建議股數</button>
+                                        <div id="pos-result-${r.code}" class="mt-2 text-xs text-gray-800 font-mono bg-white p-2 rounded hidden"></div>
+                                    </div>
+
+                                    <div class="bg-green-50 p-3 rounded-lg">
+                                        <h5 class="text-sm font-bold text-green-800 mb-2">📋 券商智慧單參數</h5>
+                                        <p class="text-xs text-gray-600 mb-2">一鍵複製，盤後預約掛單，隔天自動執行。</p>
+                                        <button onclick="copySmartOrder('${r.code}')"
+                                                class="w-full bg-green-600 text-white text-xs py-1.5 rounded hover:bg-green-700">複製條件單參數</button>
+                                    </div>
+                                </div>
 
                             </div>
                         </td>

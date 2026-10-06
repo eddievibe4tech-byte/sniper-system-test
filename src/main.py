@@ -265,6 +265,9 @@ def auto_verify_predictions(telemetry_data: Dict, finmind: FinMindClient, horizo
 
         rec["actual_result"] = {
             "profit_pct": ret,
+            # 🆕 Sprint 3 (#160)：Expectancy 追蹤 — actual_return_pct 為實際報酬率欄位，
+            # 與 profit_pct 同值（保留 profit_pct 供既有前端/報告相容使用）
+            "actual_return_pct": ret,
             "was_correct": correct,
             "horizon_days": horizon,
             "auto": True,
@@ -430,6 +433,32 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
         }
 
     now = datetime.now(TZ_TAIPEI)
+
+    # 🆕 Sprint 3 (#160)：期望值 (Expectancy) 追蹤 — 量化基金等級績效指標
+    # 依「已驗證且含 actual_result」的記錄，以對錯劃分勝/敗組，計算數學期望值：
+    #   expectancy = win_rate × avg_win + loss_rate × avg_loss
+    # 注意：avg_loss 為負值（虧損報酬），故相加即為每筆交易的期望報酬率(%)。
+    # 舊記錄可能沒有 actual_return_pct 欄位 → 退回 profit_pct；兩者皆無則不納入計算。
+    def _record_return(r: Dict) -> Optional[float]:
+        ar = r.get('actual_result') or {}
+        val = ar.get('actual_return_pct')
+        if val is None:
+            val = ar.get('profit_pct')
+        return float(val) if isinstance(val, (int, float)) else None
+
+    returns_verified = [r for r in verified_records if _record_return(r) is not None]
+    wins = [_record_return(r) for r in returns_verified if r.get('accuracy') == 1]
+    losses = [_record_return(r) for r in returns_verified if r.get('accuracy') == 0]
+
+    avg_win_pct = round(sum(wins) / len(wins), 2) if wins else 0.0
+    avg_loss_pct = round(sum(losses) / len(losses), 2) if losses else 0.0
+
+    expectancy = None
+    if returns_verified:
+        win_rate = len(wins) / len(returns_verified)
+        loss_rate = 1 - win_rate
+        expectancy = round(win_rate * avg_win_pct + loss_rate * avg_loss_pct, 2)
+
     metrics = {
         'total_predictions': total_predictions,
         'verified_count': verified_count,
@@ -441,10 +470,15 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
         'last_updated': now.isoformat(),
         'version_stats': version_stats_list,
         'model_stats': model_stats,  # 🆕 P2-2：rule-based-engine vs groq 勝率
+        # 🆕 Sprint 3 (#160)：Expectancy 核心指標
+        'expectancy': expectancy,          # 每筆交易期望報酬率(%)；無資料時 None
+        'avg_win_pct': avg_win_pct,        # 正確預測的平均報酬率(%)
+        'avg_loss_pct': avg_loss_pct,      # 錯誤預測的平均報酬率(%)（負值）
+        'expectancy_sample_count': len(returns_verified),  # 參與期望值計算的樣本數
     }
     
     path.write_text(json.dumps(metrics, ensure_ascii=False, indent=2), encoding='utf-8')
-    logger.info(f"績效指標已更新：總預測={total_predictions}, 已驗證={verified_count}, 準確率={accuracy_display}")
+    logger.info(f"績效指標已更新：總預測={total_predictions}, 已驗證={verified_count}, 準確率={accuracy_display}, 期望值={expectancy}")
 
 
 def run_daily_analysis(mode: str = 'full') -> Dict:
