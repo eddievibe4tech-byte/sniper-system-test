@@ -56,6 +56,21 @@
             </div>
         </div>
 
+        <!-- 🚨 盤前速覽：今日買賣行動清單 -->
+        <div id="today-action-card" class="bg-white border-2 border-blue-500 shadow-md rounded-xl p-5 mb-6">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">📋</span>
+                    <h2 class="text-xl font-bold text-gray-800">今日買賣行動清單</h2>
+                    <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">盤前 5 秒速覽</span>
+                </div>
+                <span class="text-xs text-gray-400">依當前價格與庫存自動判斷</span>
+            </div>
+            <div id="action-list-content">
+                <p class="text-gray-400 text-sm py-2">載入行動指引中...</p>
+            </div>
+        </div>
+
         <!-- 📦 監控股票池 -->
         <div class="bg-white border rounded-lg p-4 mb-6">
             <h2 class="text-xl font-semibold mb-4">📦 監控股票池</h2>
@@ -327,6 +342,137 @@
             }).join('');
         }
 
+        // 📋 盤前速覽：計算今日買賣清單（#162）
+        // 串聯三大機制：trading_plan（後端運算）、signal_tag（風控紀律）、localStorage（前端隱私持有成本）
+        function renderTodayActionList(stocks) {
+            const container = document.getElementById('action-list-content');
+            if (!container || !stocks || stocks.length === 0) return;
+
+            const buys = [];
+            const sells = [];
+
+            stocks.forEach(s => {
+                const tp = s.trading_plan;
+                const price = Number(s.current_price || 0);
+
+                // 1. 抓買進：現價落入買點區間，且未被風控降級
+                // 🆕 風控邏輯閉環（PR #159 訊號衝突降級鐵律）：
+                //    排除被降級為「長線配置/短期觀望」的衝突訊號，
+                //    避免頂部清單大喊「買入」、下方詳情卡片卻警告「短期勿追價」的邏輯精神分裂。
+                if (tp && tp.entry_type === 'now' && s.signal_tag !== '長線配置/短期觀望') {
+                    const zone = Array.isArray(tp.entry_zone) ? `${fmtNum(tp.entry_zone[0])}~${fmtNum(tp.entry_zone[1])}` : '-';
+                    buys.push({
+                        code: s.code,
+                        name: s.name,
+                        price: fmtNum(price),
+                        zone: zone,
+                        stopLoss: fmtNum(tp.stop_loss),
+                        tp1: fmtNum(tp.take_profit_1)
+                    });
+                }
+
+                // 2. 抓賣出：讀取瀏覽器記錄的持有成本
+                const rawCost = localStorage.getItem(`holding_cost_${s.code}`);
+                if (rawCost) {
+                    const cost = parseFloat(rawCost);
+                    if (!isNaN(cost) && cost > 0 && price > 0) {
+                        const pnl = ((price - cost) / cost) * 100;
+                        const stopLossPrice = (tp && tp.stop_loss) ? Number(tp.stop_loss) : cost * 0.92;
+
+                        if (price <= stopLossPrice || pnl <= -8) {
+                            sells.push({
+                                type: 'stop_loss',
+                                code: s.code,
+                                name: s.name,
+                                price: fmtNum(price),
+                                cost: fmtNum(cost),
+                                pnl: pnl.toFixed(1),
+                                action: '🛑 觸發停損：已跌破防守價，建議市價或限價出場，嚴禁凹單！'
+                            });
+                        } else if (pnl >= 15) {
+                            sells.push({
+                                type: 'take_profit',
+                                code: s.code,
+                                name: s.name,
+                                price: fmtNum(price),
+                                cost: fmtNum(cost),
+                                pnl: pnl.toFixed(1),
+                                action: '💰 獲利達標：獲利已逾 15%，建議先賣出 1/2 鎖定利潤！'
+                            });
+                        }
+                    }
+                }
+            });
+
+            // 3. 畫面渲染
+            if (buys.length === 0 && sells.length === 0) {
+                container.innerHTML = `
+                    <div class="flex items-center p-3.5 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">
+                        <span class="text-2xl mr-3">☕</span>
+                        <div>
+                            <p class="font-bold text-sm">今日無緊急買賣訊號</p>
+                            <p class="text-xs text-gray-500 mt-0.5">無股票落在理想買點，現有庫存亦無破線或達標。請安心上班，維持紀律！</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="space-y-3">';
+
+            // 優先顯示需要處理的賣出（防禦優先）
+            if (sells.length > 0) {
+                html += `
+                    <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <h4 class="font-bold text-red-800 text-sm flex items-center gap-1.5 mb-2">
+                            <span>🚨</span> 持倉賣出提醒（${sells.length} 檔需處理）
+                        </h4>
+                        <div class="space-y-2">
+                            ${sells.map(item => `
+                                <div class="bg-white p-2.5 rounded border border-red-100 text-xs">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-bold text-gray-800 text-sm">${escapeHTML(item.name)} (${escapeHTML(item.code)})</span>
+                                        <span class="font-bold ${item.type === 'stop_loss' ? 'text-red-600' : 'text-green-600'}">
+                                            損益：${item.pnl}% (成本 $${item.cost} ➔ 現價 $${item.price})
+                                        </span>
+                                    </div>
+                                    <p class="text-gray-700 font-medium">${item.action}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 顯示可買進清單
+            if (buys.length > 0) {
+                html += `
+                    <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <h4 class="font-bold text-green-800 text-sm flex items-center gap-1.5 mb-2">
+                            <span>🟢</span> 今日買入機會（現價已落入進場區）
+                        </h4>
+                        <div class="space-y-2">
+                            ${buys.map(item => `
+                                <div class="bg-white p-2.5 rounded border border-green-100 text-xs">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-bold text-gray-800 text-sm">${escapeHTML(item.name)} (${escapeHTML(item.code)})</span>
+                                        <span class="text-green-700 font-bold">現價 $${item.price}</span>
+                                    </div>
+                                    <div class="text-gray-600 space-y-0.5">
+                                        <p>• 建議買入區間：<b>$${item.zone}</b></p>
+                                        <p>• 防守停損價：<b class="text-red-500">$${item.stopLoss}</b>｜首批停利：<b class="text-green-600">$${item.tp1}</b></p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
         async function loadDashboard() {
             // 🟢 P3 防護：確保統一表格狀態已初始化（DOMContentLoaded 順序上本已成立，此處加強健壯性）
             window.__tableState = window.__tableState || { sortBy: 'ev_score', filter: '' };
@@ -385,6 +531,9 @@
 
                     // 渲染表格（統一管線：排序與篩選同時生效）
                     applyTablePipeline();
+
+                    // 📋 #162 盤前速覽：今日買賣行動清單（以全量資料判定，不受篩選影響）
+                    renderTodayActionList(deep.all_results);
 
                     // 🆕 Sprint 1.4 (#160)：啟動今日緊急行動看板（以全量資料判定，不受篩選影響）
                     if (deep.all_results && deep.all_results.length > 0) {
@@ -1209,12 +1358,16 @@
             if (trimmed === '') {
                 localStorage.removeItem(`holding_cost_${stockCode}`);
                 applyTablePipeline();
+                // 📋 #162：成本變動後立即刷新今日買賣行動清單（防呆：資料未載入時跳過）
+                if (window.analysisData) renderTodayActionList(window.analysisData);
                 return;
             }
             const val = parseFloat(trimmed);
             if (!isNaN(val) && val > 0) {
                 localStorage.setItem(`holding_cost_${stockCode}`, String(val));
                 applyTablePipeline();
+                // 📋 #162：成本變動後立即刷新今日買賣行動清單（防呆：資料未載入時跳過）
+                if (window.analysisData) renderTodayActionList(window.analysisData);
             } else {
                 alert('請輸入有效的正數價格');
             }
