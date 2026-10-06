@@ -1269,6 +1269,20 @@
 
             tableBody.innerHTML = data.map(r => {
                 const rowId = `detail-${r.code}`;
+
+                // 🆕 (#158) 時間維度標籤：讀取後端 signal_tag，渲染成顏色區分的 Badge
+                const tagStyleMap = {
+                    '長線配置': 'bg-blue-100 text-blue-800 border-blue-300',
+                    '短線狙擊': 'bg-orange-100 text-orange-800 border-orange-300',
+                    '長線配置/短期觀望': 'bg-yellow-100 text-yellow-800 border-yellow-300' // 衝突降級專用色
+                };
+                const signalTag = r.signal_tag || '短線狙擊';
+                const tagColorClass = tagStyleMap[signalTag] || 'bg-gray-100 text-gray-800 border-gray-300';
+                // 如果有被降級，顯示原本的 AI 建議（透明度：讓使用者知道 AI 原本的想法）
+                const originalRecNote = r.original_recommendation
+                    ? `<span class="text-xs text-gray-400 ml-2">(原AI建議: ${escapeHTML(r.original_recommendation)})</span>`
+                    : '';
+                const signalTagBadge = `<span class="ml-2 px-2.5 py-1 text-[11px] font-bold tracking-wider rounded-full border ${tagColorClass}" title="時間維度標籤">[ ${escapeHTML(signalTag)} ]</span>`;
                 
                 // 摘要行
                 const summaryRow = `
@@ -1281,6 +1295,7 @@
                             }" title="${r.data_source === 'yahoo' ? 'Yahoo Finance 備援' : 'FinMind 主力'}">
                                 ${r.data_source === 'yahoo' ? 'Yahoo' : 'FinMind'}
                             </span>
+                            ${signalTagBadge}${originalRecNote}
                             <span class="text-xs text-blue-500 ml-1">🔍</span>
                         </td>
                         <td class="px-4 py-3 text-sm text-gray-700">$${r.current_price ? r.current_price.toFixed(2) : '-'}</td>

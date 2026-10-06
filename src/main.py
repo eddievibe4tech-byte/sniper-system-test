@@ -136,6 +136,74 @@ def generate_rule_based_analysis(stock_data: Dict) -> Dict:
     }
 
 
+# ==========================================
+# 🆕 (#158) 鐵律：訊號衝突降級與時間維度標籤邏輯
+# ==========================================
+def _safe_float(val, default: float = 0.0) -> float:
+    """Code Review (#159) 防護性修正：安全轉換數值。
+
+    AI (Groq) 偶爾可能在數值欄位輸出 "N/A"、"資料不足" 或帶單位的 "75%"，
+    直接 float() 會拋出 ValueError 導致整個每日批次分析迴圈中斷。
+    本函數容錯處理：移除 % 符號與空白，轉換失敗一律回傳預設值。
+    """
+    try:
+        if val is None:
+            return default
+        if isinstance(val, str):
+            val = val.strip().replace('%', '').replace(',', '')
+            if not val:
+                return default
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+
+def apply_signal_conflict_logic(stock: dict) -> dict:
+    """
+    解決長線基本面與短線技術面的訊號衝突。
+    鐵律：基本面強(高EV或積極買入)但技術面跌破均線(MA20)時，
+    強制降級為「觀望」，並賦予專屬的時間維度標籤。
+
+    Args:
+        stock: 單檔股票的分析 record（含 ev_score / recommendation / current_price / ma20 等欄位）
+
+    Returns:
+        原地修改後的 stock dict，新增 signal_tag；衝突降級時另新增
+        original_recommendation 並以風控理由覆蓋 reason。
+    """
+    # 1. 取得關鍵指標（🛡️ Code Review：改用 _safe_float 防止 AI 輸出異常字串導致批次中斷）
+    ev_score = _safe_float(stock.get('ev_score'), 50.0)
+    rec = stock.get('recommendation', '觀望')
+
+    current_price = _safe_float(stock.get('current_price'), 0.0)
+    ma20 = _safe_float(stock.get('ma20'), 0.0)
+
+    # 定義基本面強與技術面弱的條件
+    # 🛡️ Code Review：改用包含檢查——AI 可能輸出「強烈買入」/「買入」/「Buy」等變體字眼，
+    # 精確匹配 == '積極買入' 會導致降級邏輯漏判。「避開買入」之类否定詞不在現行枚舉中，不須排除。
+    is_fundamental_strong = (ev_score >= 70) or ('買入' in str(rec))
+    is_technical_weak = (ma20 > 0 and current_price < ma20)  # 跌破 MA20
+
+    # 2. 衝突降級邏輯 (最高優先權)
+    if is_fundamental_strong and is_technical_weak:
+        stock['original_recommendation'] = rec  # 保留原 AI 推薦供前端參考
+        stock['recommendation'] = '觀望'         # 🚨 強制降級
+        stock['reason'] = (
+            f"⚠️ 訊號衝突：基本面佳(EV={ev_score:.0f})但技術修正中"
+            f"(現價{current_price:.2f} < MA20 {ma20:.2f})。"
+            f"短期勿追價，請等待站回均線再評估。"
+        )
+        stock['signal_tag'] = '長線配置/短期觀望'
+
+    # 3. 正常情況賦予時間維度標籤
+    elif is_fundamental_strong:
+        stock['signal_tag'] = '長線配置'
+    else:
+        stock['signal_tag'] = '短線狙擊'
+
+    return stock
+
+
 def auto_verify_predictions(telemetry_data: Dict, finmind: FinMindClient, horizon: int = 5) -> int:
     """
     🔴 P0 修正：自動回填驗證
@@ -718,6 +786,19 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
                 results['status'] = 'partial'
                 logger.warning(f"部分股票分析失敗：成功 {len(all_results)}/{len(stocks)}")
             
+            # 🆕 (#158) 鐵律：寫入 JSON 前套用訊號衝突降級與時間維度標籤
+            # 基本面強但跌破 MA20 → 強制降級「觀望」；同時賦予 signal_tag
+            downgraded = []
+            for stock_record in all_results:
+                before_rec = stock_record.get('recommendation')
+                apply_signal_conflict_logic(stock_record)
+                if stock_record.get('original_recommendation'):
+                    downgraded.append(
+                        f"{stock_record.get('code')}({before_rec}→觀望)"
+                    )
+            if downgraded:
+                logger.info(f"🚨 訊號衝突降級：{', '.join(downgraded)}")
+
             deep = {'analyzed_at': now.isoformat(), 'regime': regime,
                     'high_score_targets': [r for r in all_results if (r.get('ev_score') or 0) >= 70],
                     'all_results': all_results, 'skipped_stocks': skipped_stocks}
