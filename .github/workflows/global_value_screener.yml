@@ -23,7 +23,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install yfinance pandas
+          pip install --upgrade yfinance pandas
 
       - name: Run Global Value & ETF Screener
         run: |
@@ -36,7 +36,11 @@ jobs:
           fi
           ETF_COUNT=$(python -c "import json; print(len(json.load(open('../data/value_candidates.json')).get('etf_monitor', [])))")
           CAND_COUNT=$(python -c "import json; print(len(json.load(open('../data/value_candidates.json')).get('candidates', [])))")
-          echo "🌍 核心 ETF 監控：$ETF_COUNT 檔｜低估值個股：$CAND_COUNT 檔"
+          MISS_COUNT=$(python -c "import json; print(json.load(open('../data/value_candidates.json')).get('missing_fundamentals_count', 0))")
+          echo "🌍 核心 ETF 監控：$ETF_COUNT 檔｜低估值個股：$CAND_COUNT 檔｜基本面資料缺失：$MISS_COUNT 檔"
+          if [ "$MISS_COUNT" -gt 25 ]; then
+            echo "::warning title=Yahoo 限流警示::基本面資料缺失 $MISS_COUNT/50 檔，個股清單可能不完整 (429/403)"
+          fi
 
       - name: Commit and Push results
         env:

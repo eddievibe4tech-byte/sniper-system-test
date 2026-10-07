@@ -116,6 +116,7 @@ def run_value_screener():
 
     # 3. 掃描美股個股價值名單
     candidates = []
+    missing_count = 0  # 🆕 資料品質監控：統計基本面抓取失敗數量 (YF 限流/403/空字典)
     for sym in SP500_VALUE_POOL:
         try:
             if hist_batch.empty or sym not in hist_batch.columns.get_level_values(0):
@@ -132,6 +133,12 @@ def run_value_screener():
                 
             ticker = yf.Ticker(sym)
             info = ticker.info or {}
+            
+            # 🆕 攔截 Yahoo /info 端點限流導致的靜默失敗（空字典/缺 forwardPE）
+            if not info or 'forwardPE' not in info:
+                missing_count += 1
+                logger.warning(f"⚠️ {sym} 基本面資料缺失 (可能觸發 YF 限流)")
+                continue
             
             pe = info.get('forwardPE')
             peg = info.get('pegRatio')
@@ -165,8 +172,9 @@ def run_value_screener():
                     "ma200": round(ma200, 2),
                     "status": status
                 })
-            time.sleep(0.1) # 溫和延遲防止被 Yahoo 封鎖
+            time.sleep(1.5) # 🆕 拉長延遲：Yahoo /info 端點防禦嚴格，1.5s 是必要的保護成本
         except Exception as e:
+            missing_count += 1
             logger.warning(f"處理個股 {sym} 時發生錯誤: {e}")
             continue
 
@@ -175,13 +183,15 @@ def run_value_screener():
     result = {
         "updated_at": datetime.now(TZ_TAIPEI).isoformat(),
         "etf_monitor": etf_monitor,
-        "candidates": candidates
+        "candidates": candidates,
+        "missing_fundamentals_count": missing_count,  # 🆕 供前端判斷資料完整性
+        "total_scanned": len(SP500_VALUE_POOL)
     }
     
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     out_path = DATA_DIR / 'value_candidates.json'
     out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
-    logger.info(f"✅ 篩選完成！已監控 {len(etf_monitor)} 檔核心 ETF，篩出 {len(candidates)} 檔個股")
+    logger.info(f"✅ 篩選完成！已監控 {len(etf_monitor)} 檔核心 ETF，篩出 {len(candidates)} 檔個股，基本面缺失 {missing_count}/{len(SP500_VALUE_POOL)} 檔")
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

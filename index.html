@@ -2260,6 +2260,12 @@
                 if (!res.ok) throw new Error(res.status);
                 const d = await res.json();
 
+                // 🆕 資料品質監控：若基本面缺失超過 50%，顯示黃色警告（Yahoo /info 限流）
+                let dataQualityBanner = '';
+                if ((d.missing_fundamentals_count ?? 0) > (d.total_scanned ?? 0) * 0.5 && (d.total_scanned ?? 0) > 0) {
+                    dataQualityBanner = '<div class="mb-3 px-4 py-2 rounded bg-yellow-100 border border-yellow-400 text-yellow-800 text-sm font-medium">⚠️ Yahoo 基本面資料抓取受限，個股清單可能不完整。(缺失 ' + d.missing_fundamentals_count + '/' + d.total_scanned + ')</div>';
+                }
+
                 // 1. 渲染多檔 ETF 卡片矩陣 (美股 + 台股)
                 if (d.etf_monitor && d.etf_monitor.length > 0) {
                     etfGrid.innerHTML = d.etf_monitor.map(v => {
@@ -2314,11 +2320,11 @@
 
                 // 2. 渲染個股淘金表格
                 if (!d.candidates || d.candidates.length === 0) {
-                    tableEl.innerHTML = '<p class="text-gray-500 text-center py-4">目前無完全符合條件的低估值個股。</p>';
+                    tableEl.innerHTML = dataQualityBanner + '<p class="text-gray-500 text-center py-4">目前無完全符合條件的低估值個股。</p>';
                     return;
                 }
 
-                let html = '<table class="min-w-full divide-y divide-gray-200 text-sm"><thead><tr class="bg-gray-50">' +
+                let html = dataQualityBanner + '<table class="min-w-full divide-y divide-gray-200 text-sm"><thead><tr class="bg-gray-50">' +
                     '<th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">股票</th>' +
                     '<th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">狀態</th>' +
                     '<th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">預估 P/E</th>' +
@@ -2346,6 +2352,7 @@
             } catch (e) {
                 console.warn('載入失敗:', e);
                 etfGrid.innerHTML = '<p class="text-red-500 text-center py-4">跨市場數據載入失敗</p>';
+                if (tableEl) tableEl.innerHTML = '';
             }
         }
 
