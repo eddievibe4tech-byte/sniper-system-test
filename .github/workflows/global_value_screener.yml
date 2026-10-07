@@ -1,0 +1,61 @@
+name: Global Value & ETF Dip Screener (跨市場抄底雷達)
+
+on:
+  schedule:
+    # 每日台北時間 08:00 (UTC 00:00)：台股收盤後 + 美股隔夜收盤數據已更新
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  value-screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          pip install yfinance pandas
+
+      - name: Run Global Value & ETF Screener
+        run: |
+          cd src
+          python value_screener.py
+
+          if [ ! -f ../data/value_candidates.json ]; then
+            echo "❌ Value screener failed to produce file"
+            exit 1
+          fi
+          ETF_COUNT=$(python -c "import json; print(len(json.load(open('../data/value_candidates.json')).get('etf_monitor', [])))")
+          CAND_COUNT=$(python -c "import json; print(len(json.load(open('../data/value_candidates.json')).get('candidates', [])))")
+          echo "🌍 核心 ETF 監控：$ETF_COUNT 檔｜低估值個股：$CAND_COUNT 檔"
+
+      - name: Commit and Push results
+        env:
+          PUSH_URL: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        run: |
+          set -euo pipefail
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          [ -f data/value_candidates.json ] && git add data/value_candidates.json || echo "⚠️ 無 value_candidates.json"
+          git commit -m "💎 Global Value & ETF Dip Screener: $(date +'%Y-%m-%d')" || echo "No changes to commit"
+
+          # ⚠️ 防競態：其他 workflow 可能在此步驟前推了 main，先 rebase 同步再推送，並帶重試
+          for i in 1 2 3; do
+            if git pull --rebase "$PUSH_URL" main; then
+              if git push "$PUSH_URL" HEAD:main; then
+                echo "✅ 推送成功 (attempt $i)"
+                break
+              fi
+            fi
+            sleep $((i * 5))
+            if [ "$i" = "3" ]; then echo "❌ 推送失敗"; exit 1; fi
+          done
