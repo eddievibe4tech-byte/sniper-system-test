@@ -3,4 +3,8 @@ target/
 
 # Node.js dependencies and build outputs
 node_modules/
-dist/
+dist/__pycache__/
+__pycache__/
+
+__pycache__/
+*.pyc

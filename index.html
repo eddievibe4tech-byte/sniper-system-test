@@ -121,6 +121,29 @@
             <div id="us-table" class="overflow-x-auto"><p class="text-gray-500">載入中...</p></div>
         </div>
 
+        <!-- 💎 跨市場核心 ETF 抄底監控 & 美股價值淘金 -->
+        <div class="bg-white border rounded-lg p-5 mb-6 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">🎯 跨市場 ETF 抄底雷達 & 價值淘金</h2>
+                    <p class="text-xs text-gray-500 mt-1">
+                        整合美/台核心 ETF 年線乖離與 Wilder's RSI(14)。個股篩選：Forward P/E &lt; 20, PEG &lt; 1.2, ROE &gt; 15%。
+                    </p>
+                </div>
+            </div>
+
+            <!-- 6 大核心 ETF 監控矩陣 (美股4 + 台股2) -->
+            <div id="etf-monitor-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <p class="text-gray-400 text-sm col-span-full">載入跨市場 ETF 便宜度指標中...</p>
+            </div>
+
+            <!-- 個股淘金表格 -->
+            <h3 class="text-md font-semibold text-gray-700 mb-2 border-t pt-4">💎 S&P 500 低估值優質個股 (GARP)</h3>
+            <div id="value-table" class="overflow-x-auto">
+                <p class="text-gray-400 text-sm">載入數據中...</p>
+            </div>
+        </div>
+
         <!-- 💰 今日 5,000 元配置建議 -->
         <div class="bg-white border rounded-lg p-4 mb-6">
             <h2 class="text-xl font-semibold mb-2">💰 今日 5,000 元配置建議</h2>
@@ -2146,6 +2169,8 @@
             await loadAdvice();
             // 7. 載入宏觀資產配置（Issue #136 Macro Allocator）
             await loadMacro();
+            // 8. 載入跨市場 ETF 抄底雷達 & 價值淘金
+            await loadValueScreener();
         });
 
         // ⚡ 載入明日突破觀察表格
@@ -2221,6 +2246,113 @@
                 el.innerHTML = html + '</tbody></table>';
             } catch (e) {
                 el.innerHTML = '<p class="text-gray-500 text-center py-4">暫無美股數據（請先執行 Daily US Momentum）</p>';
+            }
+        }
+
+        // 💎 載入跨市場 ETF 監控與美股價值淘金（data/value_candidates.json）
+        async function loadValueScreener() {
+            const etfGrid = document.getElementById('etf-monitor-grid');
+            const tableEl = document.getElementById('value-table');
+            if (!etfGrid || !tableEl) return;
+
+            try {
+                const res = await fetch(BASE + 'data/value_candidates.json?v=' + Date.now());
+                if (!res.ok) throw new Error(res.status);
+                const d = await res.json();
+
+                // 🆕 資料品質監控：若基本面缺失超過 50%，顯示黃色警告（Yahoo /info 限流）
+                let dataQualityBanner = '';
+                if ((d.missing_fundamentals_count ?? 0) > (d.total_scanned ?? 0) * 0.5 && (d.total_scanned ?? 0) > 0) {
+                    dataQualityBanner = '<div class="mb-3 px-4 py-2 rounded bg-yellow-100 border border-yellow-400 text-yellow-800 text-sm font-medium">⚠️ Yahoo 基本面資料抓取受限，個股清單可能不完整。(缺失 ' + d.missing_fundamentals_count + '/' + d.total_scanned + ')</div>';
+                }
+
+                // 1. 渲染多檔 ETF 卡片矩陣 (美股 + 台股)
+                if (d.etf_monitor && d.etf_monitor.length > 0) {
+                    etfGrid.innerHTML = d.etf_monitor.map(v => {
+                        let cardStyle = 'border-gray-200 bg-gray-50';
+                        let badgeStyle = 'bg-gray-200 text-gray-700';
+
+                        // 動態配色：甜蜜點(綠) / 合理(黃) / 超買(紅) / 觀望(灰)
+                        if (v.strategy === '大筆加碼') {
+                            cardStyle = 'border-green-500 bg-green-50 ring-1 ring-green-500';
+                            badgeStyle = 'bg-green-600 text-white font-bold';
+                        } else if (v.strategy === '分批佈局') {
+                            cardStyle = 'border-yellow-400 bg-yellow-50';
+                            badgeStyle = 'bg-yellow-500 text-white';
+                        } else if (v.strategy.includes('減碼') || v.strategy.includes('超買')) {
+                            cardStyle = 'border-red-400 bg-red-50';
+                            badgeStyle = 'bg-red-500 text-white font-bold';
+                        }
+
+                        const pricePrefix = v.market === '🇹🇼' ? '' : '$';
+                        return `
+                            <div class="p-4 rounded-lg border ${cardStyle} flex flex-col justify-between">
+                                <div>
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="font-black text-lg text-gray-800">${v.market} ${escapeHTML(String(v.symbol))}</span>
+                                        <span class="text-xs px-2 py-0.5 rounded ${badgeStyle}">${escapeHTML(v.strategy)}</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mb-2">${escapeHTML(v.name)}</div>
+                                    <div class="text-xl font-bold text-gray-900 mb-2">${pricePrefix}${v.price}</div>
+                                </div>
+                                <div class="text-xs space-y-1 border-t pt-2 border-gray-200/60">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">年線 (MA200):</span>
+                                        <span class="font-medium">${pricePrefix}${v.ma200}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">年線乖離:</span>
+                                        <span class="font-bold ${v.bias_ma200_pct < 0 ? 'text-green-600' : (v.bias_ma200_pct > 10 ? 'text-red-600' : 'text-gray-700')}">
+                                            ${v.bias_ma200_pct > 0 ? '+' : ''}${v.bias_ma200_pct}%
+                                        </span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-500">RSI (14):</span>
+                                        <span class="font-bold ${v.rsi14 < 35 ? 'text-green-600' : (v.rsi14 > 70 ? 'text-red-600' : 'text-gray-700')}">${v.rsi14}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    etfGrid.innerHTML = '<p class="text-gray-500 text-sm col-span-full text-center py-4">目前無 ETF 監控數據。</p>';
+                }
+
+                // 2. 渲染個股淘金表格
+                if (!d.candidates || d.candidates.length === 0) {
+                    tableEl.innerHTML = dataQualityBanner + '<p class="text-gray-500 text-center py-4">目前無完全符合條件的低估值個股。</p>';
+                    return;
+                }
+
+                let html = dataQualityBanner + '<table class="min-w-full divide-y divide-gray-200 text-sm"><thead><tr class="bg-gray-50">' +
+                    '<th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">股票</th>' +
+                    '<th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">狀態</th>' +
+                    '<th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">預估 P/E</th>' +
+                    '<th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">PEG</th>' +
+                    '<th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">ROE</th>' +
+                    '<th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">現價 / MA200</th>' +
+                    '<th class="px-4 py-2 text-left text-xs font-semibold text-gray-600">連結</th></tr></thead><tbody class="divide-y divide-gray-100">';
+
+                d.candidates.forEach(c => {
+                    html += `<tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2"><b>${escapeHTML(c.symbol)}</b> <span class="text-xs text-gray-400">(${escapeHTML(c.sector)})</span></td>
+                        <td class="px-4 py-2"><span class="px-2 py-0.5 rounded text-xs ${c.status.includes('🟢') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${escapeHTML(c.status)}</span></td>
+                        <td class="px-4 py-2 font-medium">${c.forward_pe ?? '-'}</td>
+                        <td class="px-4 py-2 font-medium ${c.peg && c.peg < 1 ? 'text-green-600 font-bold' : ''}">${c.peg ?? '-'}</td>
+                        <td class="px-4 py-2">${c.roe_pct ?? '-'}%</td>
+                        <td class="px-4 py-2">$${c.price} <span class="text-xs text-gray-400">/ ${c.ma200}</span></td>
+                        <td class="px-4 py-2 text-xs">
+                            <a href="https://finviz.com/quote.ashx?t=${encodeURIComponent(c.symbol)}" target="_blank" rel="noopener" class="text-blue-600 hover:underline">Finviz</a>
+                        </td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                tableEl.innerHTML = html;
+
+            } catch (e) {
+                console.warn('載入失敗:', e);
+                etfGrid.innerHTML = '<p class="text-red-500 text-center py-4">跨市場數據載入失敗</p>';
+                if (tableEl) tableEl.innerHTML = '';
             }
         }
 
