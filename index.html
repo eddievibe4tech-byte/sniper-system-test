@@ -2350,8 +2350,10 @@
                 tableEl.innerHTML = html;
 
             } catch (e) {
-                console.warn('載入失敗:', e);
-                etfGrid.innerHTML = '<p class="text-red-500 text-center py-4">跨市場數據載入失敗</p>';
+                console.warn('Value Screener 載入失敗:', e);
+                // 🆕（#166）顯示具體錯誤訊息，方便排查是 404 還是 JSON 解析錯誤
+                const errMsg = e.message ? e.message : '未知錯誤';
+                etfGrid.innerHTML = `<p class="text-red-500 text-center py-4">跨市場數據載入失敗 (${errMsg})。<br>請確認 Workflow 是否成功產出 value_candidates.json 並 commit。</p>`;
                 if (tableEl) tableEl.innerHTML = '';
             }
         }

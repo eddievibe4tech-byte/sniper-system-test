@@ -59,6 +59,77 @@ def attach_warrant_options(opps: List[Dict], warrants: Optional[Dict]) -> List[D
     return opps
 
 
+def get_etf_migration_opportunities(deep, etf_radar):
+    """
+    🆕 資產搬家引擎（#166）：評估個股是否過熱，並尋找 ETF 抄底機會
+    - 個股 RSI > 70 或 MA20 乖離 > 10% → 停利訊號
+    - 核心台股 ETF (0050/006208) 策略含「加碼」或「佈局」→ 甜蜜點買進訊號
+    三情境：🔄 資產搬家 (prio=0) / ⚠️ 個股停利擁抱現金 (prio=0) / 🇹🇼 逢低佈局 ETF (prio=1)
+    """
+    opps = []
+    if not etf_radar or not deep:
+        return opps
+
+    # 1. 找出需要停利的過熱個股 (RSI > 70 或 乖離 > 10%)
+    hot_stocks = []
+    for r in deep.get('all_results', []) or []:
+        rsi = r.get('rsi', 50)
+        price = r.get('current_price', 0)
+        ma20 = r.get('ma20', 0)
+        bias = ((price - ma20) / ma20 * 100) if ma20 > 0 else 0
+
+        # 只要 RSI 超買或乖離過大，就列入潛在停利名單
+        if rsi > 70 or bias > 10:
+            hot_stocks.append({
+                "code": r.get('code'),
+                "name": r.get('name'),
+                "rsi": rsi,
+                "bias": round(bias, 1)
+            })
+
+    # 2. 找出適合抄底的台股核心 ETF (0050, 006208)
+    cheap_etfs = []
+    for etf in etf_radar.get('etf_monitor', []) or []:
+        if etf.get('symbol') in ['0050', '006208']:
+            strategy = etf.get('strategy', '')
+            # 只有出現「加碼」或「佈局」才視為買點
+            if '加碼' in strategy or '佈局' in strategy:
+                cheap_etfs.append(etf)
+
+    # 3. 生成搬家建議 (最高優先級 prio=0)
+    if hot_stocks:
+        target = hot_stocks[0]  # 取第一個過熱的作為代表
+        if cheap_etfs:
+            # 找乖離最低（最便宜）的 ETF
+            best_etf = min(cheap_etfs, key=lambda x: x.get('bias_ma200_pct', 999))
+            opps.append({
+                "prio": 0,
+                "market": "🔄 資產搬家",
+                "label": f"停利 {target['name']} ➔ 買入 {best_etf['symbol']}",
+                "detail": f"{target['name']} RSI={target['rsi']} 過熱/乖離+{target['bias']}%；"
+                          f"{best_etf['symbol']} 乖離 {best_etf['bias_ma200_pct']}% 具備甜蜜點。",
+            })
+        else:
+            opps.append({
+                "prio": 0,
+                "market": "⚠️ 個股停利",
+                "label": f"停利 {target['name']} ➔ 擁抱現金",
+                "detail": f"{target['name']} RSI={target['rsi']} 過熱，但核心 ETF 目前乖離偏高，"
+                          f"建議先停利泊現金，勿追高 ETF。",
+            })
+    elif cheap_etfs:
+        # 如果沒有過熱個股，但 ETF 便宜，則建議用閒置資金佈局
+        best_etf = min(cheap_etfs, key=lambda x: x.get('bias_ma200_pct', 999))
+        opps.append({
+            "prio": 1,
+            "market": "🇹🇼 台股 ETF",
+            "label": f"逢低佈局 {best_etf['symbol']} ({best_etf['name']})",
+            "detail": f"核心 ETF 出現甜蜜點，年線乖離 {best_etf['bias_ma200_pct']}%，RSI {best_etf['rsi14']}。",
+        })
+
+    return opps
+
+
 def collect_opportunities(crypto, deep, setup, us, alpha=None, warrants=None) -> List[Dict]:
     opps = []
 
@@ -144,7 +215,17 @@ def main():
     alpha = load("screener_candidates.json")
     warrants = load("warrant_candidates.json")
 
-    opps = collect_opportunities(crypto, deep, setup, us, alpha=alpha, warrants=warrants)
+    # 🆕 載入跨市場 ETF 抄底雷達（#166：資產搬家引擎的資料來源）
+    etf_radar = load("value_candidates.json")
+
+    # 🆕 優先評估資產搬家機會 (prio=0)，排在所有機會最前面
+    migration_opps = get_etf_migration_opportunities(deep, etf_radar)
+
+    # 原有的機會收集
+    core_opps = collect_opportunities(crypto, deep, setup, us, alpha=alpha, warrants=warrants)
+
+    # 合併機會列表（搬家建議排最前面）
+    opps = migration_opps + core_opps
     plan, cash = allocate(opps)
 
     warnings = []
