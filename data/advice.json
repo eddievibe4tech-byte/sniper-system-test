@@ -1,8 +1,8 @@
 {
-  "updated_at": "2026-10-08T14:15:11.184166",
+  "updated_at": "2026-10-08T22:03:55.722162",
   "capital": 5000,
   "tw_regime": "震盪",
-  "vix": 15.08,
+  "vix": 15.41,
   "fng": 64,
   "plan": [
     {
@@ -15,8 +15,8 @@
     {
       "prio": 1,
       "market": "美股",
-      "label": "動量突破 NVDA",
-      "detail": "VIX=15.08；RSI=64.41；跌破 MA50 或 -8% 停損",
+      "label": "動量突破 AAPL",
+      "detail": "VIX=15.41；RSI=61.23；跌破 MA50 或 -8% 停損",
       "alloc": 2500
     }
   ],
