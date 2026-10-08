@@ -1,22 +1,22 @@
 {
-  "updated_at": "2026-10-07T22:02:47.214867",
+  "updated_at": "2026-10-08T14:15:11.184166",
   "capital": 5000,
   "tw_regime": "震盪",
   "vix": 15.08,
-  "fng": 71,
+  "fng": 64,
   "plan": [
     {
-      "prio": 1,
-      "market": "美股",
-      "label": "動量突破 NVDA",
-      "detail": "VIX=15.08；RSI=64.41；跌破 MA50 或 -8% 停損",
+      "prio": 0,
+      "market": "⚠️ 個股停利",
+      "label": "停利 日月光投控 ➔ 擁抱現金",
+      "detail": "日月光投控 RSI=87.17 過熱，但核心 ETF 目前乖離偏高，建議先停利泊現金，勿追高 ETF。",
       "alloc": 2500
     },
     {
       "prio": 1,
       "market": "美股",
-      "label": "動量突破 AAPL",
-      "detail": "VIX=15.08；RSI=57.7；跌破 MA50 或 -8% 停損",
+      "label": "動量突破 NVDA",
+      "detail": "VIX=15.08；RSI=64.41；跌破 MA50 或 -8% 停損",
       "alloc": 2500
     }
   ],
