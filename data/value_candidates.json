@@ -1,0 +1,171 @@
+{
+  "updated_at": "2026-10-08T08:24:25.577082+08:00",
+  "etf_monitor": [
+    {
+      "price": 716.2,
+      "ma200": 659.95,
+      "ma50": 702.06,
+      "bias_ma200_pct": 8.52,
+      "rsi14": 62.8,
+      "advice": "⏳ 乖離偏高 (+8.5%)",
+      "strategy": "定期定額/觀望",
+      "symbol": "VOO",
+      "name": "S&P 500 (大型龍頭)",
+      "market": "🇺🇸",
+      "type": "美股大盤"
+    },
+    {
+      "price": 759.66,
+      "ma200": 668.78,
+      "ma50": 719.24,
+      "bias_ma200_pct": 13.59,
+      "rsi14": 70.08,
+      "advice": "🔴 嚴重超買 (乖離 +13.6%)",
+      "strategy": "停止追高/減碼",
+      "symbol": "QQQ",
+      "name": "那斯達克 100 (科技巨頭)",
+      "market": "🇺🇸",
+      "type": "科技成長"
+    },
+    {
+      "price": 212.33,
+      "ma200": 204.46,
+      "ma50": 215.94,
+      "bias_ma200_pct": 3.85,
+      "rsi14": 48.77,
+      "advice": "⏳ 乖離偏高 (+3.8%)",
+      "strategy": "定期定額/觀望",
+      "symbol": "RSP",
+      "name": "標普等權重 (落後補漲)",
+      "market": "🇺🇸",
+      "type": "市場廣度"
+    },
+    {
+      "price": 160.7,
+      "ma200": 150.68,
+      "ma50": 159.32,
+      "bias_ma200_pct": 6.65,
+      "rsi14": 56.31,
+      "advice": "⏳ 乖離偏高 (+6.7%)",
+      "strategy": "定期定額/觀望",
+      "symbol": "VT",
+      "name": "全世界股票 (全球分散)",
+      "market": "🌍",
+      "type": "全球配置"
+    },
+    {
+      "price": 116.5,
+      "ma200": 90.23,
+      "ma50": 106.55,
+      "bias_ma200_pct": 29.11,
+      "rsi14": 73.73,
+      "advice": "🔴 嚴重超買 (乖離 +29.1%)",
+      "strategy": "停止追高/減碼",
+      "symbol": "0050",
+      "name": "元大台灣50",
+      "market": "🇹🇼",
+      "type": "台股大盤"
+    },
+    {
+      "price": 265.9,
+      "ma200": 206.4,
+      "ma50": 243.91,
+      "bias_ma200_pct": 28.83,
+      "rsi14": 74.56,
+      "advice": "🔴 嚴重超買 (乖離 +28.8%)",
+      "strategy": "停止追高/減碼",
+      "symbol": "006208",
+      "name": "富邦台50 (低內扣)",
+      "market": "🇹🇼",
+      "type": "台股大盤"
+    }
+  ],
+  "candidates": [
+    {
+      "symbol": "EOG",
+      "name": "EOG Resources, Inc.",
+      "sector": "Energy",
+      "price": 144.28,
+      "forward_pe": 9.4,
+      "peg": 1.27,
+      "roe_pct": 22.51,
+      "fcf_yield_pct": 5.83,
+      "ma200": 131.29,
+      "status": "🟡 估值合理，列入觀察"
+    },
+    {
+      "symbol": "MMM",
+      "name": "3M Company",
+      "sector": "Industrials",
+      "price": 163.64,
+      "forward_pe": 16.5,
+      "peg": 1.53,
+      "roe_pct": 81.89,
+      "fcf_yield_pct": 7.6,
+      "ma200": 159.49,
+      "status": "🟡 估值合理，列入觀察"
+    },
+    {
+      "symbol": "JPM",
+      "name": "JP Morgan Chase & Co.",
+      "sector": "Financial Services",
+      "price": 331.28,
+      "forward_pe": 13.17,
+      "peg": 1.54,
+      "roe_pct": 17.79,
+      "fcf_yield_pct": null,
+      "ma200": 318.79,
+      "status": "🟡 估值合理，列入觀察"
+    },
+    {
+      "symbol": "TGT",
+      "name": "Target Corporation",
+      "sector": "Consumer Defensive",
+      "price": 154.33,
+      "forward_pe": 15.81,
+      "peg": 2.09,
+      "roe_pct": 26.41,
+      "fcf_yield_pct": 5.01,
+      "ma200": 127.9,
+      "status": "🟡 估值合理，列入觀察"
+    },
+    {
+      "symbol": "UNP",
+      "name": "Union Pacific Corporation",
+      "sector": "Industrials",
+      "price": 276.61,
+      "forward_pe": 19.32,
+      "peg": 2.75,
+      "roe_pct": 39.7,
+      "fcf_yield_pct": 2.89,
+      "ma200": 263.12,
+      "status": "🟡 估值合理，列入觀察"
+    },
+    {
+      "symbol": "PG",
+      "name": "Procter & Gamble Company (The)",
+      "sector": "Consumer Defensive",
+      "price": 148.41,
+      "forward_pe": 19.99,
+      "peg": 3.73,
+      "roe_pct": 30.29,
+      "fcf_yield_pct": 3.87,
+      "ma200": 146.25,
+      "status": "🟡 估值合理，列入觀察"
+    },
+    {
+      "symbol": "BMY",
+      "name": "Bristol-Myers Squibb Company",
+      "sector": "Healthcare",
+      "price": 59.59,
+      "forward_pe": 9.07,
+      "peg": 16.37,
+      "roe_pct": 46.6,
+      "fcf_yield_pct": 6.65,
+      "ma200": 58.19,
+      "status": "🟡 估值合理，列入觀察"
+    }
+  ],
+  "missing_fundamentals_count": 0,
+  "total_scanned": 50
+}
