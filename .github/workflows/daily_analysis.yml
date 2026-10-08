@@ -88,6 +88,9 @@ jobs:
           # 🌍 Macro Allocator 輸出：macro_allocation.json 必須 tracked——前端 loadMacro() 直接 fetch 此檔，
           #    不 commit 回 repo 的話 Pages 永遠顯示「尚無宏觀配置資料」
           [ -f data/macro_allocation.json ] && git add data/macro_allocation.json || echo "⚠️ 無 macro_allocation.json"
+          # 🆕（#166）確保價值淘金引擎的產出被 commit——前端 loadValueScreener() 與
+          #    market_advisor 資產搬家引擎都直接依賴此檔，漏 commit 會導致儀表板 404
+          [ -f data/value_candidates.json ] && git add data/value_candidates.json || echo "⚠️ 無 value_candidates.json"
 
           git commit -m "🎯 Auto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main

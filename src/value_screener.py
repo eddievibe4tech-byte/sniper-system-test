@@ -38,12 +38,17 @@ SP500_VALUE_POOL = [
 ]
 
 def calculate_technical_metrics(series: pd.Series) -> dict:
-    """計算年線乖離率、季線、以及標準 Wilder's RSI (14)"""
-    if len(series) < 200:
+    """計算年線乖離率、季線、以及標準 Wilder's RSI (14)
+    🆕（#166）放寬最低天數限制至 150 天以防新股/新 ETF Crash；
+    MA200 算出 NaN 時退版為全期平均。"""
+    if len(series) < 150:  # 🆕 從 200 降到 150，增加容錯率
         return {}
-    
+
     cur_price = float(series.iloc[-1])
-    ma200 = float(series.rolling(200).mean().iloc[-1])
+    ma200_val = series.rolling(200).mean().iloc[-1]
+    if pd.isna(ma200_val):
+        ma200_val = series.mean()  # 退版：資料少於 200 天時用全部天數的平均代替
+    ma200 = float(ma200_val)
     ma50 = float(series.rolling(50).mean().iloc[-1])
     bias_ma200 = ((cur_price - ma200) / ma200) * 100
     
@@ -84,50 +89,54 @@ def calculate_technical_metrics(series: pd.Series) -> dict:
 
 def run_value_screener():
     logger.info("🚀 啟動跨市場價值淘金與多 ETF 監控引擎...")
-    
-    all_symbols = list(CORE_ETFS.keys()) + SP500_VALUE_POOL
-    
-    # 1. 單次批次下載 2 年歷史 K 線 (確保 MA200 計算穩定)
-    logger.info(f"批次下載 {len(all_symbols)} 檔 2 年歷史行情...")
-    try:
-        hist_batch = yf.download(all_symbols, period="2y", group_by='ticker', threads=True, progress=False)
-    except Exception as e:
-        logger.error(f"批次下載失敗: {e}")
-        hist_batch = pd.DataFrame()
 
-    # 2. 解析核心 ETF 狀態 (美股 + 台股)
+    etf_symbols = list(CORE_ETFS.keys())
+    stock_symbols = SP500_VALUE_POOL
+
+    # 🆕（#166）策略 1：先分開抓 ETF (資料量少，抓 2 年確保 MA200 穩定)
     etf_monitor = []
-    for sym, meta in CORE_ETFS.items():
-        try:
-            if not hist_batch.empty and sym in hist_batch.columns.get_level_values(0):
-                # 防呆：處理 yfinance 回傳的 MultiIndex 結構
-                df = hist_batch[sym]['Close'].dropna() if isinstance(hist_batch.columns, pd.MultiIndex) else hist_batch[sym].dropna()
+    try:
+        logger.info(f"批次下載 {len(etf_symbols)} 檔 ETF 2年歷史行情...")
+        hist_etf = yf.download(etf_symbols, period="2y", group_by='ticker', threads=False, progress=False)
+        for sym, meta in CORE_ETFS.items():
+            try:
+                df = hist_etf[sym]['Close'].dropna() if isinstance(hist_etf.columns, pd.MultiIndex) else hist_etf[sym].dropna()
                 metrics = calculate_technical_metrics(df)
                 if metrics:
                     metrics.update({
-                        "symbol": sym.replace(".TW", ""), # 前端顯示去後綴
+                        "symbol": sym.replace(".TW", ""),  # 前端顯示去後綴
                         "name": meta["name"],
                         "market": meta["market"],
                         "type": meta["type"]
                     })
                     etf_monitor.append(metrics)
-        except Exception as e:
-            logger.warning(f"解析 ETF {sym} 失敗: {e}")
+            except Exception as e:
+                logger.warning(f"解析 ETF {sym} 失敗: {e}")
+    except Exception as e:
+        logger.error(f"ETF 批次下載徹底失敗: {e}")
 
-    # 3. 掃描美股個股價值名單
+    # 🆕（#166）策略 2：個股降級為 1 年 + threads=False，避免 yfinance 429 Rate Limit 崩潰整批
     candidates = []
     missing_count = 0  # 🆕 資料品質監控：統計基本面抓取失敗數量 (YF 限流/403/空字典)
-    for sym in SP500_VALUE_POOL:
+    logger.info(f"批次下載 {len(stock_symbols)} 檔個股 1年歷史行情...")
+    try:
+        hist_stocks = yf.download(stock_symbols, period="1y", group_by='ticker', threads=False, progress=False)
+    except Exception as e:
+        logger.error(f"個股批次下載失敗: {e}")
+        hist_stocks = pd.DataFrame()
+
+    for sym in stock_symbols:
         try:
-            if hist_batch.empty or sym not in hist_batch.columns.get_level_values(0):
+            if hist_stocks.empty or sym not in hist_stocks.columns.get_level_values(0):
                 continue
-                
-            df = hist_batch[sym]['Close'].dropna() if isinstance(hist_batch.columns, pd.MultiIndex) else hist_batch[sym].dropna()
-            if len(df) < 200: continue
-                
+
+            df = hist_stocks[sym]['Close'].dropna() if isinstance(hist_stocks.columns, pd.MultiIndex) else hist_stocks[sym].dropna()
+            if len(df) < 150: continue  # 🆕 門檻放寬至 150 天，資料太少直接跳過
+
             price = float(df.iloc[-1])
-            ma200 = float(df.rolling(200).mean().iloc[-1])
-            
+            ma200_val = df.rolling(200).mean().iloc[-1]
+            ma200 = float(ma200_val) if not pd.isna(ma200_val) else float(df.mean())
+
             # 防價值陷阱：股價必須維持在年線之上
             if price < ma200: continue
                 
