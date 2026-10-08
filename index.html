@@ -2260,10 +2260,16 @@
                 if (!res.ok) throw new Error(res.status);
                 const d = await res.json();
 
-                // 🆕 資料品質監控：若基本面缺失超過 50%，顯示黃色警告（Yahoo /info 限流）
+                // 🆕 P2 資料品質監控（#166 Review）：若基本面缺失率超過 30%，顯示誠實警告
+                // （避免 Yahoo /info 大規模限流時，前端空清單被誤判為「市場無好股票」）
                 let dataQualityBanner = '';
-                if ((d.missing_fundamentals_count ?? 0) > (d.total_scanned ?? 0) * 0.5 && (d.total_scanned ?? 0) > 0) {
-                    dataQualityBanner = '<div class="mb-3 px-4 py-2 rounded bg-yellow-100 border border-yellow-400 text-yellow-800 text-sm font-medium">⚠️ Yahoo 基本面資料抓取受限，個股清單可能不完整。(缺失 ' + d.missing_fundamentals_count + '/' + d.total_scanned + ')</div>';
+                const missingCount = d.missing_fundamentals_count ?? 0;
+                const totalScanned = d.total_scanned ?? 0;
+                const missingRate = totalScanned > 0 ? (missingCount / totalScanned) : 0;
+                if (totalScanned > 0 && missingRate > 0.3) {
+                    dataQualityBanner = '<div class="mb-3 p-3 bg-yellow-50 border-l-4 border-yellow-400 text-sm text-yellow-800">' +
+                        '⚠️ <b>資料品質警告</b>：今日 Yahoo 基本面資料抓取受限 (缺失 ' + missingCount + '/' + totalScanned + ' 檔)。' +
+                        '個股清單可能不完整，建議明日再觀察或手動確認。</div>';
                 }
 
                 // 1. 渲染多檔 ETF 卡片矩陣 (美股 + 台股)

@@ -98,7 +98,10 @@ def get_etf_migration_opportunities(deep, etf_radar):
 
     # 3. 生成搬家建議 (最高優先級 prio=0)
     if hot_stocks:
-        target = hot_stocks[0]  # 取第一個過熱的作為代表
+        # 🆕 P1 排序：RSI 越高、乖離越大，越優先需要停利搬家
+        # （all_results 順序為分析完成序/代碼序，不代表過熱程度）
+        hot_stocks.sort(key=lambda x: x['rsi'] + x['bias'], reverse=True)
+        target = hot_stocks[0]  # 取過熱程度最高者作為代表
         if cheap_etfs:
             # 找乖離最低（最便宜）的 ETF
             best_etf = min(cheap_etfs, key=lambda x: x.get('bias_ma200_pct', 999))
