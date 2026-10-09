@@ -1,27 +1,17 @@
 {
   "candidates": [
     {
-      "code": "2330",
-      "name": "台積電",
+      "code": "3443",
+      "name": "創意",
       "industry": "電子工業",
-      "revenue_yoy": 53.32,
-      "inst_buy_days": 3,
-      "current_price": 2500.0,
-      "ma20": 2448.25,
-      "screened_at": "2026-10-02"
-    },
-    {
-      "code": "2303",
-      "name": "聯電",
-      "industry": "電子工業",
-      "revenue_yoy": 30.71,
-      "inst_buy_days": 3,
-      "current_price": 161.5,
-      "ma20": 147.4,
-      "screened_at": "2026-10-02"
+      "revenue_yoy": 97.78,
+      "inst_buy_days": 2,
+      "current_price": 8360.0,
+      "ma20": 7449.25,
+      "screened_at": "2026-10-09"
     }
   ],
-  "updated_at": "2026-10-02T11:18:22.385510",
-  "rules_applied": "STRICT",
+  "updated_at": "2026-10-09T11:19:16.504189",
+  "rules_applied": "RELAXED (auto)",
   "error": null
 }
