@@ -1,57 +1,12 @@
 {
-  "candidates": [
-    {
-      "coin_id": "cardano",
-      "symbol": "ADA",
-      "name": "Cardano",
-      "price": 0.257145,
-      "market_cap": 9652866415,
-      "change_24h": -3.4,
-      "change_7d": 4.07,
-      "rsi": 59.69,
-      "ma20": 0.25,
-      "price_above_ma20": true,
-      "fear_greed": 64,
-      "scenario": "中性",
-      "recommendation": "觀望",
-      "win_rate": "-",
-      "win_rate_note": "",
-      "position_size": "等待明確訊號",
-      "stop_loss": "不適用",
-      "take_profit": "不適用",
-      "holding_period": "不適用",
-      "screened_at": "2026-10-08 01:16"
-    },
-    {
-      "coin_id": "avalanche-2",
-      "symbol": "AVAX",
-      "name": "Avalanche",
-      "price": 11.1,
-      "market_cap": 4920146312,
-      "change_24h": -4.14,
-      "change_7d": 1.19,
-      "rsi": 61.98,
-      "ma20": 10.79,
-      "price_above_ma20": true,
-      "fear_greed": 64,
-      "scenario": "中性",
-      "recommendation": "觀望",
-      "win_rate": "-",
-      "win_rate_note": "",
-      "position_size": "等待明確訊號",
-      "stop_loss": "不適用",
-      "take_profit": "不適用",
-      "holding_period": "不適用",
-      "screened_at": "2026-10-08 01:16"
-    }
-  ],
+  "candidates": [],
   "fear_greed_index": {
-    "value": 64,
+    "value": 59,
     "classification": "Greed",
-    "timestamp": 1791417600
+    "timestamp": 1791504000
   },
   "market_scenario": null,
-  "updated_at": "2026-10-08T01:16:50.393699",
+  "updated_at": "2026-10-09T01:19:43.350114",
   "rules_applied": {
     "fear_greed_max": 75,
     "min_market_cap": 1000000000,
