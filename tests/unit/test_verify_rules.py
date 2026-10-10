@@ -65,6 +65,15 @@ class TestWindowedReturn:
         assert windowed_return([], "2026-01-01", 5) is None            # 無資料
         assert windowed_return(s, "2026-02-01", 5) is None             # T 晚於最後交易日
 
+    def test_windowed_return_rejects_invalid_close(self):
+        # 🔴 PR review #8 回歸防護：p1（結算收盤）為 0/負值 → 回傳 None（延後結算），不得硬算
+        s = [{"date": f"2026-01-{d:02d}", "close": 100 + d} for d in range(1, 16)]
+        bad = [dict(x) for x in s]
+        bad[5]["close"] = 0.0                                           # T+H 收盤異常為 0
+        assert windowed_return(bad, "2026-01-01", 5) is None
+        bad[5]["close"] = -3.0                                          # 負值同樣拒絕
+        assert windowed_return(bad, "2026-01-01", 5) is None
+
     def test_anchor_ignores_execution_time_drift(self):
         # 同一 T+H 視窗，無論何時執行 regrade，結果只取 T+H 當日收盤 → 統計同質性
         s = [{"date": f"2026-01-{d:02d}", "close": 100 + d} for d in range(1, 16)]

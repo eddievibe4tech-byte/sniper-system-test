@@ -244,7 +244,8 @@ def windowed_return(series: List[Dict], start_date: str, horizon_days: int,
         return None                      # 交易日未走滿，不提前結算
     p0 = anchor_price if anchor_price else series[i]["close"]
     p1 = series[j]["close"]
-    if not p0 or p0 <= 0:
+    # 🔴 PR review #8：p1 為 0/負值時同樣視為無效資料 → 延後結算，避免報酬率失真
+    if not p0 or p0 <= 0 or not p1 or p1 <= 0:
         return None
     return round((p1 / p0 - 1) * 100, 2)
 
@@ -389,6 +390,8 @@ def auto_verify_predictions(telemetry_data: Dict, finmind: FinMindClient, horizo
         bench_ret = windowed_return(bench, pred_date, horizon) if bench else None
 
         rec_pred = (rec.get("prediction") or {}).get("recommendation", "")
+        # 🔴 PR review #7：25.0% 為保守預設（約等於大盤/中型股年化波動常態）；
+        # telemetry 缺波動率時以此推估門檻，偏嚴不偏鬆（低波動股會被要求更高絕對報酬）。
         vol = (rec.get("input") or {}).get("volatility") \
               or (rec.get("prediction") or {}).get("volatility") or 25.0
         verdict = judge_correctness(rec_pred, ret, bench_ret, vol, horizon)
@@ -505,12 +508,16 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
 
     # 🆕 Verification v2.1：分類準確率——買入訊號與過濾訊號（避開/觀望）分開統計，
     # 避免多頭市中「觀望佔多數、天然容易對」掩蓋買入訊號的真實品質。
+    # 🔴 PR review #5 澄清口徑差異（保留但改名 raw_category_accuracy）：
+    #   - raw_category_accuracy：全量已驗證 telemetry（含 v1/legacy），僅按 accuracy 粗分買入 vs 過濾器；
+    #   - alpha_stats.classification_accuracy_pct：僅 v2.1 評級記錄、經摩擦/alpha/門檻規則判定。
+    #   兩者互補而非重複，一個看歷史全貌、一個看新規則真實成績。
     BUY_RECOMMENDATIONS = ("積極買入", "謹慎買入")
     buy_verified = [r for r in verified_records
                     if (r.get('prediction') or {}).get('recommendation') in BUY_RECOMMENDATIONS]
     filter_verified = [r for r in verified_records
                        if (r.get('prediction') or {}).get('recommendation') not in BUY_RECOMMENDATIONS]
-    category_accuracy = {
+    raw_category_accuracy = {
         'buy': {'verified': len(buy_verified),
                 'correct': sum(1 for r in buy_verified if r.get('accuracy') == 1),
                 'accuracy': round(sum(1 for r in buy_verified if r.get('accuracy') == 1)
@@ -632,7 +639,7 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
         'expectancy_sample_count': len(returns_verified),  # 參與期望值計算的樣本數
         # 🆕 Verification v2.1
         'alpha_stats': alpha_stats,
-        'category_accuracy': category_accuracy,
+        'raw_category_accuracy': raw_category_accuracy,
         'verify_criteria_version': VERIFY_CRITERIA_VERSION,
         'accuracy_definition': ("v2.1 對沖基金級：買入需扣 0.5% 摩擦後超越波動率門檻且跑贏 0050；"
                                 "避開需「絕對虧損且相對跑輸」雙重條件才為正確；"
@@ -713,7 +720,10 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
                     logger.info("使用 Prompt：%s（V%d）", _cand.name, current_prompt_version)
                     break
             if prompt_tpl is None:
-                raise FileNotFoundError("找不到任何 main_analysis prompt 模板")
+                # 🔴 PR review #2：不再 raise（避免整個 Daily Analysis 中斷），
+                # 維持與既有行為一致的優雅降級——記 error 後以最小預設模板繼續。
+                logger.error("找不到任何 main_analysis prompt 模板，使用預設空模板（請檢查 prompts/ 目錄）")
+                prompt_tpl = ""
             regime = '震盪'  # 進階可改呼叫 groq.judge_regime(market_data)
             
             for stock in stocks:

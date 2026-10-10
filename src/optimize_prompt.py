@@ -15,6 +15,7 @@ import logging
 import os
 import re
 import sys
+import time
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
@@ -41,17 +42,39 @@ def load_json(p: Path, default):
 
 
 def groq_complete(system: str, user: str) -> str:
+    """呼叫 Groq Chat API（含重試：429/5xx 暫時性錯誤以指數退避重試，最多 3 次）。"""
     key = os.getenv("GROQ_API_KEY", "")                      # 🔴 用專案既有的 secret 名稱
     if not key:
         raise RuntimeError("GROQ_API_KEY 未設定")
-    r = requests.post(GROQ_URL, headers={"Authorization": f"Bearer {key}"},
-                      json={"model": os.getenv("GROQ_MODEL", "qwen/qwen3.6-27b"),
-                            "temperature": 0.4,
-                            "messages": [{"role": "system", "content": system},
-                                         {"role": "user", "content": user}]}, timeout=120)
-    r.raise_for_status()
-    return re.sub(r"<think>.*?</think>", "", r.json()["choices"][0]["message"]["content"],
-                  flags=re.S).strip()
+    payload = {"model": os.getenv("GROQ_MODEL", "qwen/qwen3.6-27b"),
+               "temperature": 0.4,
+               "messages": [{"role": "system", "content": system},
+                            {"role": "user", "content": user}]}
+    max_attempts = int(os.getenv("GROQ_MAX_RETRIES", "3"))
+    delay = float(os.getenv("GROQ_RETRY_BASE_DELAY", "2"))   # 指数退避：2s → 4s → 8s（上限10s）
+    for attempt in range(1, max_attempts + 1):
+        try:
+            r = requests.post(GROQ_URL, headers={"Authorization": f"Bearer {key}"},
+                              json=payload, timeout=120)
+            # 🔴 PR review #6：僅對暫時性錯誤重試；4xx（除 429）屬請求本身問題，直接失敗
+            if r.status_code == 429 or r.status_code >= 500:
+                raise requests.exceptions.HTTPError(f"HTTP {r.status_code}", response=r)
+            r.raise_for_status()
+            return re.sub(r"<think>.*?</think>", "", r.json()["choices"][0]["message"]["content"],
+                          flags=re.S).strip()
+        except (requests.exceptions.RequestException, KeyError, IndexError, ValueError) as e:
+            transient = isinstance(e, requests.exceptions.HTTPError) and \
+                        getattr(getattr(e, "response", None), "status_code", 0) != 0 and \
+                        (e.response.status_code == 429 or e.response.status_code >= 500)
+            fatal_4xx = isinstance(e, requests.exceptions.HTTPError) and not transient
+            if fatal_4xx or attempt >= max_attempts:
+                logger.error("Groq API 失敗（attempt %d/%d）：%s", attempt, max_attempts, e)
+                raise
+            wait = min(delay * (2 ** (attempt - 1)), 10)
+            logger.warning("Groq API 暫時性錯誤（attempt %d/%d）：%s → %.1fs 後重試",
+                           attempt, max_attempts, e, wait)
+            time.sleep(wait)
+    raise RuntimeError("Groq API 重試耗盡")                   # 理論不可達，保險起見
 
 
 def validate(text: str):

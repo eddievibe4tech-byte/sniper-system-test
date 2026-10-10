@@ -32,13 +32,15 @@ def _series_from_rows(rows) -> list:
 
 
 def main() -> int:
-    path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data/telemetry.json")
-    data = json.loads(path.read_text(encoding="utf-8"))
+    path: Path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data/telemetry.json")
+    data: dict = json.loads(path.read_text(encoding="utf-8"))
     fm = FinMindClient()
-    bench = _fetch_benchmark_closes(fm, days=400)
+    bench: list = _fetch_benchmark_closes(fm, days=400)
     if not bench:
         print("⚠️ 基準 0050 抓取失敗：alpha 條件將降級為絕對報酬規則")
-    cache, n, deferred = {}, 0, 0
+    cache: dict = {}
+    n: int = 0
+    deferred: int = 0
     for r in data.get("records", []):
         ar = r.get("actual_result")
         if not ar or r.get("legacy") or r.get("entry_price") is None:
@@ -56,6 +58,7 @@ def main() -> int:
             deferred += 1
             continue
         bench_ret = windowed_return(bench, pred_date, 5) if bench else None
+        # 🔴 PR review #7：25.0% 保守預設，與 src/main.py auto_verify 口徑一致
         vol = (r.get("input") or {}).get("volatility") \
               or (r.get("prediction") or {}).get("volatility") or 25.0
         v = judge_correctness((r.get("prediction") or {}).get("recommendation", ""),

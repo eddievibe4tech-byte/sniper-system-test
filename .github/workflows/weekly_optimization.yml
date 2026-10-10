@@ -44,3 +44,15 @@ jobs:
             git pull --rebase origin main || true
             git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
           fi
+
+      # 🆕 PR review #11：失敗通知（需設定 repo secret OPTIMIZE_FAIL_WEBHOOK_URL，Slack/Discord 皆可）
+      - name: Notify on failure
+        if: failure()
+        env:
+          WEBHOOK_URL: ${{ secrets.OPTIMIZE_FAIL_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          [ -z "$WEBHOOK_URL" ] && { echo "未設定 OPTIMIZE_FAIL_WEBHOOK_URL，跳過通知"; exit 0; }
+          curl -sf -X POST -H 'Content-Type: application/json' \
+            -d "{\"text\":\"❌ Weekly Prompt Optimization 失敗（${{ github.ref_name }}）：$RUN_URL\"}" \
+            "$WEBHOOK_URL" || echo "通知發送失敗（不影響主流程除錯）"
