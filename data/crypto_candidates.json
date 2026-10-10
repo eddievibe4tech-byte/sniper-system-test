@@ -1,12 +1,57 @@
 {
-  "candidates": [],
+  "candidates": [
+    {
+      "coin_id": "cosmos",
+      "symbol": "ATOM",
+      "name": "Cosmos Hub",
+      "price": 2.0,
+      "market_cap": 1071438602,
+      "change_24h": 11.59,
+      "change_7d": 20.21,
+      "rsi": 64.08,
+      "ma20": 1.79,
+      "price_above_ma20": true,
+      "fear_greed": 64,
+      "scenario": "中性",
+      "recommendation": "觀望",
+      "win_rate": "-",
+      "win_rate_note": "",
+      "position_size": "等待明確訊號",
+      "stop_loss": "不適用",
+      "take_profit": "不適用",
+      "holding_period": "不適用",
+      "screened_at": "2026-10-10 01:17"
+    },
+    {
+      "coin_id": "polkadot",
+      "symbol": "DOT",
+      "name": "Polkadot",
+      "price": 1.23,
+      "market_cap": 2101262939,
+      "change_24h": 9.26,
+      "change_7d": 6.3,
+      "rsi": 57.63,
+      "ma20": 1.19,
+      "price_above_ma20": true,
+      "fear_greed": 64,
+      "scenario": "中性",
+      "recommendation": "觀望",
+      "win_rate": "-",
+      "win_rate_note": "",
+      "position_size": "等待明確訊號",
+      "stop_loss": "不適用",
+      "take_profit": "不適用",
+      "holding_period": "不適用",
+      "screened_at": "2026-10-10 01:17"
+    }
+  ],
   "fear_greed_index": {
-    "value": 59,
+    "value": 64,
     "classification": "Greed",
-    "timestamp": 1791504000
+    "timestamp": 1791590400
   },
   "market_scenario": null,
-  "updated_at": "2026-10-09T01:19:43.350114",
+  "updated_at": "2026-10-10T01:17:06.669153",
   "rules_applied": {
     "fear_greed_max": 75,
     "min_market_cap": 1000000000,
