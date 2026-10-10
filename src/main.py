@@ -5,8 +5,10 @@
 import argparse
 import json
 import logging
+import math
 import os
 import sys
+from bisect import bisect_left
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -204,30 +206,159 @@ def apply_signal_conflict_logic(stock: dict) -> dict:
     return stock
 
 
+# ============ 🆕 Verification v2.1：對沖基金級驗證引擎 ============
+# 設計原則：華爾街評估一筆預測「對錯」不看「有沒有漲」，而是看三個條件：
+#   1. Net    —— 扣除來回摩擦成本（手續費+稅+價差+滑點）後是否賺錢
+#   2. Alpha  —— 是否跑贏基準（0050 大盤 ETF）
+#   3. Hurdle —— 是否超過該股波動率應有的門檻（√時間縮放）
+VERIFY_FRICTION_PCT = 0.5        # 來回摩擦：手續費+稅+價差+滑點
+VERIFY_ALPHA_BAND_PCT = 2.0      # 觀望類：|alpha| 在此帶內視為「確實無邊際」
+VERIFY_MIN_HURDLE_PCT = 2.0      # 買入類絕對門檻下限（net 口徑）
+VERIFY_CRITERIA_VERSION = 2      # 評級規則版本（v2.1 修訂記於 criteria 字串）
+BENCHMARK_CODE = "0050"          # 台股 alpha 基準
+
+
+def vol_hurdle_pct(vol_annual_pct: float, horizon_days: int = 5) -> float:
+    """波動率縮放門檻：0.5 × vol × sqrt(h/252)，下限 2%"""
+    scaled = 0.5 * (vol_annual_pct or 25.0) * math.sqrt(horizon_days / 252.0)
+    return max(VERIFY_MIN_HURDLE_PCT, scaled)
+
+
+def windowed_return(series: List[Dict], start_date: str, horizon_days: int,
+                    anchor_price: Optional[float] = None) -> Optional[float]:
+    """
+    🔴 v2.1 時窗鎖定：嚴格取 [T, T+H] 交易日報酬。
+
+    series 為升序 [{"date","close"}]；anchor_price 給定時作為起始價（telemetry entry_price）。
+    回傳 None ＝ 視窗尚未走完或資料缺失 → 呼叫方「延後結算」，絕不用錯誤時窗硬算。
+    （修復 v2：T+15 才驗證卻用 √5 門檻、以及 regrade 拿 5 天個股報酬比 90 天大盤報酬的錯位）
+    """
+    if not series:
+        return None
+    dates = [s["date"] for s in series]
+    i = bisect_left(dates, start_date)
+    if i >= len(dates):
+        return None
+    j = i + horizon_days
+    if j >= len(series):
+        return None                      # 交易日未走滿，不提前結算
+    p0 = anchor_price if anchor_price else series[i]["close"]
+    p1 = series[j]["close"]
+    if not p0 or p0 <= 0:
+        return None
+    return round((p1 / p0 - 1) * 100, 2)
+
+
+def judge_correctness(recommendation: str, ret_pct: float, bench_pct: Optional[float],
+                      vol_annual_pct: float, horizon_days: int = 5) -> Dict:
+    """純函數判定（可單測）：回傳 was_correct 與完整審計欄位"""
+    net = ret_pct - VERIFY_FRICTION_PCT
+    alpha = (ret_pct - bench_pct) if bench_pct is not None else None
+    hurdle = vol_hurdle_pct(vol_annual_pct, horizon_days)
+
+    if recommendation in ("積極買入", "謹慎買入"):
+        if alpha is None:
+            ok, criteria = net > hurdle, "buy:net>hurdle(no-bench)"
+        else:
+            ok, criteria = (net > hurdle and alpha > 0), "buy:net>hurdle&alpha>0"
+    elif recommendation == "避開":
+        # 🔴 v2.1 嚴格化：必須「絕對虧損 且 相對跑輸」才算正確避開，
+        #    防止多頭市靠 alpha<0 或空頭市靠 net<0 單邊刷勝率。
+        #    （本系統「避開」的替代部位是現金/ETF，故以雙重價值毀滅為標準）
+        if alpha is None:
+            ok, criteria = net <= 0, "avoid:net<=0(no-bench)"
+        else:
+            ok, criteria = (net <= 0 and alpha <= 0), "avoid:net<=0&alpha<=0"
+    else:  # 觀望 / 回檔觀察
+        if alpha is None:
+            ok, criteria = abs(net) <= VERIFY_ALPHA_BAND_PCT, "wait:|net|<=band(no-bench)"
+        else:
+            ok, criteria = (abs(alpha) <= VERIFY_ALPHA_BAND_PCT and net < hurdle), \
+                           "wait:|alpha|<=band&net<hurdle"
+
+    return {"was_correct": bool(ok),
+            "alpha_pct": round(alpha, 2) if alpha is not None else None,
+            "net_pct": round(net, 2), "hurdle_pct": round(hurdle, 2),
+            "criteria": criteria, "criteria_version": VERIFY_CRITERIA_VERSION}
+
+
+def _fetch_benchmark_closes(finmind, days: int = 400) -> List[Dict]:
+    """基準(0050) date→close 序列；失敗回傳 []（降級為絕對報酬規則）"""
+    try:
+        rows = finmind._make_request("TaiwanStockPrice", BENCHMARK_CODE, days=days) or []
+        series = [{"date": str(r.get("date", ""))[:10], "close": float(r.get("close", 0))}
+                  for r in rows if r.get("close")]
+        series.sort(key=lambda s: s["date"])
+        return series
+    except Exception as e:
+        logger.warning("基準 %s 抓取失敗：%s", BENCHMARK_CODE, e)
+        return []
+
+
+def compute_alpha_stats(verified_records: List[Dict]) -> Dict:
+    """🔴 v2.1 純函數：多空/訊號類型隔離的績效統計（可單測，杜絕符號錯誤回歸）
+
+    - 期望值只計「會實際執行」的買入訊號；避開/觀望屬過濾器，另以分類準確率評估，
+      防止「避開正確」的 -10% 污染 avg_win（負負得正的數學幻覺）。
+    - avg_loss 一律取絕對值，expectancy = hit×avg_win − miss×|avg_loss|。
+    """
+    v2 = [r for r in verified_records
+          if (r.get("actual_result") or {}).get("criteria_version") == VERIFY_CRITERIA_VERSION]
+    if not v2:
+        return {}
+    alphas = [r["actual_result"]["alpha_pct"] for r in v2
+              if r["actual_result"].get("alpha_pct") is not None]
+
+    trades = [r for r in v2
+              if (r.get("prediction") or {}).get("recommendation") in ("積極買入", "謹慎買入")]
+    if trades:
+        pnls = [r["actual_result"].get("net_pct") for r in trades
+                if isinstance(r["actual_result"].get("net_pct"), (int, float))]
+        wins = [p for p in pnls if p > 0]
+        losses = [p for p in pnls if p <= 0]
+        hit = len(wins) / len(pnls) * 100 if pnls else 0.0
+        avg_win = sum(wins) / len(wins) if wins else 0.0
+        avg_loss = abs(sum(losses) / len(losses)) if losses else 0.0   # 🔴 取絕對值
+        expectancy = (hit / 100) * avg_win - (1 - hit / 100) * avg_loss
+    else:
+        hit, avg_win, avg_loss, expectancy = 0.0, 0.0, 0.0, 0.0
+
+    overall = sum(1 for r in v2 if r["actual_result"]["was_correct"]) / len(v2) * 100
+    return {
+        "graded_records": len(v2),
+        "trade_records": len(trades),
+        "classification_accuracy_pct": round(overall, 1),
+        "trade_hit_rate_pct": round(hit, 1),
+        "avg_alpha_pct": round(sum(alphas) / len(alphas), 2) if alphas else None,
+        "avg_win_pct": round(avg_win, 2),
+        "avg_loss_pct": round(avg_loss, 2),
+        "expectancy_pct": round(expectancy, 2),
+    }
+
+
 def auto_verify_predictions(telemetry_data: Dict, finmind: FinMindClient, horizon: int = 5) -> int:
     """
-    🔴 P0 修正：自動回填驗證
-    
-    自動回填：預測滿 horizon 個交易日後，
-    用「預測當日收盤價 vs 現在價」計算實際報酬與對錯。
-    
-    Args:
-        telemetry_data: 遙測數據字典
-        finmind: FinMind 客戶端
-        horizon: 驗證天數（預設 5 交易日）
-        
-    Returns:
-        已驗證的記錄數量
+    🆕 Verification v2.1：對沖基金級自動驗證
+
+    改動重點（vs v1）：
+      1. 判定改用 judge_correctness（Net/Alpha/Hurdle 三鐵律），不再只看「有沒有漲」。
+      2. 🔴 時窗鎖定：個股與基準報酬一律取 [T, T+H] 交易日區間，以 entry_price 為錨；
+         視窗未走完 → 延後結算（回傳 None → skip），絕不用「當前最新價」硬算。
+      3. 基準 0050 一次抓取全批共用；缺失時降級為絕對報酬規則並記錄警告。
+      4. 個股價格序列按 code 快取，避免重複打 API。
     """
-    from datetime import datetime
     now = datetime.now(TZ_TAIPEI)
+    bench = _fetch_benchmark_closes(finmind, days=400)
+    if not bench:
+        logger.warning("基準 0050 缺失：alpha 條件降級為絕對報酬規則")
+    price_cache: Dict[str, List[Dict]] = {}
     verified = 0
 
     for rec in telemetry_data.get("records", []):
         # 跳過已驗證的記錄
         if rec.get("actual_result"):
             continue
-        
+
         # 跳過 legacy 記錄（舊格式無 entry_price，永遠無法驗證）
         if rec.get("legacy"):
             continue
@@ -236,44 +367,46 @@ def auto_verify_predictions(telemetry_data: Dict, finmind: FinMindClient, horizo
         if not entry_price:
             continue
 
-        pred_dt = datetime.fromisoformat(rec["timestamp"].replace('+08:00', '+08:00'))
-        # 簡化：用日曆日 * 1.5 近似交易日
-        days_elapsed = (now - pred_dt).days
-        if days_elapsed < int(horizon * 1.5):
+        pred_date = rec["timestamp"][:10]
+        code = rec["stock_code"]
+
+        # 🆕 按 code 快取價格序列，避免重複打 API
+        if code not in price_cache:
+            try:
+                rows = finmind._make_request("TaiwanStockPrice", code, days=400) or []
+                series = [{"date": str(r.get("date", ""))[:10],
+                           "close": float(r.get("close", 0))}
+                          for r in rows if r.get("close")]
+                series.sort(key=lambda s: s["date"])
+                price_cache[code] = series
+            except Exception:
+                price_cache[code] = []
+
+        # 🔴 個股報酬鎖定 [T, T+H]，以 entry_price 為錨；視窗未滿 → 延後結算
+        ret = windowed_return(price_cache[code], pred_date, horizon, anchor_price=entry_price)
+        if ret is None:
             continue
+        bench_ret = windowed_return(bench, pred_date, horizon) if bench else None
 
-        # 取得當前價格
-        try:
-            prices = finmind._get_raw_prices(rec["stock_code"], days=1) or []
-            if not prices:
-                continue
-            current = prices[-1]
-        except Exception:
-            continue
-
-        # 計算報酬率
-        ret = round((current - entry_price) / entry_price * 100, 2)
-        rec_pred = rec.get("prediction", {}).get("recommendation", "")
-
-        # 判斷對錯
-        if rec_pred in ("積極買入", "謹慎買入"):
-            correct = ret > 0
-        elif rec_pred == "避開":
-            correct = ret <= 0  # 避開後真的沒漲＝正確
-        else:  # 回檔觀察/觀望
-            correct = abs(ret) < 3
+        rec_pred = (rec.get("prediction") or {}).get("recommendation", "")
+        vol = (rec.get("input") or {}).get("volatility") \
+              or (rec.get("prediction") or {}).get("volatility") or 25.0
+        verdict = judge_correctness(rec_pred, ret, bench_ret, vol, horizon)
 
         rec["actual_result"] = {
             "profit_pct": ret,
             # 🆕 Sprint 3 (#160)：Expectancy 追蹤 — actual_return_pct 為實際報酬率欄位，
             # 與 profit_pct 同值（保留 profit_pct 供既有前端/報告相容使用）
             "actual_return_pct": ret,
-            "was_correct": correct,
+            "benchmark": BENCHMARK_CODE,
+            "benchmark_ret_pct": bench_ret,
+            "window": f"{pred_date}+{horizon}td",     # 🆕 審計欄：結算時窗
             "horizon_days": horizon,
             "auto": True,
-            "verified_at": now.isoformat()
+            "verified_at": now.isoformat(),
+            **verdict,
         }
-        rec["accuracy"] = 1 if correct else 0
+        rec["accuracy"] = 1 if verdict["was_correct"] else 0
         verified += 1
 
     return verified
@@ -369,6 +502,24 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
         accuracy_display = round(accuracy_rate, 1)
     elif verified_count > 0:
         accuracy_display = f"已驗證 {verified_count}/{total_predictions}"
+
+    # 🆕 Verification v2.1：分類準確率——買入訊號與過濾訊號（避開/觀望）分開統計，
+    # 避免多頭市中「觀望佔多數、天然容易對」掩蓋買入訊號的真實品質。
+    BUY_RECOMMENDATIONS = ("積極買入", "謹慎買入")
+    buy_verified = [r for r in verified_records
+                    if (r.get('prediction') or {}).get('recommendation') in BUY_RECOMMENDATIONS]
+    filter_verified = [r for r in verified_records
+                       if (r.get('prediction') or {}).get('recommendation') not in BUY_RECOMMENDATIONS]
+    category_accuracy = {
+        'buy': {'verified': len(buy_verified),
+                'correct': sum(1 for r in buy_verified if r.get('accuracy') == 1),
+                'accuracy': round(sum(1 for r in buy_verified if r.get('accuracy') == 1)
+                                  / len(buy_verified) * 100, 1) if buy_verified else None},
+        'filter': {'verified': len(filter_verified),
+                   'correct': sum(1 for r in filter_verified if r.get('accuracy') == 1),
+                   'accuracy': round(sum(1 for r in filter_verified if r.get('accuracy') == 1)
+                                     / len(filter_verified) * 100, 1) if filter_verified else None},
+    }
     
     # 計算各版本統計
     # 🔴 P0 修正：準確率分母必須是「已驗證筆數」而非「全部預測筆數（含待驗證）」，
@@ -459,6 +610,10 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
         loss_rate = 1 - win_rate
         expectancy = round(win_rate * avg_win_pct + loss_rate * avg_loss_pct, 2)
 
+    # 🆕 v2.1 alpha 統計與期望值（僅統計 criteria_version==2 的 v2 評級記錄）
+    # 🔴 修訂：期望值只計買入訊號、avg_loss 取絕對值——详见 compute_alpha_stats()。
+    alpha_stats = compute_alpha_stats(verified_records)
+
     metrics = {
         'total_predictions': total_predictions,
         'verified_count': verified_count,
@@ -475,10 +630,19 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
         'avg_win_pct': avg_win_pct,        # 正確預測的平均報酬率(%)
         'avg_loss_pct': avg_loss_pct,      # 錯誤預測的平均報酬率(%)（負值）
         'expectancy_sample_count': len(returns_verified),  # 參與期望值計算的樣本數
+        # 🆕 Verification v2.1
+        'alpha_stats': alpha_stats,
+        'category_accuracy': category_accuracy,
+        'verify_criteria_version': VERIFY_CRITERIA_VERSION,
+        'accuracy_definition': ("v2.1 對沖基金級：買入需扣 0.5% 摩擦後超越波動率門檻且跑贏 0050；"
+                                "避開需「絕對虧損且相對跑輸」雙重條件才為正確；"
+                                "觀望以 |alpha|≤2% 無邊際為正確"),
     }
     
     path.write_text(json.dumps(metrics, ensure_ascii=False, indent=2), encoding='utf-8')
-    logger.info(f"績效指標已更新：總預測={total_predictions}, 已驗證={verified_count}, 準確率={accuracy_display}, 期望值={expectancy}")
+    logger.info(f"績效指標已更新：總預測={total_predictions}, 已驗證={verified_count}, "
+                f"準確率={accuracy_display}, 期望值={expectancy}, "
+                f"v2期望值={alpha_stats.get('expectancy_pct')}")
 
 
 def run_daily_analysis(mode: str = 'full') -> Dict:
@@ -538,14 +702,18 @@ def run_daily_analysis(mode: str = 'full') -> Dict:
             finmind = FinMindClient()
             groq = GroqClient()
             yahoo = YahooFinanceClient()  # ✅ 初始化備援客戶端
-            # 🆕 方案 2：Prompt 壓縮 — 優先使用 v2（~400 tokens，原 ~1000 tokens）
-            prompt_v2_path = BASE_DIR / 'prompts' / 'main_analysis_v2.txt'
-            if prompt_v2_path.exists():
-                prompt_tpl = prompt_v2_path.read_text(encoding='utf-8')
-                logger.info("使用壓縮版 Prompt：prompts/main_analysis_v2.txt")
-            else:
-                prompt_tpl = (BASE_DIR / 'prompts' / 'main_analysis.txt').read_text(encoding='utf-8')
-                logger.warning("找不到 main_analysis_v2.txt，退回完整版 Prompt")
+            # 🆕 方案 2＋v2.1：Prompt 載入改為「版本驅動」——優化器產出 V{N+1} 後，
+            # Daily Analysis 必須真的使用它（否則原硬編碼 v2 会让自動優化永不生效）。
+            prompt_tpl = None
+            for _cand in (BASE_DIR / 'prompts' / f'main_analysis_v{current_prompt_version}.txt',
+                          BASE_DIR / 'prompts' / 'main_analysis_v2.txt',
+                          BASE_DIR / 'prompts' / 'main_analysis.txt'):
+                if _cand.exists():
+                    prompt_tpl = _cand.read_text(encoding='utf-8')
+                    logger.info("使用 Prompt：%s（V%d）", _cand.name, current_prompt_version)
+                    break
+            if prompt_tpl is None:
+                raise FileNotFoundError("找不到任何 main_analysis prompt 模板")
             regime = '震盪'  # 進階可改呼叫 groq.judge_regime(market_data)
             
             for stock in stocks:

@@ -637,13 +637,35 @@
                     document.getElementById('last-updated').innerText = `最後更新時間：${updateTime}`;
                     
                     // 🟡 新增：在準確率下方增加提示文字
+                    // 🆕 Verification v2.1：优先显示「准确度定义」（对沖基金级 Net/Alpha/Hurdle 规则），
+                    //    并於卡片下方追加期望值（Expectancy）一行——北极星指标。
                     let accuracyHint = document.getElementById('accuracy-hint');
                     if (!accuracyHint) {
                         const hintEl = document.createElement('p');
                         hintEl.id = 'accuracy-hint';
                         hintEl.className = 'text-xs text-gray-500 mt-1';
-                        hintEl.innerText = '預測需經過 5 個交易日才會自動驗證';
+                        hintEl.innerText = metricsData.accuracy_definition
+                            ? metricsData.accuracy_definition
+                            : '預測需經過 5 個交易日才會自動驗證';
                         document.querySelector('#accuracy').parentNode.appendChild(hintEl);
+                    } else if (metricsData.accuracy_definition) {
+                        accuracyHint.innerText = metricsData.accuracy_definition;
+                    }
+                    // 🆕 v2.1 alpha_stats：顯示買入訊號期望值（>0 代表系統具正期望）
+                    const as = metricsData.alpha_stats;
+                    let expEl = document.getElementById('expectancy-line');
+                    if (as && as.graded_records) {
+                        if (!expEl) {
+                            expEl = document.createElement('p');
+                            expEl.id = 'expectancy-line';
+                            expEl.className = 'text-xs font-semibold mt-1';
+                            document.querySelector('#accuracy').parentNode.appendChild(expEl);
+                        }
+                        const e = as.expectancy_pct;
+                        expEl.innerText = `📊 買入期望值 ${e > 0 ? '+' : ''}${e}%｜命中率 ${as.trade_hit_rate_pct}%｜平均α ${as.avg_alpha_pct === null ? 'N/A' : (as.avg_alpha_pct > 0 ? '+' : '') + as.avg_alpha_pct + '%'}`;
+                        expEl.className = 'text-xs font-semibold mt-1 ' + (e > 0 ? 'text-green-600' : 'text-red-600');
+                    } else if (expEl) {
+                        expEl.remove();
                     }
                 } else {
                     document.getElementById('last-updated').innerText = '最後更新時間：暫無數據 (檔案可能尚未生成)';

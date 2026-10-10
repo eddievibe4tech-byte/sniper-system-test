@@ -21,15 +21,26 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install -r requirements-dev.txt
+        run: pip install -r requirements.txt          # 🔴 v2.1：改用主依賴（requests 所在；dev 檔僅測試工具）
 
       - name: Run Optimization
         env:
-          AI_API_KEY: ${{ secrets.AI_API_KEY }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_OWNER: ${{ github.repository_owner }}
-          GITHUB_REPO: ${{ github.event.repository.name }}
-          # 將非敏感的設定檔參數也環境變數化
-          OPTIMIZATION_THRESHOLD: 5 
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}   # 🔴 對齊專案既有 secret 名稱（原 AI_API_KEY/GH_TOKEN 未設定＝空值）
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+          OPTIMIZATION_THRESHOLD: 5
+          TARGET_ACCURACY: 70
         run: |
           python -m src.optimize_prompt
+
+      - name: Commit new prompt version               # 🔴 原本沒有 commit 步驟——優化結果永遠不會落地
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add prompts/ data/prompt_history.json
+          if git diff --cached --quiet; then
+            echo "本週無 prompt 變更"
+          else
+            git commit -m "🧠 Auto prompt optimization: $(date +'%Y-%m-%d')"
+            git pull --rebase origin main || true
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+          fi
