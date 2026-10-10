@@ -92,22 +92,73 @@ class TestExpectancyMetrics:
         assert metrics['avg_loss_pct'] == 0.0
 
     def test_actual_return_pct_written_by_auto_verify(self):
-        """auto_verify_predictions 必須在 actual_result 寫入 actual_return_pct（與 profit_pct 同值）"""
+        """auto_verify 必須寫入 actual_return_pct（與 profit_pct 同值）
+        🆕 v2.1：驗證改用 windowed_return 鎖定 [T, T+H]，
+        mock 需提供 _make_request 的 date+close 序列（不再用 _get_raw_prices）。
+        """
         import src.main as m
         from datetime import datetime, timedelta, timezone
         tz = timezone(timedelta(hours=8))
-        old_ts = (datetime.now(tz) - timedelta(days=20)).isoformat()
+        t0 = datetime.now(tz) - timedelta(days=20)
+        pred_date = t0.strftime("%Y-%m-%d")
+
+        def d(k):  # 第 k 個交易日（測試簡化為日曆日）
+            return (t0 + timedelta(days=k)).strftime("%Y-%m-%d")
+
+        # 個股：T+5 收盤 110 → ret = +10%（anchor = entry_price 100）
+        stock_rows = [{"date": d(k), "close": 110.0 if k == 5 else 100.0 + k}
+                      for k in range(0, 8)]
+        # 基準 0050：T→T+5 為 100→102 → bench_ret = +2% → alpha = +8% > 0
+        bench_rows = [{"date": d(k), "close": 102.0 if k >= 5 else 100.0}
+                      for k in range(0, 8)]
+
+        finmind = MagicMock()
+
+        def fake_make_request(dataset, code, days=400, **kw):
+            return bench_rows if code == "0050" else stock_rows
+
+        finmind._make_request.side_effect = fake_make_request
+
         telemetry = {"records": [{
             "stock_code": "2330",
-            "timestamp": old_ts,
+            "timestamp": t0.isoformat(),
             "entry_price": 100.0,
             "prediction": {"recommendation": "積極買入"},
         }], "metadata": {}}
-        finmind = MagicMock()
-        finmind._get_raw_prices.return_value = [110.0]
         n = m.auto_verify_predictions(telemetry, finmind, horizon=5)
         assert n == 1
         ar = telemetry["records"][0]["actual_result"]
         assert ar["actual_return_pct"] == 10.0
-        assert ar["profit_pct"] == 10.0  # 相容性：保留既有欄位
-        assert ar["was_correct"] is True
+        assert ar["profit_pct"] == 10.0          # 相容性：保留既有欄位
+        assert ar["was_correct"] is True          # net 9.5>2 且 alpha 8>0
+        assert ar["criteria_version"] == 2
+        assert ar["window"] == f"{pred_date}+5td"
+        assert ar["benchmark_ret_pct"] == 2.0
+
+    def test_window_not_complete_defers_verification(self):
+        """🆕 v2.1 回歸：價格序列未走滿 [T, T+H] → 延後結算（n=0），絕不硬算"""
+        import src.main as m
+        from datetime import datetime, timedelta, timezone
+        tz = timezone(timedelta(hours=8))
+        t0 = datetime.now(tz) - timedelta(days=20)
+
+        def d(k):
+            return (t0 + timedelta(days=k)).strftime("%Y-%m-%d")
+
+        stock_rows = [{"date": d(k), "close": 100.0 + k} for k in range(0, 4)]  # 只有 T+3
+
+        finmind = MagicMock()
+
+        def fake_make_request(dataset, code, days=400, **kw):
+            return [] if code == "0050" else stock_rows
+
+        finmind._make_request.side_effect = fake_make_request
+        telemetry = {"records": [{
+            "stock_code": "2330",
+            "timestamp": t0.isoformat(),
+            "entry_price": 100.0,
+            "prediction": {"recommendation": "積極買入"},
+        }], "metadata": {}}
+        n = m.auto_verify_predictions(telemetry, finmind, horizon=5)
+        assert n == 0
+        assert telemetry["records"][0].get("actual_result") is None  # 保持未驗證

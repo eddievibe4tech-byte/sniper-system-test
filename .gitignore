@@ -1,10 +1,6 @@
-# Rust/Tauri build artifacts
-target/
-
-# Node.js dependencies and build outputs
-node_modules/
-dist/__pycache__/
-__pycache__/
-
+# Python compiled files
 __pycache__/
 *.pyc
+
+# Environment variables
+.env
