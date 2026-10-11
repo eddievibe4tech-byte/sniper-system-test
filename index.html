@@ -44,6 +44,9 @@
         .ruler-labels{display:flex;justify-content:space-between;font-size:.62rem;color:#6b7280}
         .tab{padding:.35rem .8rem;border:1px solid #e5e7eb;border-radius:9999px;font-size:.8rem;background:#fff;margin-right:.4rem;cursor:pointer}
         .tab-active{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+        /* 🆕 PR#173 review P3-1：中性盤整（未進入利率週期）時四點全灰無標示 → 加 neutral 樣式 */
+        .step-neutral .step-dot{background:#f59e0b;color:#fff}
+        .step-neutral .step-label{color:#b45309;font-weight:700}
     </style>
 </head>
 <body class="bg-gray-100 p-4 md:p-8">
@@ -85,24 +88,18 @@
 
         <!-- 🎯 第三層：狙擊標的看板（Tabs） -->
         <section class="bg-white border rounded-lg p-4 mb-6">
-            <h2 class="text-xl font-semibold mb-3">🎯 狙擊標的看板</h2>
+            <!-- 🆕 PR#173 review P2-1：補回 #115 複製決策報告按鈕入口 -->
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-xl font-semibold">🎯 狙擊標的看板</h2>
+                <button onclick="copyDecisionReport()" class="px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">📋 複製決策報告</button>
+            </div>
             <div id="sniper-tabs" class="mb-3"></div>
             <div id="sniper-body" class="overflow-x-auto"></div>
         </section>
 
-        <!-- 🚨 盤前速覽：今日買賣行動清單 -->
-        <div id="today-action-card" class="bg-white border-2 border-blue-500 shadow-md rounded-xl p-5 mb-6">
-            <div class="flex items-center justify-between mb-3 pb-2 border-b">
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">📋</span>
-                    <h2 class="text-xl font-bold text-gray-800">今日買賣行動清單</h2>
-                    <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">盤前 5 秒速覽</span>
-                </div>
-                <span class="text-xs text-gray-400">依當前價格與庫存自動判斷</span>
-            </div>
-            <div id="action-list-content">
-                <p class="text-gray-400 text-sm py-2">載入行動指引中...</p>
-            </div>
+        <!-- 🚨 盤前速覽：持有成本停損/停利檢查（🆕 PR#173 review P2-2：買側已由指揮中心統一輸出，此處僅留賣側；內容由 renderTodayActionList 注入並掛載至指揮中心第 4 段） -->
+        <div id="today-action-card" class="hidden">
+            <div id="action-list-content"></div>
         </div>
 
         <!-- 📦 監控股票池 -->
@@ -450,20 +447,8 @@
                 }
             });
 
-            // 3. 畫面渲染
-            if (buys.length === 0 && sells.length === 0) {
-                container.innerHTML = `
-                    <div class="flex items-center p-3.5 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">
-                        <span class="text-2xl mr-3">☕</span>
-                        <div>
-                            <p class="font-bold text-sm">今日無緊急買賣訊號</p>
-                            <p class="text-xs text-gray-500 mt-0.5">無股票落在理想買點，現有庫存亦無破線或達標。請安心上班，維持紀律！</p>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-
+            // 3. 畫面渲染（🆕 PR#173 review P2-2：指揮中心第 3 段已統一輸出買側，此處僅渲染賣側「持倉停損/停利檢查」，避免重複）
+            const noBuyNoSell = (buys.length === 0 && sells.length === 0);
             let html = '<div class="space-y-3">';
 
             // 優先顯示需要處理的賣出（防禦優先）
@@ -488,35 +473,22 @@
                         </div>
                     </div>
                 `;
-            }
-
-            // 顯示可買進清單
-            if (buys.length > 0) {
+            } else if (!noBuyNoSell || buys.length === 0) {
                 html += `
-                    <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
-                        <h4 class="font-bold text-green-800 text-sm flex items-center gap-1.5 mb-2">
-                            <span>🟢</span> 今日買入機會（現價已落入進場區）
-                        </h4>
-                        <div class="space-y-2">
-                            ${buys.map(item => `
-                                <div class="bg-white p-2.5 rounded border border-green-100 text-xs">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <span class="font-bold text-gray-800 text-sm">${escapeHTML(item.name)} (${escapeHTML(item.code)})</span>
-                                        <span class="text-green-700 font-bold">現價 ${fmtPrice(item.price)}</span>
-                                    </div>
-                                    <div class="text-gray-600 space-y-0.5">
-                                        <p>• 建議買入區間：<b>${item.zone === '-' ? '-' : '$' + item.zone}</b></p>
-                                        <p>• 防守停損價：<b class="text-red-500">${fmtPrice(item.stopLoss)}</b>｜首批停利：<b class="text-green-600">${fmtPrice(item.tp1)}</b></p>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
+                    <div class="flex items-center p-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">
+                        <span class="text-xl mr-2">☕</span>
+                        <p class="text-sm">現有庫存無破線或達標（持有成本請於個股詳情卡輸入），請安心上班、維持紀律！</p>
                     </div>
                 `;
             }
 
             html += '</div>';
             container.innerHTML = html;
+
+            // 🆕 PR#173 review P2-2：將賣側清單掛載至指揮中心第 4 段「持倉停損/停利檢查」，
+            //    原獨立「盤前速覽」卡片退位為隱藏容器（消除買側重複）。
+            const acSlot = document.getElementById('ac-holdings-slot');
+            if (acSlot) acSlot.innerHTML = html;
         }
 
         async function loadDashboard() {
@@ -1917,6 +1889,14 @@
 
         const esc = escapeHTML;
 
+        // 🆕 PR#173 review P2-3：details 展開時觸發 resize，保險對策——
+        //    Chart.js ResizeObserver 在關閉的 <details> 內初始為 0 高度，
+        //    部分 CDN 版本不會自動修正，展開後手動派發 resize 事件讓圖表重算尺寸。
+        function bindDetailsResize() {
+            document.querySelectorAll('details').forEach(d =>
+                d.addEventListener('toggle', () => { if (d.open) window.dispatchEvent(new Event('resize')); }));
+        }
+
         // ========== 第一層：行動指揮中心（Issue #172：DCA 指令→5,000 派工→完美買點三段式）==========
         async function loadActionCenter() {
             const el = document.getElementById('action-center');
@@ -1935,18 +1915,33 @@
                 html += `<div class="ac-block"><p class="ac-title">1. 💼 投資組合與定期定額（${esc(dca.bond_mode_label || '')}）</p><ul>${auto}${man}</ul></div>`;
             }
             if (adv && adv.plan && adv.plan.length) {
+                // 🆕 PR#173 review P3-5：先判「買」再判賣，混合動作（如「停利鴻海➔買入00687B」）用 🔄，避免誤標 🔴
+                const iconOf = (label) => {
+                    const hasBuy = /買/.test(label);
+                    const hasSell = /停利|出清|賣/.test(label);
+                    return (hasBuy && hasSell) ? '🔄' : hasSell ? '🔴' : '🟢';
+                };
                 const items = adv.plan.map(p =>
-                    `<li>${/停利|出清|賣/.test(p.label) ? '🔴' : '🟢'}【${esc(p.market)}】${esc(p.label)} → $${(p.alloc || 0).toLocaleString()} <span class="text-gray-500 text-xs">(${esc(p.detail)})</span></li>`).join('');
+                    `<li>${iconOf(p.label || '')}【${esc(p.market)}】${esc(p.label)} → $${(p.alloc || 0).toLocaleString()} <span class="text-gray-500 text-xs">(${esc(p.detail)})</span></li>`).join('');
                 const warn = (adv.warnings || []).map(w => `<li class="text-red-600">⚠️ ${esc(w)}</li>`).join('');
                 html += `<div class="ac-block"><p class="ac-title">2. 💵 今日 ${(adv.capital || 5000).toLocaleString()} 元額度派工</p><ul>${items}${warn}</ul></div>`;
             } else if (adv) {
                 html += `<div class="ac-block"><p class="ac-title">2. 💵 今日額度派工</p><ul><li>今日無符合情境：全數持現金</li></ul></div>`;
+            } else {
+                // 🆕 PR#173 review P3-6：advice.json 抓取失敗時不再整段消失
+                html += `<div class="ac-block"><p class="ac-title">2. 💵 今日額度派工</p><ul><li class="text-gray-400">配置資料載入失敗（advice.json 無法讀取）</li></ul></div>`;
             }
-            const nows = (deep && deep.all_results || []).filter(r => r.trading_plan && r.trading_plan.entry_type === 'now');
+            // 🆕 PR#173 review P1-1：補上 PR#159 風控降級濾網——被降為「長線配置/短期觀望」的衝突訊號
+            //    不得在置頂指揮中心被標示為完美買點；並列建議徽章讓「AI 說觀望但價格在區間」一眼可辨。
+            const nows = (deep && deep.all_results || []).filter(r =>
+                r.trading_plan && r.trading_plan.entry_type === 'now' &&
+                r.signal_tag !== '長線配置/短期觀望');
             html += `<div class="ac-block"><p class="ac-title">3. 🎯 個股完美買點掛單（現價已落入區間）</p><ul>` +
                 (nows.length ? nows.map(r => { const t = r.trading_plan;
-                    return `<li>• <b>${esc(r.code)} ${esc(r.name)}</b> (現價 $${r.current_price}) ➜ 買入 ${t.entry_zone[0]}~${t.entry_zone[1]}｜停損 ${t.stop_loss}｜停利 ${t.take_profit_1}/${t.take_profit_2}</li>`;
+                    return `<li>• <b>${esc(r.code)} ${esc(r.name)}</b> (現價 $${r.current_price}) ➜ 買入 ${t.entry_zone[0]}~${t.entry_zone[1]}｜停損 ${t.stop_loss}｜停利 ${t.take_profit_1}/${t.take_profit_2} <span class="ml-1 px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-semibold">${esc(r.recommendation || '')}</span></li>`;
                 }).join('') : '<li>目前無個股落入買點區間，等待回踩訊號</li>') + `</ul></div>`;
+            // 🆕 PR#173 review P2-2：第 4 段「持倉停損/停利檢查」佔位——內容由 renderTodayActionList（賣側）注入
+            html += `<div class="ac-block"><p class="ac-title">4. 🛑 持倉停損/停利檢查（依瀏覽器記錄的持有成本）</p><div id="ac-holdings-slot"><p class="text-gray-400 text-sm">載入中...</p></div></div>`;
             el.innerHTML = html;
             const upEl = document.getElementById('ac-updated');
             if (upEl) upEl.innerText = '最後更新 ' + new Date().toLocaleTimeString('zh-TW', {hour:'2-digit',minute:'2-digit'});
@@ -1963,22 +1958,27 @@
             const stepperEl = document.getElementById('rate-stepper');
             if (stepperEl) {
                 const phase = (rc && rc.rate_cycle && rc.rate_cycle.phase) || '';
-                const idx = PHASES.findIndex(p => phase.startsWith(p));
+                let idx = PHASES.findIndex(p => phase.startsWith(p));
+                // 🆕 PR#173 review P3-1：中性盤整（idx=-1）時四點全灰無標示 → 標註「未進入利率週期」並用 neutral 樣式提示
+                const neutral = idx === -1;
+                if (neutral) idx = 0;
                 stepperEl.innerHTML =
-                    PHASES.map((p, i) => `<div class="step ${i === idx ? 'step-active' : i < idx ? 'step-done' : ''}">
+                    PHASES.map((p, i) => `<div class="step ${!neutral && i === idx ? 'step-active' : (!neutral && i < idx ? 'step-done' : (neutral && i === 0 ? 'step-neutral' : ''))}">
                         <div class="step-dot">${i + 1}</div><div class="step-label">${p}</div></div>${i < 3 ? '<div class="step-line"></div>' : ''}`).join('') +
-                    `<p class="text-xs text-gray-600 mt-2 w-full">目前：<b>${esc(phase || 'N/A')}</b>｜策略：${esc((rc && rc.rate_cycle && rc.rate_cycle.action) || '—')}</p>`;
+                    `<p class="text-xs text-gray-600 mt-2 w-full">目前：<b>${esc(phase || '未進入利率週期')}</b>｜策略：${esc((rc && rc.rate_cycle && rc.rate_cycle.action) || '—')}</p>`;
             }
 
             if (dca && dca.roles && window.Chart) {
                 const donut = document.getElementById('dca-donut');
                 if (donut) {
                     if (window.dcaDonut) window.dcaDonut.destroy();
+                    // 🆕 PR#173 review P3-4：顏色依 role 映射，不再硬編碼陣列順序
+                    const ROLE_COLORS = { growth: '#3b82f6', income: '#22c55e', rate_bet: '#f59e0b', reserve: '#94a3b8' };
                     window.dcaDonut = new Chart(donut, {
                         type: 'doughnut',
                         data: { labels: dca.roles.map(r => r.name),
                                 datasets: [{ data: dca.roles.map(r => r.final_amount),
-                                             backgroundColor: ['#3b82f6', '#22c55e', '#f59e0b', '#94a3b8'] }] },
+                                             backgroundColor: dca.roles.map(r => ROLE_COLORS[r.role] || '#cbd5e1') }] },
                         options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } } } });
                 }
             }
@@ -2015,7 +2015,50 @@
                 <div class="ruler-labels"><span>停損 ${lo}</span><span>區間 ${z1}~${z2}</span><span>停利 ${hi}</span></div>`;
         }
         let activeTab = 'now';
+        // 🆕 PR#173 review P3-2：Tab 異步渲染代幣——快速切 Tab 時舊請求完成後比對 token，過期即作廢回寫
+        let __tabRenderToken = 0;
         function switchTab(k) { activeTab = k; renderSniperTabs(window.__deep || { all_results: [] }); }
+        // 🆕 PR#173 review P1-2：詳情卡共用 builder（價格地圖／買入操作指引／賣的策略），
+        //    接進狙擊看板可展開列，取代隨舊表格消失的 #121 三張卡。
+        function renderDetailCards(r) {
+            const tp = r.trading_plan;
+            const priceChartCard = (tp && tp.entry_type !== 'none' && Array.isArray(tp.entry_zone)) ? `
+                <div class="bg-white p-3 rounded border">
+                    <h5 class="text-sm font-bold mb-2">📊 價格地圖</h5>
+                    <canvas id="price-chart-${r.code}" class="w-full" style="height:120px;"></canvas>
+                    <div class="mt-2 flex flex-wrap gap-2 text-[11px] text-gray-600">
+                        <span>🔵 現價 ${fmtNum(r.current_price)}</span>
+                        <span>🟢 買點 ${fmtNum(tp.entry_zone[0])}~${fmtNum(tp.entry_zone[1])}</span>
+                        <span>🔴 停損 ${fmtNum(tp.stop_loss)}</span>
+                        <span>🟡 +10% ${fmtNum(tp.take_profit_1)}</span>
+                        <span>🟢 +20% ${fmtNum(tp.take_profit_2)}</span>
+                    </div>
+                </div>` : '';
+            const exitCard = (tp && tp.exit_strategy) ? `
+                <div class="bg-white p-3 rounded border"><h5 class="text-sm font-bold mb-2">💰 賣的策略</h5>${renderExitStrategy(r)}</div>` : '';
+            return `<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                ${priceChartCard}
+                <div class="bg-white p-3 rounded border"><h5 class="text-sm font-bold mb-2">📌 買入操作指引</h5>${renderActionGuide(r)}</div>
+                ${exitCard}
+            </div>`;
+        }
+        // 🆕 展開/收合詳情列；展開時延遲繪製價格地圖 Canvas（复用既有世代計數器防競態）
+        function toggleSniperDetail(code) {
+            const row = document.getElementById('sniper-detail-' + code);
+            if (!row) return;
+            row.classList.toggle('hidden');
+            if (!row.classList.contains('hidden')) {
+                const r = ((window.__deep || {}).all_results || []).find(x => String(x.code) === String(code));
+                if (r && r.trading_plan) {
+                    const thisGeneration = ++__tableRenderGeneration;
+                    setTimeout(() => {
+                        if (thisGeneration !== __tableRenderGeneration) return;
+                        const canvas = document.getElementById('price-chart-' + code);
+                        if (canvas) renderPriceChart(canvas, r.trading_plan, r.current_price);
+                    }, 50);
+                }
+            }
+        }
         function renderSniperTabs(deep) {
             const g = { now: [], wait: [], avoid: [] };
             (deep.all_results || []).forEach(r => g[classify(r)].push(r));
@@ -2030,18 +2073,23 @@
             if (activeTab === 'us') return renderUsTab(body);
             const rows = g[activeTab];
             body.innerHTML = rows.length ? `<table class="min-w-full text-sm"><thead><tr class="text-gray-500 text-xs">
-                <th class="text-left">股票</th><th>現價/MA20</th><th>EV</th><th>建議</th><th class="w-64">進場尺規（停損→區間→停利）</th><th>狀態</th></tr></thead><tbody>` +
+                <th class="text-left">股票</th><th>現價/MA20</th><th>EV</th><th>建議</th><th class="w-64">進場尺規（停損→區間→停利）</th><th>狀態</th><th></th></tr></thead><tbody>` +
                 rows.map(r => `<tr class="border-t"><td class="py-2"><b>${esc(r.code)}</b> ${esc(r.name)}</td>
                     <td>$${r.current_price} / ${r.ma20}</td>
                     <td class="font-bold ${(r.ev_score||0)>=70?'text-green-600':(r.ev_score||0)<40?'text-red-600':''}">${r.ev_score}</td>
                     <td>${esc(r.recommendation)}</td><td>${renderRuler(r.trading_plan, r.current_price)}</td>
-                    <td class="text-xs">${esc((r.trading_plan || {}).status || '—')}</td></tr>`).join('') + '</tbody></table>'
+                    <td class="text-xs">${esc((r.trading_plan || {}).status || '—')}</td>
+                    <td><button onclick="toggleSniperDetail('${esc(String(r.code))}')" class="text-xs text-blue-600 hover:underline whitespace-nowrap">🔍 詳情</button></td></tr>
+                <tr id="sniper-detail-${esc(String(r.code))}" class="hidden"><td colspan="7" class="p-3 bg-gray-50">${renderDetailCards(r)}</td></tr>`).join('') + '</tbody></table>'
                 : '<p class="text-gray-500 text-sm p-4">此分類目前無標的</p>';
         }
         async function renderUsTab(body) {
+            const token = ++__tabRenderToken;
             const [us, vc] = await Promise.all([
                 fetchJSON('data/us_candidates.json').catch(() => null),
                 fetchJSON('data/value_candidates.json').catch(() => null)]);
+            // 🆕 PR#173 review P3-2：await 期間若已切換 Tab（token 過期或 activeTab 非 us），丟棄本次回寫
+            if (token !== __tabRenderToken || activeTab !== 'us') return;
             const rows = (us && us.candidates || []).map(c => `<tr class="border-t"><td class="py-2"><b>${esc(c.symbol)}</b></td><td>$${c.price}</td><td>${esc(c.scenario)}</td><td>${esc(c.recommendation || '')}</td><td class="text-xs">${esc(c.stop_loss || '')}</td></tr>`).join('');
             const etfs = (vc && vc.etf_monitor || []).map(b => `<tr class="border-t"><td class="py-2"><b>${esc(b.symbol)}</b></td><td>$${b.price}</td><td>${esc(b.strategy || '')}</td><td>${b.bias_ma200_pct > 0 ? '+' : ''}${b.bias_ma200_pct}%</td><td class="text-xs">RSI ${b.rsi14}</td></tr>`).join('');
             body.innerHTML = `<table class="min-w-full text-sm"><thead><tr class="text-gray-500 text-xs"><th class="text-left">標的</th><th>價格</th><th>情境/策略</th><th>建議/乖離</th><th>停損/RSI</th></tr></thead><tbody>${rows}${etfs}</tbody></table>`;
@@ -2334,6 +2382,7 @@
         // 🟠 P1 修正：使用安全的事件監聽器綁定，避免覆寫常數變數
         // 🆕 Issue #172：初始化重接——遵循「行動→視覺→標的→除錯」四層注意力漏斗順序
         document.addEventListener('DOMContentLoaded', async () => {
+            bindDetailsResize();                                        // 🆕 PR#173 review P2-3：details 展開時 resize 保險
             await loadActionCenter();                                   // 第一層：行動指揮中心優先
             await loadMacroVisuals();                                   // 第二層：Stepper／Donut／乖離條
             const deep = await fetchJSON('data/deep_analysis.json').catch(() => null);

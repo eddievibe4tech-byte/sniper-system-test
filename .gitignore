@@ -1,1 +1,9 @@
+# Python compiled files
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# Temp
 .tmp/
