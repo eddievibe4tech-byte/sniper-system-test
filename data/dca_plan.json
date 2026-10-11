@@ -1,66 +1,94 @@
 {
-  "updated_at": "2026-10-11T10:57:44.849884+08:00",
+  "updated_at": "2026-10-11T11:10:20.261157+08:00",
   "monthly_budget": 10000,
   "phase": "Phase 4: 通膨反撲 / 流動性風險",
-  "bond_mode": "stop_reserve(停扣轉活存)",
   "bond_multiplier": 0.0,
+  "bond_mode_label": "定期暫停，轉存活存",
+  "action_items": {
+    "auto_dca": [
+      {
+        "code": "00981",
+        "action": "維持正常扣款（$4,750）"
+      },
+      {
+        "code": "00878",
+        "action": "維持正常扣款（$3,000）"
+      },
+      {
+        "code": "00687B",
+        "action": "暫停扣款（App 內點選暫停）"
+      }
+    ],
+    "manual": [
+      {
+        "code": "00687B",
+        "action": "手動買進",
+        "amount": 6750,
+        "detail": "動用活存備用金，手動下單「00687B 盤中零股」約 $6,750（約 86 股）"
+      }
+    ]
+  },
+  "signal": {
+    "triggered": true,
+    "plain": "美債跌破年線 -6.67%（已達波段超跌甜蜜點，適合進場撿便宜）；通膨反撲期，債價承壓＝低接時機",
+    "technical": "乖離 MA200 -6.67%"
+  },
   "roles": [
     {
       "role": "growth",
       "code": "00981",
       "name": "凱基TOP50(進攻)",
       "pct": 0.475,
+      "base_amount": 4750,
+      "final_amount": 4750,
       "days": [
         6,
         20
       ],
-      "base_amount": 4750,
-      "final_amount": 4750,
-      "per_day": 2375
+      "per_day": 2375,
+      "status": "normal",
+      "status_label": "正常扣款"
     },
     {
       "role": "income",
       "code": "00878",
       "name": "國泰永續高股息(收息)",
       "pct": 0.3,
+      "base_amount": 3000,
+      "final_amount": 3000,
       "days": [
         6,
         20
       ],
-      "base_amount": 3000,
-      "final_amount": 3000,
-      "per_day": 1500
+      "per_day": 1500,
+      "status": "normal",
+      "status_label": "正常扣款"
     },
     {
       "role": "rate_bet",
       "code": "00687B",
       "name": "國泰20年美債(降息博弈)",
       "pct": 0.175,
-      "days": [
-        6,
-        16,
-        26
-      ],
       "base_amount": 1750,
       "final_amount": 0,
-      "per_day": 0
+      "days": [],
+      "per_day": 0,
+      "status": "paused",
+      "status_label": "⏸ 暫停中"
     },
     {
       "role": "reserve",
       "code": "CASH",
       "name": "高利活存(銀彈)",
       "pct": 0.05,
-      "days": [],
       "base_amount": 500,
       "final_amount": 2250,
-      "per_day": 0
+      "days": [],
+      "per_day": 0,
+      "status": "reserve",
+      "status_label": "留存活存備用"
     }
   ],
-  "dip_buy_signal": {
-    "triggered": true,
-    "reason": "00687B 乖離 MA200 達 -6.67%，波段低檔；利率週期 Phase4 通膨反撲，債價承壓即低接時機",
-    "suggested_amount": 6750
-  },
   "calendar": [
     {
       "day": 6,
@@ -72,19 +100,6 @@
         {
           "code": "00878",
           "amount": 1500
-        },
-        {
-          "code": "00687B",
-          "amount": 0
-        }
-      ]
-    },
-    {
-      "day": 16,
-      "items": [
-        {
-          "code": "00687B",
-          "amount": 0
         }
       ]
     },
@@ -100,17 +115,9 @@
           "amount": 1500
         }
       ]
-    },
-    {
-      "day": 26,
-      "items": [
-        {
-          "code": "00687B",
-          "amount": 0
-        }
-      ]
     }
   ],
+  "calendar_note": "00687B 已暫停，6號、16號、26號本月不扣款",
   "bond_technical": {
     "price": 77.98,
     "bias_ma200_pct": -6.67,

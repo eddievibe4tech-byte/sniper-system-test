@@ -950,6 +950,20 @@ jobs:
 
 ## 版本資訊
 
+### v2.6.0（2026-10-11）
+
+**🔄 DCA Allocator 白話化重構 — 先給動作、再給理由、最後給數據**
+
+針對 v2.5.0 DCA 卡片的三個盲點進行前後端重構：
+
+1. **停扣時動態清空扣款日（解決日曆衝突）**：`bond_mult == 0` 時 `days=[]`，日曆自動過濾 00687B（不再出現「月扣 $0 但日曆仍列 6/16/26」的資訊打架），並產出 `calendar_note`（如「00687B 已暫停，6號、16號、26號本月不扣款」）。
+2. **新增 `action_items` 置頂動作清單**：定期（`auto_dca`：暫停／維持扣款）與手動（`manual`：低接觸發時的零股下單金額與股數）分離，前端黃色「⚡ 今日操作指南」置頂；無訊號時顯示「本月無需單筆突擊」。
+3. **所有狀態改為白話文案**：`MODE_LABEL` 取代工程師代碼（`stop_reserve(乘數 0x)` → 「定期暫停，轉存活存」）；新增 `plain_signal()` 把技術數據翻譯成人話（如「美債跌破年線 -6.67%（已達波段超跌甜蜜點，適合進場撿便宜）」）。
+
+**其他變更**
+- `src/dca_allocator.py`：輸出 schema 改版 — `bond_mode`→`bond_mode_label`、`dip_buy_signal`→`signal`＋`action_items`，`roles` 新增 `status`／`status_label`。
+- `index.html`：`loadDCA()` 改為兩層式版面（⚡ 今日操作指南置頂＋📊 背景資產狀態），停扣標的顯示「⏸ 暫停中」、扣款日顯示「—」。
+
 ### v2.5.0（2026-10-11）
 
 **🆕 定期定額配置引擎 (DCA Allocator) — `src/dca_allocator.py`**

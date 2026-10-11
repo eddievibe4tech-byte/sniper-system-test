@@ -27,7 +27,13 @@ PORTFOLIO = [
 
 # 利率週期 → 債券扣款乘數（半額+低接為防守預設）
 BOND_MULT = {"Phase 1": 1.0, "Phase 2": 1.5, "Phase 3": 0.5, "Phase 4": 0.0, "中性盤整": 0.5}
-MODE_NAME = {1.0: "full(全額)", 1.5: "boost(加碼)", 0.5: "half_split(半額+活存低接)", 0.0: "stop_reserve(停扣轉活存)"}
+# 白話模式文案（取代工程師代碼）
+MODE_LABEL = {
+    1.0: "全額扣款，正常佈局",
+    1.5: "加碼扣款，降息確認",
+    0.5: "半額扣款，其餘轉活存",
+    0.0: "定期暫停，轉存活存",      # 🔴 取代 stop_reserve(乘數 0x)
+}
 
 
 def load_json(p, default):
@@ -57,6 +63,21 @@ def fetch_bond_technical(tw_code, rate_data):
     return {}
 
 
+def plain_signal(tech: dict, phase_key: str) -> str:
+    """🟢 把技術數據翻譯成人話結論"""
+    msgs = []
+    bias = tech.get("bias_ma200_pct")
+    if bias is not None and bias < -3:
+        msgs.append(f"美債跌破年線 {bias}%（已達波段超跌甜蜜點，適合進場撿便宜）")
+    elif bias is not None and bias > 5:
+        msgs.append(f"美債高於年線 +{bias}%（偏貴，暫不加碼）")
+    if tech.get("at_60d_low"):
+        msgs.append("觸及 60 日新低，市場恐慌錯殺")
+    if phase_key == "Phase 4":
+        msgs.append("通膨反撲期，債價承壓＝低接時機")
+    return "；".join(msgs) or "未觸發低接，維持紀律扣款"
+
+
 def run_dca_allocator(monthly_budget: int = 10000):
     logging.basicConfig(level=logging.INFO)
     rate = load_json(DATA_DIR / "rate_cycle.json", {})
@@ -66,47 +87,66 @@ def run_dca_allocator(monthly_budget: int = 10000):
 
     bond = next(r for r in PORTFOLIO if r["role"] == "rate_bet")
     tech = fetch_bond_technical(bond["tw"], rate)
+    price = tech.get("price") or 0
 
-    # 🟢 低接燈號：乖離<-3% 或 60日新低 或 Phase4 → 觸發
-    dip, reasons = False, []
-    if tech.get("bias_ma200_pct", 0) < -3:
-        dip, _ = True, reasons.append(f"00687B 乖離 MA200 達 {tech['bias_ma200_pct']}%，波段低檔")
-    if tech.get("at_60d_low"):
-        dip, _ = True, reasons.append("00687B 觸及 60 日新低，恐慌錯殺")
-    if key == "Phase 4":
-        dip, _ = True, reasons.append("利率週期 Phase4 通膨反撲，債價承壓即低接時機")
+    # 低接燈號
+    dip = (tech.get("bias_ma200_pct", 0) < -3) or tech.get("at_60d_low", False) or (key == "Phase 4")
 
-    roles, calendar, bond_saved = [], {}, 0.0
+    roles, calendar, bond_saved, paused_notes = [], {}, 0.0, []
     for r in PORTFOLIO:
         base = monthly_budget * r["pct"]
+        orig_days = list(r["days"])
+
         if r["role"] == "rate_bet":
             final = base * bond_mult
-            bond_saved = base - final          # 債券省下的轉活存
+            bond_saved = base - final
+            if bond_mult == 0:                      # 🔴 停扣：清空扣款日，日曆自動過濾
+                days, status, status_label = [], "paused", "⏸ 暫停中"
+                paused_notes.append(f"{r['code']} 已暫停，{'、'.join(str(d)+'號' for d in orig_days)}本月不扣款")
+            else:
+                days, status, status_label = orig_days, "normal", "正常扣款"
         elif r["role"] == "reserve":
-            final = base + bond_saved          # 銀彈＝基礎＋債券省下
+            final, days, status, status_label = base + bond_saved, [], "reserve", "留存活存備用"
         else:
-            final = base
-        per_day = round(final / len(r["days"])) if r["days"] else 0
-        roles.append({**{k: r[k] for k in ("role", "code", "name", "pct", "days")},
-                      "base_amount": round(base), "final_amount": round(final), "per_day": per_day})
-        for d in r["days"]:
+            final, days, status, status_label = base, orig_days, "normal", "正常扣款"
+
+        per_day = round(final / len(days)) if days else 0
+        roles.append({"role": r["role"], "code": r["code"], "name": r["name"], "pct": r["pct"],
+                      "base_amount": round(base), "final_amount": round(final),
+                      "days": days, "per_day": per_day, "status": status, "status_label": status_label})
+        for d in days:                              # 🟢 只有未暫停的標的會進日曆
             calendar.setdefault(d, []).append({"code": r["code"], "amount": per_day})
+
+    # 🟢 置頂動作清單：定期 vs 手動 分離
+    auto_dca = [{"code": x["code"],
+                 "action": "暫停扣款（App 內點選暫停）" if x["status"] == "paused"
+                           else f"維持正常扣款（${x['final_amount']:,}）"}
+                for x in roles if x["role"] != "reserve"]
+    manual = []
+    if dip:
+        amt = round((monthly_budget * 0.05 + bond_saved) * 3)
+        shares = int(amt // price) if price else None
+        manual.append({"code": bond["code"], "action": "手動買進", "amount": amt,
+                       "detail": f"動用活存備用金，手動下單「{bond['code']} 盤中零股」約 ${amt:,}"
+                                 + (f"（約 {shares} 股）" if shares else "")})
 
     result = {
         "updated_at": datetime.now(TZ).isoformat(),
         "monthly_budget": monthly_budget,
         "phase": phase,
-        "bond_mode": MODE_NAME.get(bond_mult, "half_split(半額+活存低接)"),
         "bond_multiplier": bond_mult,
+        "bond_mode_label": MODE_LABEL.get(bond_mult, "半額扣款，其餘轉活存"),
+        "action_items": {"auto_dca": auto_dca, "manual": manual},
+        "signal": {"triggered": dip, "plain": plain_signal(tech, key),
+                   "technical": f"乖離 MA200 {tech.get('bias_ma200_pct')}%"},
         "roles": roles,
-        "dip_buy_signal": {"triggered": dip, "reason": "；".join(reasons) or "未觸發，維持紀律扣款",
-                           "suggested_amount": round((monthly_budget * 0.05 + bond_saved) * 3)},
         "calendar": [{"day": d, "items": v} for d, v in sorted(calendar.items())],
+        "calendar_note": "；".join(paused_notes),
         "bond_technical": tech,
     }
     DATA_DIR.mkdir(exist_ok=True)
     (DATA_DIR / "dca_plan.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-    logger.info("✅ DCA 計畫產出：債券模式=%s，低接燈號=%s", result["bond_mode"], "🟢觸發" if dip else "⚪未觸發")
+    logger.info("✅ DCA 產出：模式=%s｜低接=%s", result["bond_mode_label"], dip)
 
 
 if __name__ == "__main__":

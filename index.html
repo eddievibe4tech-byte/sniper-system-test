@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎯 狙擊手系統 Dashboard v2.5.0</title>
+    <title>🎯 狙擊手系統 Dashboard v2.6.0</title>
     <!-- 建議未來改用編譯好的 CSS 檔案，目前保留 Play CDN 方便開發 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -2221,24 +2221,54 @@
         });
 
         // 💰 載入定期定額配置引擎（data/dca_plan.json，DCA Allocator）
+        // 兩層式版面：⚡ 今日操作指南（置頂）＋ 📊 背景資產狀態
         async function loadDCA() {
             const el = document.getElementById('dca-card');
             if (!el) return;
             try {
-                const res = await fetch(BASE + 'data/dca_plan.json?v=' + Date.now());
-                if (!res.ok) throw new Error(res.status);
-                const d = await res.json();
-                const dip = d.dip_buy_signal || {};
+                const d = await (await fetch(BASE + 'data/dca_plan.json?v=' + Date.now())).json();
+                const ai = d.action_items || { auto_dca: [], manual: [] };
+
+                // ⚡ 層一：今日操作指南（定期 / 手動 分離）
+                const autoHtml = ai.auto_dca.map(a =>
+                    `<li>【定期定額】<b>${escapeHTML(a.code)}</b>：${escapeHTML(a.action)}</li>`).join('');
+                const manualHtml = ai.manual.length
+                    ? ai.manual.map(m => `<li>【手動買進】<b>${escapeHTML(m.code)}</b>：${escapeHTML(m.detail)}</li>`).join('')
+                    : '<li>【手動買進】無（本月無需單筆突擊，維持紀律扣款）</li>';
+
+                // 📊 層二：表格（停扣顯示 ⏸、拆單日顯示 —）
+                const rows = d.roles.map(r => `<tr>
+                    <td class="text-left">${escapeHTML(r.name)}</td>
+                    <td>${(r.pct * 100).toFixed(1)}%</td>
+                    <td>${r.status === 'paused' ? '<span class="text-gray-500">⏸ 暫停中</span>'
+                         : r.status === 'reserve' ? '<span class="text-gray-500">留存活存</span>'
+                         : '$' + r.final_amount.toLocaleString()}</td>
+                    <td>${r.days && r.days.length ? r.days.map(x => x + '號').join('、') : '—'}</td>
+                  </tr>`).join('');
+
+                // 📅 日曆（已過濾停扣標的）
+                const calHtml = d.calendar.map(c =>
+                    `<li>${c.day}號：${c.items.map(i => `${escapeHTML(i.code)} ($${i.amount.toLocaleString()})`).join(' + ')}</li>`).join('');
+
                 el.innerHTML = `
-                    <div class="flex justify-between mb-3"><b>利率週期：${escapeHTML(d.phase)}</b>
-                        <span class="px-2 py-1 rounded text-xs font-bold ${dip.triggered ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-700'}">
-                            低接燈號 ${dip.triggered ? '🟢 觸發' : '⚪ 未觸發'}</span></div>
-                    <p class="text-sm mb-2">債券模式：<b>${escapeHTML(d.bond_mode)}</b>（乘數 ${d.bond_multiplier}x）｜${escapeHTML(dip.reason)}</p>
-                    <table class="w-full text-sm mb-3"><tr class="text-gray-500 text-xs"><th>角色</th><th>比例</th><th>月扣</th><th>拆單日</th></tr>
-                        ${d.roles.map(r => `<tr><td>${escapeHTML(r.name)}</td><td>${(r.pct * 100).toFixed(1)}%</td><td>$${r.final_amount}</td><td>${r.days.join('/') || '—'}</td></tr>`).join('')}
-                    </table>
-                    <p class="text-xs text-gray-600">📅 扣款日曆：${d.calendar.map(c => `${c.day}號(${c.items.map(i => i.code).join('+')})`).join('、')}</p>
-                    ${dip.triggered ? `<p class="mt-2 text-sm font-bold text-green-700">💡 建議動用活存銀彈單筆加碼約 $${dip.suggested_amount}</p>` : ''}`;
+                  <div class="mb-3 p-3 rounded bg-yellow-50 border border-yellow-300">
+                    <p class="font-bold text-yellow-900 mb-1">⚡ 今日操作指南（券商 App）</p>
+                    <ul class="text-sm text-yellow-900 list-disc ml-5">${autoHtml}${manualHtml}</ul>
+                  </div>
+                  <div class="border-t pt-3 mb-3">
+                    <p class="text-sm mb-1">📊 週期與模式：<b>${escapeHTML(d.phase)}</b>｜債券：<b>${escapeHTML(d.bond_mode_label)}</b>
+                      <span class="ml-2 px-2 py-0.5 rounded text-xs font-bold ${d.signal.triggered ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-700'}">
+                        ${d.signal.triggered ? '🟢 觸發跌深低接' : '⚪ 未觸發'}</span></p>
+                    <p class="text-xs text-gray-600">💡 ${escapeHTML(d.signal.plain)}</p>
+                  </div>
+                  <p class="text-sm font-semibold mb-1">【常態月扣規劃（每月 $${d.monthly_budget.toLocaleString()}）】</p>
+                  <table class="w-full text-sm mb-2">
+                    <thead><tr class="text-gray-500 text-xs"><th class="text-left">標的角色</th><th>比例</th><th>本月扣款</th><th>扣款日</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                  </table>
+                  <p class="text-xs font-semibold mb-1">📅 本月自動扣款日曆：</p>
+                  <ul class="text-xs text-gray-600 list-disc ml-5">${calHtml}</ul>
+                  ${d.calendar_note ? `<p class="text-xs text-gray-500 mt-1">（${escapeHTML(d.calendar_note)}）</p>` : ''}`;
             } catch (e) {
                 console.warn('DCA 載入失敗:', e);
                 el.innerHTML = '<p class="text-red-500 text-sm">DCA 資料載入失敗</p>';
