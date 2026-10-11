@@ -1,0 +1,120 @@
+{
+  "updated_at": "2026-10-11T10:57:44.849884+08:00",
+  "monthly_budget": 10000,
+  "phase": "Phase 4: 通膨反撲 / 流動性風險",
+  "bond_mode": "stop_reserve(停扣轉活存)",
+  "bond_multiplier": 0.0,
+  "roles": [
+    {
+      "role": "growth",
+      "code": "00981",
+      "name": "凱基TOP50(進攻)",
+      "pct": 0.475,
+      "days": [
+        6,
+        20
+      ],
+      "base_amount": 4750,
+      "final_amount": 4750,
+      "per_day": 2375
+    },
+    {
+      "role": "income",
+      "code": "00878",
+      "name": "國泰永續高股息(收息)",
+      "pct": 0.3,
+      "days": [
+        6,
+        20
+      ],
+      "base_amount": 3000,
+      "final_amount": 3000,
+      "per_day": 1500
+    },
+    {
+      "role": "rate_bet",
+      "code": "00687B",
+      "name": "國泰20年美債(降息博弈)",
+      "pct": 0.175,
+      "days": [
+        6,
+        16,
+        26
+      ],
+      "base_amount": 1750,
+      "final_amount": 0,
+      "per_day": 0
+    },
+    {
+      "role": "reserve",
+      "code": "CASH",
+      "name": "高利活存(銀彈)",
+      "pct": 0.05,
+      "days": [],
+      "base_amount": 500,
+      "final_amount": 2250,
+      "per_day": 0
+    }
+  ],
+  "dip_buy_signal": {
+    "triggered": true,
+    "reason": "00687B 乖離 MA200 達 -6.67%，波段低檔；利率週期 Phase4 通膨反撲，債價承壓即低接時機",
+    "suggested_amount": 6750
+  },
+  "calendar": [
+    {
+      "day": 6,
+      "items": [
+        {
+          "code": "00981",
+          "amount": 2375
+        },
+        {
+          "code": "00878",
+          "amount": 1500
+        },
+        {
+          "code": "00687B",
+          "amount": 0
+        }
+      ]
+    },
+    {
+      "day": 16,
+      "items": [
+        {
+          "code": "00687B",
+          "amount": 0
+        }
+      ]
+    },
+    {
+      "day": 20,
+      "items": [
+        {
+          "code": "00981",
+          "amount": 2375
+        },
+        {
+          "code": "00878",
+          "amount": 1500
+        }
+      ]
+    },
+    {
+      "day": 26,
+      "items": [
+        {
+          "code": "00687B",
+          "amount": 0
+        }
+      ]
+    }
+  ],
+  "bond_technical": {
+    "price": 77.98,
+    "bias_ma200_pct": -6.67,
+    "at_60d_low": false,
+    "proxy": "TLT"
+  }
+}

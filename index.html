@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎯 狙擊手系統 Dashboard</title>
+    <title>🎯 狙擊手系統 Dashboard v2.5.0</title>
     <!-- 建議未來改用編譯好的 CSS 檔案，目前保留 Play CDN 方便開發 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -157,6 +157,12 @@
             <div id="rate-cycle-card" class="p-4 rounded-lg border-2 border-gray-200 bg-gray-50">
                 <p class="text-gray-400 text-sm">載入利率數據中...</p>
             </div>
+        </div>
+
+        <!-- 💰 定期定額配置引擎（鐵三角＋拆單日曆＋低接燈號） -->
+        <div class="bg-white border rounded-lg p-5 mb-6 shadow-sm">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">💰 定期定額配置引擎（鐵三角＋拆單日曆）</h2>
+            <div id="dca-card" class="p-4 rounded-lg border-2 border-blue-200 bg-blue-50"><p class="text-gray-400 text-sm">載入中...</p></div>
         </div>
 
         <!-- 💰 今日 5,000 元配置建議 -->
@@ -2210,7 +2216,34 @@
             await loadValueScreener();
             // 9. 🏦 載入美債降息週期引擎（Rate Cycle Engine）
             await loadRateCycle();
+            // 10. 💰 載入定期定額配置引擎（DCA Allocator：鐵三角＋拆單日曆＋低接燈號）
+            await loadDCA();
         });
+
+        // 💰 載入定期定額配置引擎（data/dca_plan.json，DCA Allocator）
+        async function loadDCA() {
+            const el = document.getElementById('dca-card');
+            if (!el) return;
+            try {
+                const res = await fetch(BASE + 'data/dca_plan.json?v=' + Date.now());
+                if (!res.ok) throw new Error(res.status);
+                const d = await res.json();
+                const dip = d.dip_buy_signal || {};
+                el.innerHTML = `
+                    <div class="flex justify-between mb-3"><b>利率週期：${escapeHTML(d.phase)}</b>
+                        <span class="px-2 py-1 rounded text-xs font-bold ${dip.triggered ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-700'}">
+                            低接燈號 ${dip.triggered ? '🟢 觸發' : '⚪ 未觸發'}</span></div>
+                    <p class="text-sm mb-2">債券模式：<b>${escapeHTML(d.bond_mode)}</b>（乘數 ${d.bond_multiplier}x）｜${escapeHTML(dip.reason)}</p>
+                    <table class="w-full text-sm mb-3"><tr class="text-gray-500 text-xs"><th>角色</th><th>比例</th><th>月扣</th><th>拆單日</th></tr>
+                        ${d.roles.map(r => `<tr><td>${escapeHTML(r.name)}</td><td>${(r.pct * 100).toFixed(1)}%</td><td>$${r.final_amount}</td><td>${r.days.join('/') || '—'}</td></tr>`).join('')}
+                    </table>
+                    <p class="text-xs text-gray-600">📅 扣款日曆：${d.calendar.map(c => `${c.day}號(${c.items.map(i => i.code).join('+')})`).join('、')}</p>
+                    ${dip.triggered ? `<p class="mt-2 text-sm font-bold text-green-700">💡 建議動用活存銀彈單筆加碼約 $${dip.suggested_amount}</p>` : ''}`;
+            } catch (e) {
+                console.warn('DCA 載入失敗:', e);
+                el.innerHTML = '<p class="text-red-500 text-sm">DCA 資料載入失敗</p>';
+            }
+        }
 
         // ⚡ 載入明日突破觀察表格
         async function loadSetup() {

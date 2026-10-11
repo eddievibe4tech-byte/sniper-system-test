@@ -63,6 +63,11 @@ jobs:
         run: |
           python -m src.macro_allocator || echo "⚠️ macro allocator 失敗（不中斷主流程）"
 
+      # 💰 定期定額配置引擎（DCA Allocator）：鐵三角配置＋拆單多日扣款＋半額扣款/活存低接，
+      #    讀取 rate_cycle.json 判斷債券乘數，產出 data/dca_plan.json 供前端 loadDCA() 讀取；失敗不中斷主流程。
+      - name: Run DCA Allocator (定期定額配置引擎)
+        run: python -m src.dca_allocator || echo "⚠️ DCA allocator failed"
+
       # ❌ 已刪除重複的 Generate Static Review Report 步驟（避免每天執行兩次分析）
 
       - name: Validate telemetry.json before commit
@@ -98,6 +103,8 @@ jobs:
           [ -f data/value_candidates.json ] && git add data/value_candidates.json || echo "⚠️ 無 value_candidates.json"
           # 🏦 Rate Cycle Engine 輸出：rate_cycle.json 必須 commit——前端 loadRateCycle() 直接 fetch 此檔
           [ -f data/rate_cycle.json ] && git add data/rate_cycle.json || echo "⚠️ 無 rate_cycle.json"
+          # 💰 DCA Allocator 輸出：dca_plan.json 必須 commit——前端 loadDCA() 直接 fetch 此檔（鐵三角＋拆單日曆＋低接燈號）
+          [ -f data/dca_plan.json ] && git add data/dca_plan.json || echo "⚠️ 無 dca_plan.json"
 
           git commit -m "🎯 Auto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
