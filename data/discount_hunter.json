@@ -1,0 +1,96 @@
+{
+  "updated_at": "2026-10-11T13:36:49.019777+08:00",
+  "targets": [
+    {
+      "symbol": "VOO",
+      "name": "S&P 500 ETF",
+      "current_price": 715.59,
+      "zones": {
+        "small_zone": [
+          690.54,
+          697.7
+        ],
+        "big_zone": [
+          665.5,
+          679.81
+        ],
+        "small_discount_pct": 3.0,
+        "big_discount_pct": 6.0
+      },
+      "proximity": {
+        "status": "⏳ 尚未特價",
+        "action": "繼續定期定額，耐心等待",
+        "proximity_pct": 2.5
+      },
+      "budget_allocation": {
+        "first_batch": 2500,
+        "hunt_reserve": 7500
+      },
+      "limit_order_suggestion": {
+        "small": "限價 $690.54~697.7",
+        "big": "限價 $665.5~679.81"
+      }
+    },
+    {
+      "symbol": "JPM",
+      "name": "摩根大通",
+      "current_price": 332.99,
+      "zones": {
+        "small_zone": [
+          321.34,
+          324.67
+        ],
+        "big_zone": [
+          303.02,
+          309.68
+        ],
+        "small_discount_pct": 3.0,
+        "big_discount_pct": 8.0
+      },
+      "proximity": {
+        "status": "⏳ 尚未特價",
+        "action": "繼續定期定額，耐心等待",
+        "proximity_pct": 2.5
+      },
+      "budget_allocation": {
+        "first_batch": 2500,
+        "hunt_reserve": 7500
+      },
+      "limit_order_suggestion": {
+        "small": "限價 $321.34~324.67",
+        "big": "限價 $303.02~309.68"
+      }
+    },
+    {
+      "symbol": "EOG",
+      "name": "能源探勘",
+      "current_price": 148.16,
+      "zones": {
+        "small_zone": [
+          142.97,
+          144.46
+        ],
+        "big_zone": [
+          134.83,
+          137.79
+        ],
+        "small_discount_pct": 3.0,
+        "big_discount_pct": 8.0
+      },
+      "proximity": {
+        "status": "⏳ 尚未特價",
+        "action": "繼續定期定額，耐心等待",
+        "proximity_pct": 2.5
+      },
+      "budget_allocation": {
+        "first_batch": 2500,
+        "hunt_reserve": 7500
+      },
+      "limit_order_suggestion": {
+        "small": "限價 $142.97~144.46",
+        "big": "限價 $134.83~137.79"
+      }
+    }
+  ],
+  "strategy_note": "二八分批法：20-30% 先進場避免踏空，70-80% 留作特價狩獵金"
+}

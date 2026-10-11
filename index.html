@@ -70,6 +70,13 @@
             <div id="action-center" class="space-y-3"><p class="text-gray-400 text-sm">載入今日指令中...</p></div>
         </section>
 
+        <!-- 🎯 特價獵人引擎 -->
+        <section class="bg-white border-2 border-orange-400 rounded-xl p-5 mb-6 shadow">
+            <h2 class="text-xl font-bold text-gray-800 mb-3">🎯 特價獵人引擎 <span class="text-xs font-normal text-gray-500">（二八分批法）</span></h2>
+            <p class="text-xs text-gray-600 mb-4">自動監控關注標的，計算特價區間（小特價 -3%、大特價 -6%~-8%），告訴你何時該出手。</p>
+            <div id="discount-hunter-card"><p class="text-gray-400 text-sm">載入特價數據中...</p></div>
+        </section>
+
         <!-- 📊 第二層：視覺化核心圖表 -->
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             <div class="bg-white border rounded-lg p-4">
@@ -2394,7 +2401,63 @@
             await loadRateCycle();
             await loadDCA();
             await loadValueScreener();
+            await loadDiscountHunter();
         });
+
+        // 🎯 特價獵人引擎（data/discount_hunter.json，Discount Hunter）
+        // 小特價 -3%／大特價 -6%~-8% 區間監控＋二八分批法資金配置與限價單建議
+        async function loadDiscountHunter() {
+            const el = document.getElementById('discount-hunter-card');
+            if (!el) return;
+            try {
+                const d = await (await fetch(BASE + 'data/discount_hunter.json?v=' + Date.now())).json();
+                if (!d.targets || d.targets.length === 0) {
+                    el.innerHTML = '<p class="text-gray-500 text-sm">無特價獵人數據</p>';
+                    return;
+                }
+
+                let html = '<div class="space-y-3">';
+                d.targets.forEach(t => {
+                    const prox = t.proximity;
+                    let bgColor = 'bg-gray-50 border-gray-200';
+                    if (prox.status.includes('已達大特價')) bgColor = 'bg-green-50 border-green-400';
+                    else if (prox.status.includes('已達小特價')) bgColor = 'bg-yellow-50 border-yellow-400';
+                    else if (prox.status.includes('接近')) bgColor = 'bg-orange-50 border-orange-300';
+
+                    html += `<div class="p-3 rounded-lg border-2 ${bgColor}">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <span class="font-bold text-lg">${escapeHTML(t.symbol)}</span>
+                                <span class="text-sm text-gray-600 ml-2">${escapeHTML(t.name)}</span>
+                            </div>
+                            <span class="text-xl font-bold">$${t.current_price}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs mb-2">
+                            <div><span class="text-gray-500">小特價 (-${t.zones.small_discount_pct}%):</span> <b>$${t.zones.small_zone[0]}~${t.zones.small_zone[1]}</b></div>
+                            <div><span class="text-gray-500">大特價 (-${t.zones.big_discount_pct}%):</span> <b>$${t.zones.big_zone[0]}~${t.zones.big_zone[1]}</b></div>
+                        </div>
+                        <div class="flex justify-between items-center border-t pt-2">
+                            <div>
+                                <span class="text-sm font-bold">${escapeHTML(prox.status)}</span>
+                                ${prox.proximity_pct > 0 ? `<span class="text-xs text-gray-500 ml-2">(距離特價 ${prox.proximity_pct}%)</span>` : ''}
+                            </div>
+                            <span class="text-xs text-blue-700">${escapeHTML(prox.action)}</span>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-600">
+                            💰 資金配置：先進場 $${t.budget_allocation.first_batch.toLocaleString()} (25%) ｜ 狩獵金 $${t.budget_allocation.hunt_reserve.toLocaleString()} (75%)
+                        </div>
+                        <div class="mt-1 text-xs text-gray-500">
+                            📋 掛單建議：${escapeHTML(t.limit_order_suggestion.small)} ｜ ${escapeHTML(t.limit_order_suggestion.big)}
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+                html += `<p class="text-xs text-gray-500 mt-3 italic">${escapeHTML(d.strategy_note)}</p>`;
+                el.innerHTML = html;
+            } catch (e) {
+                el.innerHTML = '<p class="text-red-500 text-sm">特價獵人載入失敗</p>';
+            }
+        }
 
         // 💰 載入定期定額配置引擎（data/dca_plan.json，DCA Allocator）
         // 兩層式版面：⚡ 今日操作指南（置頂）＋ 📊 背景資產狀態
