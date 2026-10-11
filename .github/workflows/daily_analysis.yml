@@ -68,6 +68,11 @@ jobs:
       - name: Run DCA Allocator (定期定額配置引擎)
         run: python -m src.dca_allocator || echo "⚠️ DCA allocator failed"
 
+      # 🎯 特價獵人引擎（Discount Hunter）：監控現價、計算小特價(-3%)/大特價(-6%~-8%)區間，
+      #    整合二八分批法給出進場建議，產出 data/discount_hunter.json 供前端 loadDiscountHunter() 讀取；失敗不中斷主流程。
+      - name: Run Discount Hunter (特價獵人引擎)
+        run: python -m src.discount_hunter || echo "⚠️ Discount hunter failed"
+
       # ❌ 已刪除重複的 Generate Static Review Report 步驟（避免每天執行兩次分析）
 
       - name: Validate telemetry.json before commit
@@ -105,6 +110,8 @@ jobs:
           [ -f data/rate_cycle.json ] && git add data/rate_cycle.json || echo "⚠️ 無 rate_cycle.json"
           # 💰 DCA Allocator 輸出：dca_plan.json 必須 commit——前端 loadDCA() 直接 fetch 此檔（鐵三角＋拆單日曆＋低接燈號）
           [ -f data/dca_plan.json ] && git add data/dca_plan.json || echo "⚠️ 無 dca_plan.json"
+          # 🎯 Discount Hunter 輸出：discount_hunter.json 必須 commit——前端 loadDiscountHunter() 直接 fetch 此檔（特價區間＋二八分批建議）
+          [ -f data/discount_hunter.json ] && git add data/discount_hunter.json || echo "⚠️ 無 discount_hunter.json"
 
           git commit -m "🎯 Auto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
