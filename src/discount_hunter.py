@@ -6,6 +6,7 @@
 """
 import json
 import logging
+import os
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List
@@ -73,7 +74,6 @@ def judge_proximity(price: float, zones: Dict) -> Dict:
     """判定現價與特價區間的距離"""
     small_high = zones["small_zone"][1]
     big_high = zones["big_zone"][1]
-    big_low = zones["big_zone"][0]
 
     if price <= big_high:
         status = "🟢 已達大特價"
@@ -84,7 +84,7 @@ def judge_proximity(price: float, zones: Dict) -> Dict:
         action = "動用 20-30% 資金分批買入"
         proximity_pct = 0.0
     else:
-        # 計算距離小特價上限的百分比
+        # 計算現價距離小特價上限的百分比距離：(現價 - 小特價上限) / 現價 × 100%
         dist_to_small = (price - small_high) / price * 100
         proximity_pct = round(dist_to_small, 1)
         if proximity_pct < 2.0:
@@ -97,9 +97,17 @@ def judge_proximity(price: float, zones: Dict) -> Dict:
     return {"status": status, "action": action, "proximity_pct": proximity_pct}
 
 
-def run_discount_hunter(budget: float = 10000):
+def run_discount_hunter(budget: float = None):
+    """執行特價獵人引擎
+
+    預算優先級：函式參數 > 環境變數 HUNT_BUDGET > 預設 10000
+    """
     logging.basicConfig(level=logging.INFO)
     logger.info("🎯 啟動特價獵人引擎...")
+
+    if budget is None:
+        budget = float(os.getenv("HUNT_BUDGET", "10000"))
+    logger.info(f"預算: ${budget:,.0f}")
 
     symbols = [t["symbol"] for t in HUNT_TARGETS]
     prices = fetch_current_prices(symbols)
@@ -144,7 +152,7 @@ def run_discount_hunter(budget: float = 10000):
     output = {
         "updated_at": datetime.now(TZ).isoformat(),
         "targets": results,
-        "strategy_note": "二八分批法：20-30% 先進場避免踏空，70-80% 留作特價狩獵金",
+        "strategy_note": "二八分批法：25% 先進場避免踏空，75% 留作特價狩獵金",
     }
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -154,4 +162,10 @@ def run_discount_hunter(budget: float = 10000):
 
 
 if __name__ == "__main__":
-    run_discount_hunter()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="🎯 特價獵人引擎 (Discount Hunter)")
+    parser.add_argument("--budget", type=float, default=None,
+                        help="總預算（優先於環境變數 HUNT_BUDGET，預設 10000）")
+    args = parser.parse_args()
+    run_discount_hunter(budget=args.budget)

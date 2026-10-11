@@ -2418,41 +2418,53 @@
 
                 let html = '<div class="space-y-3">';
                 d.targets.forEach(t => {
-                    const prox = t.proximity;
+                    // 防禦性編碼：各欄位缺失時降級顯示，不崩潰
+                    const prox = t.proximity || {};
+                    const zones = t.zones || {};
+                    const budget = t.budget_allocation || {};
+                    const limitOrder = t.limit_order_suggestion || {};
+
                     let bgColor = 'bg-gray-50 border-gray-200';
-                    if (prox.status.includes('已達大特價')) bgColor = 'bg-green-50 border-green-400';
-                    else if (prox.status.includes('已達小特價')) bgColor = 'bg-yellow-50 border-yellow-400';
-                    else if (prox.status.includes('接近')) bgColor = 'bg-orange-50 border-orange-300';
+                    if ((prox.status || '').includes('已達大特價')) bgColor = 'bg-green-50 border-green-400';
+                    else if ((prox.status || '').includes('已達小特價')) bgColor = 'bg-yellow-50 border-yellow-400';
+                    else if ((prox.status || '').includes('接近')) bgColor = 'bg-orange-50 border-orange-300';
 
                     html += `<div class="p-3 rounded-lg border-2 ${bgColor}">
                         <div class="flex justify-between items-start mb-2">
                             <div>
-                                <span class="font-bold text-lg">${escapeHTML(t.symbol)}</span>
-                                <span class="text-sm text-gray-600 ml-2">${escapeHTML(t.name)}</span>
+                                <span class="font-bold text-lg">${escapeHTML(t.symbol || '')}</span>
+                                <span class="text-sm text-gray-600 ml-2">${escapeHTML(t.name || '')}</span>
                             </div>
-                            <span class="text-xl font-bold">$${t.current_price}</span>
+                            <span class="text-xl font-bold">$${t.current_price || '-'}</span>
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-xs mb-2">
-                            <div><span class="text-gray-500">小特價 (-${t.zones.small_discount_pct}%):</span> <b>$${t.zones.small_zone[0]}~${t.zones.small_zone[1]}</b></div>
-                            <div><span class="text-gray-500">大特價 (-${t.zones.big_discount_pct}%):</span> <b>$${t.zones.big_zone[0]}~${t.zones.big_zone[1]}</b></div>
+                            <div><span class="text-gray-500">小特價 (-${zones.small_discount_pct || 0}%):</span> <b>$${zones.small_zone?.[0] ?? '-'}~${zones.small_zone?.[1] ?? '-'}</b></div>
+                            <div><span class="text-gray-500">大特價 (-${zones.big_discount_pct || 0}%):</span> <b>$${zones.big_zone?.[0] ?? '-'}~${zones.big_zone?.[1] ?? '-'}</b></div>
                         </div>
                         <div class="flex justify-between items-center border-t pt-2">
                             <div>
-                                <span class="text-sm font-bold">${escapeHTML(prox.status)}</span>
-                                ${prox.proximity_pct > 0 ? `<span class="text-xs text-gray-500 ml-2">(距離特價 ${prox.proximity_pct}%)</span>` : ''}
+                                <span class="text-sm font-bold">${escapeHTML(prox.status || '⏳ 尚未特價')}</span>
+                                ${(prox.proximity_pct || 0) > 0 ? `<span class="text-xs text-gray-500 ml-2">(距離特價 ${prox.proximity_pct}%)</span>` : ''}
                             </div>
-                            <span class="text-xs text-blue-700">${escapeHTML(prox.action)}</span>
+                            <span class="text-xs text-blue-700">${escapeHTML(prox.action || '繼續定期定額')}</span>
                         </div>
                         <div class="mt-2 text-xs text-gray-600">
-                            💰 資金配置：先進場 $${t.budget_allocation.first_batch.toLocaleString()} (25%) ｜ 狩獵金 $${t.budget_allocation.hunt_reserve.toLocaleString()} (75%)
+                            💰 資金配置：先進場 $${(budget.first_batch || 0).toLocaleString()} (25%) ｜ 狩獵金 $${(budget.hunt_reserve || 0).toLocaleString()} (75%)
                         </div>
                         <div class="mt-1 text-xs text-gray-500">
-                            📋 掛單建議：${escapeHTML(t.limit_order_suggestion.small)} ｜ ${escapeHTML(t.limit_order_suggestion.big)}
+                            📋 掛單建議：${escapeHTML(limitOrder.small || '-')} ｜ ${escapeHTML(limitOrder.big || '-')}
                         </div>
                     </div>`;
                 });
                 html += '</div>';
-                html += `<p class="text-xs text-gray-500 mt-3 italic">${escapeHTML(d.strategy_note)}</p>`;
+                html += `<p class="text-xs text-gray-500 mt-3 italic">${escapeHTML(d.strategy_note || '')}</p>`;
+                // P2-1：顯示資料更新時間，方便判斷數據是否過期
+                const updateTime = d.updated_at
+                    ? new Date(d.updated_at).toLocaleString('zh-TW', {
+                        month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
+                    })
+                    : '-';
+                html += `<p class="text-xs text-gray-400 mt-1">最後更新：${updateTime}</p>`;
                 el.innerHTML = html;
             } catch (e) {
                 el.innerHTML = '<p class="text-red-500 text-sm">特價獵人載入失敗</p>';
