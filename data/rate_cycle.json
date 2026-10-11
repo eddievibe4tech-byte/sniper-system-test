@@ -1,0 +1,33 @@
+{
+  "updated_at": "2026-10-11T10:04:28.697468+08:00",
+  "rate_cycle": {
+    "phase": "Phase 4: 通膨反撲 / 流動性風險",
+    "action": "🔴 減碼避險 / 暫停扣款",
+    "reasons": [
+      "10Y 殖利率回升至 5.24%，通膨壓力重現"
+    ]
+  },
+  "target_etf": {
+    "code": "00697B",
+    "name": "元大美債 7-10",
+    "price": "N/A",
+    "ma200": "N/A",
+    "bias_ma200_pct": "N/A"
+  },
+  "macro_data": {
+    "TLT": {
+      "price": 77.98,
+      "ma200": 83.55,
+      "above_ma200": false,
+      "bias_ma200_pct": -6.67
+    },
+    "TNX_10Y": {
+      "current": 5.24,
+      "avg_3m": 4.85,
+      "trend": "up"
+    },
+    "VIX": {
+      "current": 14.84
+    }
+  }
+}

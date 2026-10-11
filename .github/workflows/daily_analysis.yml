@@ -50,6 +50,11 @@ jobs:
         run: |
           python -m src.market_advisor || echo "⚠️ advisor 失敗（不中斷主流程）"
 
+      # 🏦 利率週期引擎（Rate Cycle Engine）：監控 10Y 殖利率 / TLT / 00697B / VIX，
+      #    產出 data/rate_cycle.json 供前端 loadRateCycle() 讀取；失敗不中斷主流程。
+      - name: Run Rate Cycle Screener (美債降息引擎)
+        run: python -m src.rate_cycle_screener || echo "⚠️ Rate cycle screener failed"
+
       # 🌍 宏觀資產配置引擎（Macro Allocator）：產出 data/macro_allocation.json 供前端 loadMacro() 讀取。
       #    失敗不中斷主流程；regime 狀態檔 macro_regime_state.json 屬本地髒檔，已在 .gitignore 排除、不回 commit。
       - name: Run Macro Allocator
@@ -91,6 +96,8 @@ jobs:
           # 🆕（#166）確保價值淘金引擎的產出被 commit——前端 loadValueScreener() 與
           #    market_advisor 資產搬家引擎都直接依賴此檔，漏 commit 會導致儀表板 404
           [ -f data/value_candidates.json ] && git add data/value_candidates.json || echo "⚠️ 無 value_candidates.json"
+          # 🏦 Rate Cycle Engine 輸出：rate_cycle.json 必須 commit——前端 loadRateCycle() 直接 fetch 此檔
+          [ -f data/rate_cycle.json ] && git add data/rate_cycle.json || echo "⚠️ 無 rate_cycle.json"
 
           git commit -m "🎯 Auto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main

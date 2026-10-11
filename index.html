@@ -144,6 +144,21 @@
             </div>
         </div>
 
+        <!-- 🏦 美債降息週期引擎 -->
+        <div class="bg-white border rounded-lg p-5 mb-6 shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800">🏦 美債降息週期引擎 (00697B / TLT)</h2>
+                    <p class="text-xs text-gray-500 mt-1">
+                        監控 10Y 殖利率與長債均線，判斷目前處於利率週期的哪一個階段，作為定期定額加減碼依據。
+                    </p>
+                </div>
+            </div>
+            <div id="rate-cycle-card" class="p-4 rounded-lg border-2 border-gray-200 bg-gray-50">
+                <p class="text-gray-400 text-sm">載入利率數據中...</p>
+            </div>
+        </div>
+
         <!-- 💰 今日 5,000 元配置建議 -->
         <div class="bg-white border rounded-lg p-4 mb-6">
             <h2 class="text-xl font-semibold mb-2">💰 今日 5,000 元配置建議</h2>
@@ -2193,6 +2208,8 @@
             await loadMacro();
             // 8. 載入跨市場 ETF 抄底雷達 & 價值淘金
             await loadValueScreener();
+            // 9. 🏦 載入美債降息週期引擎（Rate Cycle Engine）
+            await loadRateCycle();
         });
 
         // ⚡ 載入明日突破觀察表格
@@ -2268,6 +2285,75 @@
                 el.innerHTML = html + '</tbody></table>';
             } catch (e) {
                 el.innerHTML = '<p class="text-gray-500 text-center py-4">暫無美股數據（請先執行 Daily US Momentum）</p>';
+            }
+        }
+
+        // 🏦 載入美債降息週期引擎（data/rate_cycle.json，Rate Cycle Engine）
+        async function loadRateCycle() {
+            const el = document.getElementById('rate-cycle-card');
+            if (!el) return;
+            try {
+                const res = await fetch(BASE + 'data/rate_cycle.json?v=' + Date.now());
+                if (!res.ok) throw new Error('No data');
+                const d = await res.json();
+                const c = d.rate_cycle;
+                const etf = d.target_etf;
+
+                // 動態配色
+                let borderColor = 'border-gray-300 bg-gray-50';
+                let badgeColor = 'bg-gray-200 text-gray-800';
+                if (c.action.includes('加碼')) { borderColor = 'border-green-500 bg-green-50'; badgeColor = 'bg-green-600 text-white'; }
+                else if (c.action.includes('定期定額')) { borderColor = 'border-yellow-400 bg-yellow-50'; badgeColor = 'bg-yellow-500 text-white'; }
+                else if (c.action.includes('停止') || c.action.includes('領息')) { borderColor = 'border-orange-400 bg-orange-50'; badgeColor = 'bg-orange-500 text-white'; }
+                else if (c.action.includes('減碼') || c.action.includes('暫停')) { borderColor = 'border-red-500 bg-red-50'; badgeColor = 'bg-red-600 text-white'; }
+
+                el.className = `p-5 rounded-lg border-2 ${borderColor}`;
+
+                const reasonsHtml = c.reasons.map(r => `<li class="mb-1">• ${escapeHTML(r)}</li>`).join('');
+
+                el.innerHTML = `
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
+                        <div>
+                            <h3 class="text-xl font-black text-gray-800">${escapeHTML(c.phase)}</h3>
+                            <p class="text-sm text-gray-600 mt-1">目標標的：${escapeHTML(etf.name)} (${escapeHTML(etf.code)})</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block px-3 py-1 rounded-full text-sm font-bold ${badgeColor} mb-2">操作建議</span>
+                            <p class="text-lg font-bold text-gray-900">${escapeHTML(c.action)}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/60 p-3 rounded border border-gray-200 mb-4">
+                        <p class="text-sm font-semibold text-gray-700 mb-2">📊 宏觀判斷依據：</p>
+                        <ul class="text-sm text-gray-600 list-none ml-1">${reasonsHtml}</ul>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center border-t pt-3">
+                        <div class="p-2 bg-white rounded border">
+                            <p class="text-xs text-gray-500">10Y 殖利率</p>
+                            <p class="text-lg font-bold ${d.macro_data.TNX_10Y?.trend === 'down' ? 'text-green-600' : 'text-red-600'}">
+                                ${d.macro_data.TNX_10Y?.current || '-'}%
+                            </p>
+                        </div>
+                        <div class="p-2 bg-white rounded border">
+                            <p class="text-xs text-gray-500">TLT (長債)</p>
+                            <p class="text-lg font-bold">$${d.macro_data.TLT?.price || '-'}</p>
+                        </div>
+                        <div class="p-2 bg-white rounded border">
+                            <p class="text-xs text-gray-500">VIX 恐慌指數</p>
+                            <p class="text-lg font-bold">${d.macro_data.VIX?.current || '-'}</p>
+                        </div>
+                        <div class="p-2 bg-white rounded border">
+                            <p class="text-xs text-gray-500">00697B 乖離</p>
+                            <p class="text-lg font-bold ${etf.bias_ma200_pct < 0 ? 'text-green-600' : 'text-red-600'}">
+                                ${etf.bias_ma200_pct || '-'}%
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                console.warn('Rate Cycle 載入失敗:', e);
+                el.innerHTML = '<p class="text-red-500 text-sm text-center py-4">利率數據載入失敗 (可能為 API 限制)</p>';
             }
         }
 
