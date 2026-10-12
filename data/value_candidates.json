@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-11T08:24:48.164509+08:00",
+  "updated_at": "2026-10-12T08:26:24.537521+08:00",
   "etf_monitor": [
     {
       "price": 715.59,
@@ -86,23 +86,11 @@
       "name": "EOG Resources, Inc.",
       "sector": "Energy",
       "price": 148.16,
-      "forward_pe": 9.61,
-      "peg": 1.31,
+      "forward_pe": 9.66,
+      "peg": 1.27,
       "roe_pct": 22.51,
-      "fcf_yield_pct": 5.76,
+      "fcf_yield_pct": 5.68,
       "ma200": 131.99,
-      "status": "🟡 估值合理，列入觀察"
-    },
-    {
-      "symbol": "MMM",
-      "name": "3M Company",
-      "sector": "Industrials",
-      "price": 159.96,
-      "forward_pe": 16.29,
-      "peg": 1.5,
-      "roe_pct": 81.89,
-      "fcf_yield_pct": 7.7,
-      "ma200": 159.54,
       "status": "🟡 估值合理，列入觀察"
     },
     {
@@ -111,10 +99,22 @@
       "sector": "Financial Services",
       "price": 332.99,
       "forward_pe": 13.25,
-      "peg": 1.53,
+      "peg": 1.52,
       "roe_pct": 17.79,
       "fcf_yield_pct": null,
       "ma200": 319.08,
+      "status": "🟡 估值合理，列入觀察"
+    },
+    {
+      "symbol": "MMM",
+      "name": "3M Company",
+      "sector": "Industrials",
+      "price": 159.96,
+      "forward_pe": 16.29,
+      "peg": 1.54,
+      "roe_pct": 81.89,
+      "fcf_yield_pct": 7.7,
+      "ma200": 159.54,
       "status": "🟡 估值合理，列入觀察"
     },
     {
@@ -123,7 +123,7 @@
       "sector": "Consumer Defensive",
       "price": 153.64,
       "forward_pe": 16.1,
-      "peg": 2.12,
+      "peg": 2.07,
       "roe_pct": 26.41,
       "fcf_yield_pct": 4.92,
       "ma200": 128.77,
@@ -135,7 +135,7 @@
       "sector": "Industrials",
       "price": 278.34,
       "forward_pe": 19.57,
-      "peg": 2.76,
+      "peg": 2.75,
       "roe_pct": 39.7,
       "fcf_yield_pct": 2.85,
       "ma200": 263.81,
@@ -146,8 +146,8 @@
       "name": "Bristol-Myers Squibb Company",
       "sector": "Healthcare",
       "price": 59.12,
-      "forward_pe": 8.96,
-      "peg": 16.46,
+      "forward_pe": 8.94,
+      "peg": 16.59,
       "roe_pct": 46.6,
       "fcf_yield_pct": 6.72,
       "ma200": 58.31,
