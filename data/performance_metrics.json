@@ -1,16 +1,16 @@
 {
-  "total_predictions": 500,
+  "total_predictions": 514,
   "verified_count": 364,
   "correct_count": 236,
   "incorrect_count": 128,
-  "pending_count": 100,
+  "pending_count": 114,
   "accuracy_rate": 64.8,
   "current_version": 1,
-  "last_updated": "2026-10-11T10:07:08.365721+08:00",
+  "last_updated": "2026-10-12T22:19:21.463954+08:00",
   "version_stats": [
     {
       "version": 1,
-      "predictions": 500,
+      "predictions": 514,
       "verified": 364,
       "correct": 236,
       "accuracy": 64.8
@@ -24,7 +24,7 @@
       "accuracy": null
     },
     "groq": {
-      "predictions": 500,
+      "predictions": 514,
       "verified": 364,
       "correct": 236,
       "accuracy": 64.8

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-11T10:07:13.959480+08:00",
+  "updated_at": "2026-10-12T22:19:27.460801+08:00",
   "rate_cycle": {
     "phase": "Phase 4: 通膨反撲 / 流動性風險",
     "action": "🔴 減碼避險 / 暫停扣款",
@@ -16,18 +16,18 @@
   },
   "macro_data": {
     "TLT": {
-      "price": 77.98,
-      "ma200": 83.55,
+      "price": 78.0,
+      "ma200": 83.52,
       "above_ma200": false,
-      "bias_ma200_pct": -6.67
+      "bias_ma200_pct": -6.61
     },
     "TNX_10Y": {
       "current": 5.24,
-      "avg_3m": 4.85,
+      "avg_3m": 4.86,
       "trend": "up"
     },
     "VIX": {
-      "current": 14.84
+      "current": 15.27
     }
   }
 }
