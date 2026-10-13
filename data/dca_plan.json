@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-12T22:19:29.577930+08:00",
+  "updated_at": "2026-10-14T04:07:13.791230+08:00",
   "monthly_budget": 10000,
   "phase": "Phase 4: 通膨反撲 / 流動性風險",
   "bond_multiplier": 0.0,
@@ -30,8 +30,8 @@
   },
   "signal": {
     "triggered": true,
-    "plain": "美債跌破年線 -6.61%（已達波段超跌甜蜜點，適合進場撿便宜）；通膨反撲期，債價承壓＝低接時機",
-    "technical": "乖離 MA200 -6.61%"
+    "plain": "美債跌破年線 -6.13%（已達波段超跌甜蜜點，適合進場撿便宜）；通膨反撲期，債價承壓＝低接時機",
+    "technical": "乖離 MA200 -6.13%"
   },
   "roles": [
     {
@@ -119,8 +119,8 @@
   ],
   "calendar_note": "00687B 已暫停，6號、16號、26號本月不扣款",
   "bond_technical": {
-    "price": 78.0,
-    "bias_ma200_pct": -6.61,
+    "price": 78.37,
+    "bias_ma200_pct": -6.13,
     "at_60d_low": false,
     "proxy": "TLT"
   }
