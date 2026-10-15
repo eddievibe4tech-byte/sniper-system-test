@@ -7,8 +7,13 @@ import json
 import time
 import logging
 import requests
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, List
 from datetime import datetime
+
+try:  # 正式路徑（python -m src.groq_client / pytest）
+    from src.model_resolver import get_dynamic_model_chain
+except ImportError:  # 相容 flat import 模式（src/ 在 sys.path，如 news_sentiment/macro_allocator）
+    from model_resolver import get_dynamic_model_chain
 
 logger = logging.getLogger(__name__)
 
@@ -22,59 +27,93 @@ class GroqClient:
 
         Args:
             api_key: Groq API Key，若未提供則從環境變數 GROQ_API_KEY 讀取
-            model: 使用的模型名稱，若未提供則從環境變數 GROQ_MODEL 讀取，預設為 qwen/qwen3.6-27b
+            model: 使用的模型名稱；若未提供則由動態模型解析鏈決定
+                   （env GROQ_MODEL 空字串防呆 → /models 動態抓取 → 靜態兜底鏈）
         """
         self.api_key = api_key or os.getenv('GROQ_API_KEY', '')
-        self.model = model or os.getenv('GROQ_MODEL', 'qwen/qwen3.6-27b')
+        # 🔴 修正：空字串 env 不再覆蓋預設值（GitHub Actions 未設定 repo Variable
+        #    時會注入空字串，os.getenv 預設值不生效 → payload model="" → 404）
+        # 🔴 修正：不再硬編碼 OpenRouter 風格 ID（qwen/qwen3.6-27b 在 Groq 會 100% 404）
+        self.fallback_chain = get_dynamic_model_chain(self.api_key)
+        preferred = (model or os.getenv('GROQ_MODEL') or "").strip()
+        self.model = preferred if preferred in self.fallback_chain else self.fallback_chain[0]
         self.base_url = 'https://api.groq.com/openai/v1/chat/completions'
         self.max_retries = 3
         self.retry_delay = 2.0
 
     def _make_request(self, messages: list, temperature: float = 0.3) -> Optional[Dict]:
         """
-        發送 API 請求到 Groq
+        發送 API 請求到 Groq（遍歷整個模型 fallback 鏈）
+
+        404（model_not_found）→ 不重試，直接切換鏈中下一個模型；
+        429/5xx → 指數退避重試，耗盡後換下一個模型。
 
         Args:
             messages: 對話訊息列表
             temperature: 溫度參數（降低至 0.3 讓輸出更穩定）
 
         Returns:
-            API 回應資料，失敗時返回 None
+            API 回應資料，全鏈失敗時返回 None
         """
         if not self.api_key:
             raise ValueError("Groq API Key 未設定")
 
-        url = "https://api.groq.com/openai/v1/chat/completions"
+        url = self.base_url
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
 
-        payload = {
-            "model": self.model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": 4096,
-        }
+        # 🔴 核心修正：遍歷整個 fallback chain（而非只打單一模型）
+        for current_model in self.fallback_chain:
+            payload = {
+                "model": current_model,
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": 4096,
+            }
 
-        for attempt in range(self.max_retries):
-            try:
-                response = requests.post(url, headers=headers, json=payload, timeout=30)
+            for attempt in range(self.max_retries):
+                try:
+                    response = requests.post(url, headers=headers, json=payload, timeout=30)
 
-                if response.status_code != 200:
-                    logger.error(f"Groq API 失敗 (HTTP {response.status_code}):")
-                    logger.error(f"URL: {url}")
-                    logger.error(f"Model: {self.model}")
-                    logger.error(f"Response: {response.text}")
-                    return None
+                    # 1. 遇到 404 (Model Not Found)：不重試，直接換下一個模型
+                    if response.status_code == 404:
+                        logger.warning(f"Groq 404（模型 {current_model} 已下架或無權限），自動切換至下一順位...")
+                        break  # 跳出 attempt 迴圈，進入 chain 的下一個 model
 
-                return response.json()
+                    # 2. 遇到 429 (Rate Limit) 或 5xx (Server Error)：進行指數退避重試
+                    if response.status_code in (429, 500, 502, 503, 504):
+                        if attempt < self.max_retries - 1:
+                            wait_time = self.retry_delay * (2 ** attempt)
+                            logger.warning(f"Groq API 暫時性錯誤 (HTTP {response.status_code})，{wait_time}s 後重試...")
+                            time.sleep(wait_time)
+                            continue
+                        else:
+                            logger.error(f"Groq API 重試耗盡 (HTTP {response.status_code})，model={current_model}")
+                            break  # 換下一個模型
 
-            except Exception as e:
-                logger.warning(f"Groq 請求失敗 (Attempt {attempt + 1}): {e}")
-                time.sleep(self.retry_delay)
+                    # 3. 其他 4xx 錯誤（如 400 Bad Request）：通常是 Prompt 問題，不換模型
+                    if response.status_code != 200:
+                        logger.error(f"Groq API 請求失敗 (HTTP {response.status_code}):")
+                        logger.error(f"URL: {url}")
+                        logger.error(f"Model: {current_model}")
+                        logger.error(f"Response: {response.text}")
+                        return None
 
+                    # 成功
+                    self.model = current_model  # 記錄實際生效的模型
+                    return response.json()
+
+                except requests.exceptions.RequestException as e:
+                    logger.warning(f"Groq 網路請求異常 (model={current_model}, Attempt {attempt + 1}/{self.max_retries}): {e}")
+                    if attempt < self.max_retries - 1:
+                        time.sleep(self.retry_delay)
+                    else:
+                        break  # 網路徹底斷線，換下一個模型試試看
+
+        logger.error("🚨 Groq 所有候選模型皆失敗，AI 分析將跳過（降級 rule-based fallback）")
         return None
 
     def _render_template(self, template: str, data: dict) -> str:
