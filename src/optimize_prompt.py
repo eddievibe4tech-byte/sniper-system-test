@@ -41,40 +41,71 @@ def load_json(p: Path, default):
         return default
 
 
+def _model_chain() -> list:
+    """🔴 修正：空字串 env 不再覆蓋預設值；動態抓取活躍模型＋靜態兜底鏈。
+
+    根因：workflow 的 `GROQ_MODEL: ${{ vars.GROQ_MODEL }}` 在 repo 未設定該
+    Variable 時會注入「空字串」，而 os.getenv 的預設值只在變數「不存在」時生效，
+    於是 payload 變成 model="" → Groq 回 404 model_not_found。
+    此外舊預設 qwen/qwen3.6-27b 是 OpenRouter 風格 ID，Groq 只接受扁平 ID。
+    """
+    try:  # 正式路徑（python -m src.optimize_prompt）
+        from src.model_resolver import get_dynamic_model_chain
+    except ImportError:  # 相容 flat import 模式（src/ 在 sys.path）
+        from model_resolver import get_dynamic_model_chain
+    return get_dynamic_model_chain()
+
+
 def groq_complete(system: str, user: str) -> str:
-    """呼叫 Groq Chat API（含重試：429/5xx 暫時性錯誤以指數退避重試，最多 3 次）。"""
+    """呼叫 Groq Chat API：404（model_not_found）→ 換下一個模型；429/5xx → 指數退避重試。
+
+    Note: timeout=120 因為 prompt 優化需要較長的推理時間（模型要生成整份 v2 prompt），
+    一般 API 呼叫使用 groq_client.py 的 timeout=30。
+    """
     key = os.getenv("GROQ_API_KEY", "")                      # 🔴 用專案既有的 secret 名稱
     if not key:
         raise RuntimeError("GROQ_API_KEY 未設定")
-    payload = {"model": os.getenv("GROQ_MODEL", "qwen/qwen3.6-27b"),
-               "temperature": 0.4,
-               "messages": [{"role": "system", "content": system},
-                            {"role": "user", "content": user}]}
     max_attempts = int(os.getenv("GROQ_MAX_RETRIES", "3"))
     delay = float(os.getenv("GROQ_RETRY_BASE_DELAY", "2"))   # 指数退避：2s → 4s → 8s（上限10s）
-    for attempt in range(1, max_attempts + 1):
-        try:
-            r = requests.post(GROQ_URL, headers={"Authorization": f"Bearer {key}"},
-                              json=payload, timeout=120)
-            # 🔴 PR review #6：僅對暫時性錯誤重試；4xx（除 429）屬請求本身問題，直接失敗
-            if r.status_code == 429 or r.status_code >= 500:
-                raise requests.exceptions.HTTPError(f"HTTP {r.status_code}", response=r)
-            r.raise_for_status()
-            return re.sub(r"<think>.*?</think>", "", r.json()["choices"][0]["message"]["content"],
-                          flags=re.S).strip()
-        except (requests.exceptions.RequestException, KeyError, IndexError, ValueError) as e:
-            transient = isinstance(e, requests.exceptions.HTTPError) and \
-                        getattr(getattr(e, "response", None), "status_code", 0) != 0 and \
-                        (e.response.status_code == 429 or e.response.status_code >= 500)
-            fatal_4xx = isinstance(e, requests.exceptions.HTTPError) and not transient
-            if fatal_4xx or attempt >= max_attempts:
-                logger.error("Groq API 失敗（attempt %d/%d）：%s", attempt, max_attempts, e)
-                raise
-            wait = min(delay * (2 ** (attempt - 1)), 10)
-            logger.warning("Groq API 暫時性錯誤（attempt %d/%d）：%s → %.1fs 後重試",
-                           attempt, max_attempts, e, wait)
-            time.sleep(wait)
-    raise RuntimeError("Groq API 重試耗盡")                   # 理論不可達，保險起見
+    last_err = None
+    for model in _model_chain():
+        payload = {"model": model,
+                   "temperature": 0.4,
+                   "messages": [{"role": "system", "content": system},
+                                {"role": "user", "content": user}]}
+        for attempt in range(1, max_attempts + 1):
+            try:
+                r = requests.post(GROQ_URL, headers={"Authorization": f"Bearer {key}"},
+                                  json=payload, timeout=120)
+                # 🔴 404＝model_not_found：重試無意義，立即切換 fallback 模型
+                if r.status_code == 404:
+                    logger.warning("Groq 404（模型不可用）：%s → 切換 fallback 模型", model)
+                    last_err = requests.exceptions.HTTPError(
+                        f"404 model={model}: {r.text}", response=r)
+                    break  # 跳出 attempt 迴圈，進入下一個 model
+                # 🔴 PR review #6：僅對暫時性錯誤重試；其他 4xx 屬請求本身問題
+                if r.status_code == 429 or r.status_code >= 500:
+                    raise requests.exceptions.HTTPError(f"HTTP {r.status_code}", response=r)
+                r.raise_for_status()
+                logger.info("Groq 優化成功，使用模型：%s", model)
+                return re.sub(r"<think>.*?</think>", "",
+                              r.json()["choices"][0]["message"]["content"],
+                              flags=re.S).strip()
+            except (requests.exceptions.RequestException, KeyError, IndexError, ValueError) as e:
+                transient = isinstance(e, requests.exceptions.HTTPError) and \
+                            getattr(getattr(e, "response", None), "status_code", 0) != 0 and \
+                            (e.response.status_code == 429 or e.response.status_code >= 500)
+                fatal_4xx = isinstance(e, requests.exceptions.HTTPError) and not transient
+                if fatal_4xx or attempt >= max_attempts:
+                    logger.error("Groq API 失敗（model=%s, attempt %d/%d）：%s",
+                                 model, attempt, max_attempts, e)
+                    last_err = e
+                    break  # 此模型已盡力，換下一個
+                wait = min(delay * (2 ** (attempt - 1)), 10)
+                logger.warning("Groq API 暫時性錯誤（model=%s, attempt %d/%d）：%s → %.1fs 後重試",
+                               model, attempt, max_attempts, e, wait)
+                time.sleep(wait)
+    raise RuntimeError(f"Groq 全模型鏈失敗：{last_err}")
 
 
 def validate(text: str):

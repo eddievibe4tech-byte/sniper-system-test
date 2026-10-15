@@ -23,6 +23,12 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt          # 🔴 v2.1：改用主依賴（requests 所在；dev 檔僅測試工具）
 
+      # 🆕 模型日誌：下次失敗時 log 直接告訴您送出的模型字串是什麼（空字串＝repo 未設定 GROQ_MODEL Variable）
+      - name: Show resolved model
+        env:
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+        run: echo "GROQ_MODEL env = [${GROQ_MODEL}]（空值時由 model_resolver 動態解析鏈接管，不再產生 model=\"\" 404）"
+
       - name: Run Optimization
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}   # 🔴 對齊專案既有 secret 名稱（原 AI_API_KEY/GH_TOKEN 未設定＝空值）
