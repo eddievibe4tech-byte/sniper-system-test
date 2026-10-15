@@ -1,12 +1,12 @@
 {
   "candidates": [],
   "fear_greed_index": {
-    "value": 62,
-    "classification": "Greed",
-    "timestamp": 1791936000
+    "value": 53,
+    "classification": "Neutral",
+    "timestamp": 1792022400
   },
   "market_scenario": null,
-  "updated_at": "2026-10-14T05:56:27.448438",
+  "updated_at": "2026-10-15T05:40:21.651849",
   "rules_applied": {
     "fear_greed_max": 75,
     "min_market_cap": 1000000000,
