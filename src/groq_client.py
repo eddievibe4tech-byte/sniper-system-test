@@ -80,7 +80,10 @@ class GroqClient:
 
                     # 1. 遇到 404 (Model Not Found)：不重試，直接換下一個模型
                     if response.status_code == 404:
-                        logger.warning(f"Groq 404（模型 {current_model} 已下架或無權限），自動切換至下一順位...")
+                        logger.warning(
+                            f"Groq 404（模型 {current_model} 已下架或無權限）"
+                            f"→ 切換至下一順位模型（該模型已嘗試 {attempt + 1}/{self.max_retries} 次）"
+                        )
                         break  # 跳出 attempt 迴圈，進入 chain 的下一個 model
 
                     # 2. 遇到 429 (Rate Limit) 或 5xx (Server Error)：進行指數退避重試

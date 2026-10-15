@@ -130,6 +130,27 @@ class TestOptimizePromptGroqComplete:
         assert '/' not in sent_model  # 不再是 OpenRouter 風格
 
     @patch('src.optimize_prompt.requests.post')
+    def test_think_tags_are_removed(self, mock_post, monkeypatch):
+        """🔴 PR review：驗證 <think>...</think> 標籤被正確移除（reasoning 模型如 qwen-qwq-32b
+        輸出含完整思考過程，若未清除將污染 v2 prompt）。同時防呆回歸：確保正則不是
+        錯誤的 r'thinks.*?/thinks' 變體。"""
+        monkeypatch.setenv('GROQ_API_KEY', 'test_key')
+        resp_ok = MagicMock()
+        resp_ok.status_code = 200
+        resp_ok.json.return_value = {
+            'choices': [{'message': {
+                'content': '<think>思考過程\n多行內容</think>最終 prompt 內容'
+            }}]}
+        mock_post.return_value = resp_ok
+
+        result = groq_complete("sys", "user")
+
+        assert "思考過程" not in result
+        assert "多行內容" not in result
+        assert "<think>" not in result and "</think>" not in result
+        assert "最終 prompt 內容" in result
+
+    @patch('src.optimize_prompt.requests.post')
     def test_all_models_fail_raises_runtime(self, mock_post, monkeypatch):
         """全鏈 404 → 拋 RuntimeError（而非靜默）"""
         monkeypatch.setenv('GROQ_API_KEY', 'test_key')

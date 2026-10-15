@@ -57,7 +57,11 @@ def _model_chain() -> list:
 
 
 def groq_complete(system: str, user: str) -> str:
-    """呼叫 Groq Chat API：404（model_not_found）→ 換下一個模型；429/5xx → 指數退避重試。"""
+    """呼叫 Groq Chat API：404（model_not_found）→ 換下一個模型；429/5xx → 指數退避重試。
+
+    Note: timeout=120 因為 prompt 優化需要較長的推理時間（模型要生成整份 v2 prompt），
+    一般 API 呼叫使用 groq_client.py 的 timeout=30。
+    """
     key = os.getenv("GROQ_API_KEY", "")                      # 🔴 用專案既有的 secret 名稱
     if not key:
         raise RuntimeError("GROQ_API_KEY 未設定")
