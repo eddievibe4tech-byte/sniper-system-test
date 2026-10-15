@@ -1,16 +1,16 @@
 {
   "candidates": [],
-  "vix": 15.27,
+  "vix": 16.87,
   "vix_source": "yfinance",
   "market_scenario": {
     "scenario": "動量突破",
-    "vix": 15.27,
+    "vix": 16.87,
     "vix_source": "yfinance",
-    "spy_rsi": 59.91,
+    "spy_rsi": 59.8,
     "note": "市場層級象限（VIX + SPY RSI）"
   },
   "error": null,
-  "updated_at": "2026-10-14T00:40:56.192728",
+  "updated_at": "2026-10-15T00:09:47.756856",
   "rules_applied": {
     "vix_panic": 30.0,
     "vix_calm": 20.0,
