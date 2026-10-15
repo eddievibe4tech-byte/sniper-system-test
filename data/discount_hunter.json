@@ -1,18 +1,18 @@
 {
-  "updated_at": "2026-10-15T02:20:03.721395+08:00",
+  "updated_at": "2026-10-16T02:01:17.907535+08:00",
   "targets": [
     {
       "symbol": "VOO",
       "name": "S&P 500 ETF",
-      "current_price": 706.2,
+      "current_price": 708.74,
       "zones": {
         "small_zone": [
-          681.48,
-          688.55
+          683.93,
+          691.02
         ],
         "big_zone": [
-          656.77,
-          670.89
+          659.13,
+          673.3
         ],
         "small_discount_pct": 3.0,
         "big_discount_pct": 6.0
@@ -27,22 +27,22 @@
         "hunt_reserve": 7500
       },
       "limit_order_suggestion": {
-        "small": "限價 $681.48~688.55",
-        "big": "限價 $656.77~670.89"
+        "small": "限價 $683.93~691.02",
+        "big": "限價 $659.13~673.3"
       }
     },
     {
       "symbol": "JPM",
       "name": "摩根大通",
-      "current_price": 333.96,
+      "current_price": 334.4,
       "zones": {
         "small_zone": [
-          322.27,
-          325.61
+          322.7,
+          326.04
         ],
         "big_zone": [
-          303.9,
-          310.58
+          304.3,
+          310.99
         ],
         "small_discount_pct": 3.0,
         "big_discount_pct": 8.0
@@ -57,22 +57,22 @@
         "hunt_reserve": 7500
       },
       "limit_order_suggestion": {
-        "small": "限價 $322.27~325.61",
-        "big": "限價 $303.9~310.58"
+        "small": "限價 $322.7~326.04",
+        "big": "限價 $304.3~310.99"
       }
     },
     {
       "symbol": "EOG",
       "name": "能源探勘",
-      "current_price": 154.44,
+      "current_price": 153.36,
       "zones": {
         "small_zone": [
-          149.03,
-          150.58
+          147.99,
+          149.53
         ],
         "big_zone": [
-          140.54,
-          143.63
+          139.56,
+          142.62
         ],
         "small_discount_pct": 3.0,
         "big_discount_pct": 8.0
@@ -87,8 +87,8 @@
         "hunt_reserve": 7500
       },
       "limit_order_suggestion": {
-        "small": "限價 $149.03~150.58",
-        "big": "限價 $140.54~143.63"
+        "small": "限價 $147.99~149.53",
+        "big": "限價 $139.56~142.62"
       }
     }
   ],

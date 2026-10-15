@@ -1,19 +1,19 @@
 {
-  "total_predictions": 542,
-  "verified_count": 392,
-  "correct_count": 240,
-  "incorrect_count": 152,
+  "total_predictions": 556,
+  "verified_count": 406,
+  "correct_count": 245,
+  "incorrect_count": 161,
   "pending_count": 114,
-  "accuracy_rate": 61.2,
+  "accuracy_rate": 60.3,
   "current_version": 1,
-  "last_updated": "2026-10-15T02:19:55.351984+08:00",
+  "last_updated": "2026-10-16T02:01:09.213053+08:00",
   "version_stats": [
     {
       "version": 1,
-      "predictions": 542,
-      "verified": 392,
-      "correct": 240,
-      "accuracy": 61.2
+      "predictions": 556,
+      "verified": 406,
+      "correct": 245,
+      "accuracy": 60.3
     }
   ],
   "model_stats": {
@@ -24,36 +24,36 @@
       "accuracy": null
     },
     "groq": {
-      "predictions": 542,
-      "verified": 392,
-      "correct": 240,
-      "accuracy": 61.2
+      "predictions": 556,
+      "verified": 406,
+      "correct": 245,
+      "accuracy": 60.3
     }
   },
-  "expectancy": 1.2,
-  "avg_win_pct": -0.03,
-  "avg_loss_pct": 3.15,
-  "expectancy_sample_count": 392,
+  "expectancy": 0.96,
+  "avg_win_pct": -0.12,
+  "avg_loss_pct": 2.6,
+  "expectancy_sample_count": 406,
   "alpha_stats": {
-    "graded_records": 28,
-    "trade_records": 4,
-    "classification_accuracy_pct": 14.3,
-    "trade_hit_rate_pct": 25.0,
-    "avg_alpha_pct": 0.14,
-    "avg_win_pct": 1.56,
-    "avg_loss_pct": 6.31,
-    "expectancy_pct": -4.34
+    "graded_records": 42,
+    "trade_records": 6,
+    "classification_accuracy_pct": 21.4,
+    "trade_hit_rate_pct": 33.3,
+    "avg_alpha_pct": 0.17,
+    "avg_win_pct": 2.93,
+    "avg_loss_pct": 6.1,
+    "expectancy_pct": -3.09
   },
   "raw_category_accuracy": {
     "buy": {
-      "verified": 24,
-      "correct": 14,
-      "accuracy": 58.3
+      "verified": 26,
+      "correct": 15,
+      "accuracy": 57.7
     },
     "filter": {
-      "verified": 368,
-      "correct": 226,
-      "accuracy": 61.4
+      "verified": 380,
+      "correct": 230,
+      "accuracy": 60.5
     }
   },
   "verify_criteria_version": 2,
