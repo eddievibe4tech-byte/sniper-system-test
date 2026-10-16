@@ -1,12 +1,35 @@
 {
-  "candidates": [],
+  "candidates": [
+    {
+      "coin_id": "tron",
+      "symbol": "TRX",
+      "name": "TRON",
+      "price": 0.334558,
+      "market_cap": 31778337096,
+      "change_24h": 1.2,
+      "change_7d": 0.87,
+      "rsi": 51.65,
+      "ma20": 0.33,
+      "price_above_ma20": true,
+      "fear_greed": 63,
+      "scenario": "中性",
+      "recommendation": "觀望",
+      "win_rate": "-",
+      "win_rate_note": "",
+      "position_size": "等待明確訊號",
+      "stop_loss": "不適用",
+      "take_profit": "不適用",
+      "holding_period": "不適用",
+      "screened_at": "2026-10-16 05:32"
+    }
+  ],
   "fear_greed_index": {
-    "value": 53,
-    "classification": "Neutral",
-    "timestamp": 1792022400
+    "value": 63,
+    "classification": "Greed",
+    "timestamp": 1792108800
   },
   "market_scenario": null,
-  "updated_at": "2026-10-15T05:40:21.651849",
+  "updated_at": "2026-10-16T05:33:58.495014",
   "rules_applied": {
     "fear_greed_max": 75,
     "min_market_cap": 1000000000,
