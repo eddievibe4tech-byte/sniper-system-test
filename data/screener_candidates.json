@@ -1,17 +1,27 @@
 {
   "candidates": [
     {
-      "code": "3443",
-      "name": "創意",
-      "industry": "電子工業",
-      "revenue_yoy": 97.78,
-      "inst_buy_days": 2,
-      "current_price": 8360.0,
-      "ma20": 7449.25,
-      "screened_at": "2026-10-09"
+      "code": "2324",
+      "name": "仁寶",
+      "industry": "電腦及週邊設備業",
+      "revenue_yoy": 35.45,
+      "inst_buy_days": 3,
+      "current_price": 36.7,
+      "ma20": 36.59,
+      "screened_at": "2026-10-16"
+    },
+    {
+      "code": "2002",
+      "name": "中鋼",
+      "industry": "鋼鐵工業",
+      "revenue_yoy": 27.13,
+      "inst_buy_days": 3,
+      "current_price": 19.55,
+      "ma20": 18.95,
+      "screened_at": "2026-10-16"
     }
   ],
-  "updated_at": "2026-10-09T11:19:16.504189",
-  "rules_applied": "RELAXED (auto)",
+  "updated_at": "2026-10-16T11:29:32.474045",
+  "rules_applied": "STRICT",
   "error": null
 }
