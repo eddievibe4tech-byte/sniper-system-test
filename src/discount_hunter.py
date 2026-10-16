@@ -18,13 +18,40 @@ logger = logging.getLogger(__name__)
 TZ = timezone(timedelta(hours=8))
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
-# 特價獵人監控池（可自由擴充）
+# 特價獵人監控池（已修正為真實標的與台股實務參數）
 HUNT_TARGETS = [
-    {"symbol": "VOO", "name": "S&P 500 ETF", "small_discount": 0.03, "big_discount": 0.06},
-    {"symbol": "JPM", "name": "摩根大通", "small_discount": 0.03, "big_discount": 0.08},
-    {"symbol": "EOG", "name": "能源探勘", "small_discount": 0.03, "big_discount": 0.08},
-    # 可自行加入台股標的（需加 .TW 後綴）
-    # {"symbol": "006208.TW", "name": "富邦台50", "small_discount": 0.03, "big_discount": 0.06},
+    {
+        "symbol": "VOO",
+        "name": "S&P 500 ETF",
+        "small_discount": 0.03,  # 美股波動較大，維持 3%
+        "big_discount": 0.06,    # 大特價 6%
+    },
+    {
+        "symbol": "JPM",
+        "name": "摩根大通",
+        "small_discount": 0.03,
+        "big_discount": 0.08,
+    },
+    {
+        "symbol": "EOG",
+        "name": "能源探勘",
+        "small_discount": 0.03,
+        "big_discount": 0.08,
+    },
+    # 🆕 修正：改用真正的台灣市值前 50 大龍頭 ETF
+    {
+        "symbol": "0050.TW",
+        "name": "元大台灣50",
+        "small_discount": 0.02,  # 台股權值 ETF 波動較小，單日跌 2% 已屬明顯回檔
+        "big_discount": 0.04,    # 單日跌 4% 以上通常為歷史級黑天鵝或極佳甜蜜點
+    },
+    # 🆕 修正：00940 為「月配息」高息 ETF，非季配息
+    {
+        "symbol": "00940.TW",
+        "name": "元大台灣價值高息 (月配)",
+        "small_discount": 0.02,
+        "big_discount": 0.04,
+    },
 ]
 
 
