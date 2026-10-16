@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-10-16T02:01:14.725062+08:00",
+  "updated_at": "2026-10-17T01:48:58.796907+08:00",
   "rate_cycle": {
     "phase": "Phase 4: 通膨反撲 / 流動性風險",
     "action": "🔴 減碼避險 / 暫停扣款",
     "reasons": [
-      "10Y 殖利率回升至 5.09%，通膨壓力重現"
+      "10Y 殖利率回升至 5.1%，通膨壓力重現"
     ]
   },
   "target_etf": {
@@ -16,18 +16,18 @@
   },
   "macro_data": {
     "TLT": {
-      "price": 80.04,
-      "ma200": 83.43,
+      "price": 79.93,
+      "ma200": 83.4,
       "above_ma200": false,
-      "bias_ma200_pct": -4.07
+      "bias_ma200_pct": -4.17
     },
     "TNX_10Y": {
-      "current": 5.09,
-      "avg_3m": 4.89,
+      "current": 5.1,
+      "avg_3m": 4.9,
       "trend": "up"
     },
     "VIX": {
-      "current": 16.58
+      "current": 19.06
     }
   }
 }

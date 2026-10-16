@@ -1,96 +1,106 @@
 {
-  "updated_at": "2026-10-16T02:01:17.907535+08:00",
+  "updated_at": "2026-10-17T01:49:01.177048+08:00",
+  "strategy_note": "二八分批法：25% 底倉參與，75% 留作特價狩獵金",
   "targets": [
     {
       "symbol": "VOO",
       "name": "S&P 500 ETF",
-      "current_price": 708.74,
-      "zones": {
-        "small_zone": [
-          683.93,
-          691.02
-        ],
-        "big_zone": [
-          659.13,
-          673.3
-        ],
-        "small_discount_pct": 3.0,
-        "big_discount_pct": 6.0
-      },
-      "proximity": {
-        "status": "⏳ 尚未特價",
-        "action": "繼續定期定額，耐心等待",
-        "proximity_pct": 2.5
-      },
-      "budget_allocation": {
-        "first_batch": 2500,
-        "hunt_reserve": 7500
-      },
-      "limit_order_suggestion": {
-        "small": "限價 $683.93~691.02",
-        "big": "限價 $659.13~673.3"
-      }
+      "currency": "USD",
+      "current_price": 703.0,
+      "anchor_price": 709.43,
+      "change_pct": -0.91,
+      "status": "⚠️ 接近特價",
+      "action": "準備資金，預先掛限價單",
+      "small_zone": [
+        691.76,
+        698.72
+      ],
+      "big_zone": [
+        667.22,
+        680.7
+      ],
+      "first_batch_budget": 2500.0,
+      "hunt_reserve_budget": 7500.0
+    },
+    {
+      "symbol": "006208",
+      "name": "富邦台50",
+      "currency": "TWD",
+      "current_price": 258.7,
+      "anchor_price": 257.85,
+      "change_pct": 0.33,
+      "status": "⏳ 尚未特價",
+      "action": "繼續定期定額或維持觀望",
+      "small_zone": [
+        252.71,
+        255.25
+      ],
+      "big_zone": [
+        246.34,
+        251.32
+      ],
+      "first_batch_budget": 2500.0,
+      "hunt_reserve_budget": 7500.0
+    },
+    {
+      "symbol": "0050",
+      "name": "元大台灣50",
+      "currency": "TWD",
+      "current_price": 113.0,
+      "anchor_price": 112.4,
+      "change_pct": 0.53,
+      "status": "⏳ 尚未特價",
+      "action": "繼續定期定額或維持觀望",
+      "small_zone": [
+        110.16,
+        111.26
+      ],
+      "big_zone": [
+        107.39,
+        109.55
+      ],
+      "first_batch_budget": 2500.0,
+      "hunt_reserve_budget": 7500.0
     },
     {
       "symbol": "JPM",
       "name": "摩根大通",
-      "current_price": 334.4,
-      "zones": {
-        "small_zone": [
-          322.7,
-          326.04
-        ],
-        "big_zone": [
-          304.3,
-          310.99
-        ],
-        "small_discount_pct": 3.0,
-        "big_discount_pct": 8.0
-      },
-      "proximity": {
-        "status": "⏳ 尚未特價",
-        "action": "繼續定期定額，耐心等待",
-        "proximity_pct": 2.5
-      },
-      "budget_allocation": {
-        "first_batch": 2500,
-        "hunt_reserve": 7500
-      },
-      "limit_order_suggestion": {
-        "small": "限價 $322.7~326.04",
-        "big": "限價 $304.3~310.99"
-      }
+      "currency": "USD",
+      "current_price": 339.19,
+      "anchor_price": 335.53,
+      "change_pct": 1.09,
+      "status": "⏳ 尚未特價",
+      "action": "繼續定期定額或維持觀望",
+      "small_zone": [
+        323.83,
+        327.09
+      ],
+      "big_zone": [
+        308.92,
+        315.16
+      ],
+      "first_batch_budget": 2500.0,
+      "hunt_reserve_budget": 7500.0
     },
     {
       "symbol": "EOG",
       "name": "能源探勘",
-      "current_price": 153.36,
-      "zones": {
-        "small_zone": [
-          147.99,
-          149.53
-        ],
-        "big_zone": [
-          139.56,
-          142.62
-        ],
-        "small_discount_pct": 3.0,
-        "big_discount_pct": 8.0
-      },
-      "proximity": {
-        "status": "⏳ 尚未特價",
-        "action": "繼續定期定額，耐心等待",
-        "proximity_pct": 2.5
-      },
-      "budget_allocation": {
-        "first_batch": 2500,
-        "hunt_reserve": 7500
-      },
-      "limit_order_suggestion": {
-        "small": "限價 $147.99~149.53",
-        "big": "限價 $139.56~142.62"
-      }
+      "currency": "USD",
+      "current_price": 157.23,
+      "anchor_price": 152.62,
+      "change_pct": 3.02,
+      "status": "⏳ 尚未特價",
+      "action": "繼續定期定額或維持觀望",
+      "small_zone": [
+        147.3,
+        148.78
+      ],
+      "big_zone": [
+        139.01,
+        141.81
+      ],
+      "first_batch_budget": 2500.0,
+      "hunt_reserve_budget": 7500.0
     }
-  ],
-  "strategy_note": "二八分批法：25% 先進場避免踏空，75% 留作特價狩獵金"
+  ]
 }

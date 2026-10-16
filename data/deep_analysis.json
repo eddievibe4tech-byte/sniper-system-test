@@ -1,7 +1,79 @@
 {
-  "analyzed_at": "2026-10-16T02:00:48.831455+08:00",
+  "analyzed_at": "2026-10-17T01:48:34.956179+08:00",
   "regime": "震盪",
   "high_score_targets": [
+    {
+      "code": "2881",
+      "name": "富邦金",
+      "industry": "金融",
+      "regime": "震盪",
+      "revenue_yoy": -51.99,
+      "gross_margin": null,
+      "net_margin": null,
+      "eps": 10.7,
+      "inst_buy_days": 2,
+      "margin_change": 310,
+      "change_5d": 5.56,
+      "volatility": 22.11,
+      "ma5": 160.0,
+      "ma20": 154.28,
+      "rsi": 68.09,
+      "macd": 2.57,
+      "price_above_ma20": true,
+      "current_price": 161.5,
+      "data_source": "finmind",
+      "ev_score": 75,
+      "recommendation": "謹慎買入",
+      "reason": "股價站穩均線，投信持續吸籌，但RSI偏高需防回檔。",
+      "raw_response": "{\n\"ev_score\": 75,\n\"recommendation\": \"謹慎買入\",\n\"reason\": \"股價站穩均線，投信持續吸籌，但RSI偏高需防回檔。\"\n}",
+      "risk_level": "🟡 中風險",
+      "trading_plan": {
+        "entry_type": "pullback",
+        "entry_zone": [
+          154.28,
+          157.37
+        ],
+        "stop_loss": 146.47,
+        "take_profit_1": 171.41,
+        "take_profit_2": 186.99,
+        "risk_reward": 1.67,
+        "action_now": "等回踩，不追價",
+        "status": "⏳ 等回踩 MA20",
+        "stop_pct": 6.0,
+        "exit_strategy": {
+          "initial_stop": 146.47,
+          "stage_1": {
+            "target": 171.41,
+            "action": "賣 1/3，停損上移至成本價",
+            "trigger": "漲幅達 +10%（171.41）"
+          },
+          "stage_2": {
+            "target": 186.99,
+            "action": "再賣 1/3，停損上移至 +10%",
+            "trigger": "漲幅達 +20%（186.99）"
+          },
+          "stage_3": {
+            "action": "剩餘 1/3 設 MA20 移動停利",
+            "trigger": "跌破 MA20 全數出場",
+            "moving_stop": 154.28
+          },
+          "time_stop": {
+            "days": 20,
+            "action": "持有 20 天未達 +10% 則出場",
+            "reason": "避免機會成本"
+          },
+          "technical_exit": {
+            "rsi_overbought": 75,
+            "action": "RSI > 75 或跌破 MA50 出場",
+            "reason": "技術面轉弱",
+            "rsi_current": 68.1,
+            "ma50": null,
+            "ma50_available": false
+          }
+        }
+      },
+      "signal_tag": "長線配置"
+    },
     {
       "code": "2412",
       "name": "中華電",
@@ -11,51 +83,51 @@
       "gross_margin": 36.49,
       "net_margin": 16.98,
       "eps": 5.09,
-      "inst_buy_days": 2,
-      "margin_change": 130,
-      "change_5d": 4.81,
-      "volatility": 12.7,
-      "ma5": 148.4,
-      "ma20": 145.75,
+      "inst_buy_days": 0,
+      "margin_change": 21,
+      "change_5d": 4.44,
+      "volatility": 12.64,
+      "ma5": 149.7,
+      "ma20": 146.22,
       "rsi": 80.0,
-      "macd": 1.79,
+      "macd": 2.11,
       "price_above_ma20": true,
-      "current_price": 152.5,
+      "current_price": 153.0,
       "data_source": "finmind",
-      "ev_score": 70,
+      "ev_score": 75,
       "recommendation": "謹慎買入",
-      "reason": "基本面穩健，技術面超買，籌碼偏多。",
-      "raw_response": "{\n\"ev_score\": 70,\n\"recommendation\": \"謹慎買入\",\n\"reason\": \"基本面穩健，技術面超買，籌碼偏多。\"\n}",
+      "reason": "基本面穩健，技術面過熱，籌碼中性。",
+      "raw_response": "{\n\"ev_score\": 75,\n\"recommendation\": \"謹慎買入\",\n\"reason\": \"基本面穩健，技術面過熱，籌碼中性。\"\n}",
       "risk_level": "🟢 低風險",
       "trading_plan": {
         "entry_type": "pullback",
         "entry_zone": [
-          145.75,
-          148.66
+          146.22,
+          149.14
         ],
-        "stop_loss": 138.38,
-        "take_profit_1": 161.93,
-        "take_profit_2": 176.65,
+        "stop_loss": 138.82,
+        "take_profit_1": 162.45,
+        "take_profit_2": 177.22,
         "risk_reward": 1.67,
         "action_now": "等回踩，不追價",
         "status": "⏳ 等回踩 MA20",
         "stop_pct": 6.0,
         "exit_strategy": {
-          "initial_stop": 138.38,
+          "initial_stop": 138.82,
           "stage_1": {
-            "target": 161.93,
+            "target": 162.45,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（161.93）"
+            "trigger": "漲幅達 +10%（162.45）"
           },
           "stage_2": {
-            "target": 176.65,
+            "target": 177.22,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（176.65）"
+            "trigger": "漲幅達 +20%（177.22）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 145.75
+            "moving_stop": 146.22
           },
           "time_stop": {
             "days": 20,
@@ -85,51 +157,51 @@
       "gross_margin": 64.23,
       "net_margin": 50.37,
       "eps": 86.26,
-      "inst_buy_days": 1,
-      "margin_change": 457,
-      "change_5d": -5.61,
-      "volatility": 20.79,
-      "ma5": 2502.0,
-      "ma20": 2489.25,
-      "rsi": 47.06,
-      "macd": 18.95,
+      "inst_buy_days": 0,
+      "margin_change": -113,
+      "change_5d": -5.1,
+      "volatility": 21.04,
+      "ma5": 2476.0,
+      "ma20": 2491.0,
+      "rsi": 37.5,
+      "macd": 10.54,
       "price_above_ma20": false,
-      "current_price": 2440.0,
+      "current_price": 2420.0,
       "data_source": "finmind",
-      "ev_score": 65,
+      "ev_score": 55,
       "recommendation": "觀望",
-      "reason": "基本面強但技術面弱，籌碼中性，建議觀望。",
-      "raw_response": "{\n\"ev_score\": 65,\n\"recommendation\": \"觀望\",\n\"reason\": \"基本面強但技術面弱，籌碼中性，建議觀望。\"\n}",
+      "reason": "技術面弱於均線，籌碼面無支撐，基本面穩健但短線風險高。",
+      "raw_response": "{\n\"ev_score\": 55,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術面弱於均線，籌碼面無支撐，基本面穩健但短線風險高。\"\n}",
       "risk_level": "🟡 中風險",
       "trading_plan": {
         "entry_type": "reclaim",
         "entry_zone": [
-          2489.25,
-          2539.03
+          2491.0,
+          2540.82
         ],
-        "stop_loss": 2363.29,
-        "take_profit_1": 2765.56,
-        "take_profit_2": 3016.97,
+        "stop_loss": 2364.96,
+        "take_profit_1": 2767.5,
+        "take_profit_2": 3019.09,
         "risk_reward": 1.67,
         "action_now": "等站回 MA20",
         "status": "⏳ 等站回 MA20",
         "stop_pct": 6.0,
         "exit_strategy": {
-          "initial_stop": 2363.29,
+          "initial_stop": 2364.96,
           "stage_1": {
-            "target": 2765.56,
+            "target": 2767.5,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（2765.56）"
+            "trigger": "漲幅達 +10%（2767.5）"
           },
           "stage_2": {
-            "target": 3016.97,
+            "target": 3019.09,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（3016.97）"
+            "trigger": "漲幅達 +20%（3019.09）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 2489.25
+            "moving_stop": 2491.0
           },
           "time_stop": {
             "days": 20,
@@ -140,7 +212,7 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 47.1,
+            "rsi_current": 37.5,
             "ma50": null,
             "ma50_available": false
           }
@@ -158,50 +230,50 @@
       "net_margin": 13.99,
       "eps": 31.42,
       "inst_buy_days": 1,
-      "margin_change": 254,
-      "change_5d": -18.09,
-      "volatility": 64.66,
-      "ma5": 1811.0,
-      "ma20": 1850.0,
-      "rsi": 32.69,
-      "macd": 9.8,
+      "margin_change": 178,
+      "change_5d": -16.79,
+      "volatility": 63.98,
+      "ma5": 1745.0,
+      "ma20": 1848.25,
+      "rsi": 33.12,
+      "macd": -7.89,
       "price_above_ma20": false,
-      "current_price": 1630.0,
+      "current_price": 1635.0,
       "data_source": "finmind",
-      "ev_score": 50,
+      "ev_score": 45,
       "recommendation": "觀望",
-      "reason": "技術面破位且波動高，籌碼支撐不足，建議觀望。",
-      "raw_response": "{\n\"ev_score\": 50,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術面破位且波動高，籌碼支撐不足，建議觀望。\"\n}",
+      "reason": "技術面破位且高波動，籌碼支撐有限，建議觀望。",
+      "raw_response": "{\n\"ev_score\": 45,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術面破位且高波動，籌碼支撐有限，建議觀望。\"\n}",
       "risk_level": "🔴 極高風險",
       "trading_plan": {
         "entry_type": "reclaim",
         "entry_zone": [
-          1850.0,
-          1887.0
+          1848.25,
+          1885.22
         ],
-        "stop_loss": 1644.28,
-        "take_profit_1": 2055.35,
-        "take_profit_2": 2242.2,
+        "stop_loss": 1642.72,
+        "take_profit_1": 2053.41,
+        "take_profit_2": 2240.08,
         "risk_reward": 0.83,
         "action_now": "等站回 MA20",
         "status": "⏳ 等站回 MA20",
         "stop_pct": 12.0,
         "exit_strategy": {
-          "initial_stop": 1644.28,
+          "initial_stop": 1642.72,
           "stage_1": {
-            "target": 2055.35,
+            "target": 2053.41,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（2055.35）"
+            "trigger": "漲幅達 +10%（2053.41）"
           },
           "stage_2": {
-            "target": 2242.2,
+            "target": 2240.08,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（2242.2）"
+            "trigger": "漲幅達 +20%（2240.08）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 1850.0
+            "moving_stop": 1848.25
           },
           "time_stop": {
             "days": 20,
@@ -212,7 +284,7 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 32.7,
+            "rsi_current": 33.1,
             "ma50": null,
             "ma50_available": false
           }
@@ -229,51 +301,51 @@
       "gross_margin": 46.28,
       "net_margin": 16.43,
       "eps": 60.55,
-      "inst_buy_days": 1,
-      "margin_change": 137,
-      "change_5d": -13.86,
-      "volatility": 58.77,
-      "ma5": 4496.0,
-      "ma20": 4799.5,
-      "rsi": 21.73,
-      "macd": -99.38,
+      "inst_buy_days": 0,
+      "margin_change": 110,
+      "change_5d": -9.38,
+      "volatility": 58.64,
+      "ma5": 4408.0,
+      "ma20": 4790.5,
+      "rsi": 25.07,
+      "macd": -131.38,
       "price_above_ma20": false,
-      "current_price": 4165.0,
+      "current_price": 4250.0,
       "data_source": "finmind",
-      "ev_score": 45,
+      "ev_score": 55,
       "recommendation": "觀望",
-      "reason": "技術超賣但趨勢弱，波動高，籌碼支撐不足。",
-      "raw_response": "{\n\"ev_score\": 45,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術超賣但趨勢弱，波動高，籌碼支撐不足。\"\n}",
+      "reason": "技術超賣但趨勢弱，基本面穩健，高波動風險。",
+      "raw_response": "{\n\"ev_score\": 55,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術超賣但趨勢弱，基本面穩健，高波動風險。\"\n}",
       "risk_level": "🔴 極高風險",
       "trading_plan": {
         "entry_type": "reclaim",
         "entry_zone": [
-          4799.5,
-          4895.49
+          4790.5,
+          4886.31
         ],
-        "stop_loss": 4265.8,
-        "take_profit_1": 5332.24,
-        "take_profit_2": 5816.99,
+        "stop_loss": 4257.8,
+        "take_profit_1": 5322.25,
+        "take_profit_2": 5806.09,
         "risk_reward": 0.83,
         "action_now": "等站回 MA20",
         "status": "⏳ 等站回 MA20",
         "stop_pct": 12.0,
         "exit_strategy": {
-          "initial_stop": 4265.8,
+          "initial_stop": 4257.8,
           "stage_1": {
-            "target": 5332.24,
+            "target": 5322.25,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（5332.24）"
+            "trigger": "漲幅達 +10%（5322.25）"
           },
           "stage_2": {
-            "target": 5816.99,
+            "target": 5806.09,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（5816.99）"
+            "trigger": "漲幅達 +20%（5806.09）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 4799.5
+            "moving_stop": 4790.5
           },
           "time_stop": {
             "days": 20,
@@ -284,7 +356,7 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 21.7,
+            "rsi_current": 25.1,
             "ma50": null,
             "ma50_available": false
           }
@@ -301,51 +373,51 @@
       "gross_margin": null,
       "net_margin": null,
       "eps": 10.7,
-      "inst_buy_days": 1,
-      "margin_change": -87,
-      "change_5d": 2.57,
-      "volatility": 22.16,
-      "ma5": 158.3,
-      "ma20": 153.75,
-      "rsi": 60.87,
-      "macd": 2.25,
+      "inst_buy_days": 2,
+      "margin_change": 310,
+      "change_5d": 5.56,
+      "volatility": 22.11,
+      "ma5": 160.0,
+      "ma20": 154.28,
+      "rsi": 68.09,
+      "macd": 2.57,
       "price_above_ma20": true,
-      "current_price": 159.5,
+      "current_price": 161.5,
       "data_source": "finmind",
-      "ev_score": 65,
+      "ev_score": 75,
       "recommendation": "謹慎買入",
-      "reason": "金融股看籌碼，投信連買且站穩均線，技術面偏多。",
-      "raw_response": "{\n\"ev_score\": 65,\n\"recommendation\": \"謹慎買入\",\n\"reason\": \"金融股看籌碼，投信連買且站穩均線，技術面偏多。\"\n}",
+      "reason": "股價站穩均線，投信持續吸籌，但RSI偏高需防回檔。",
+      "raw_response": "{\n\"ev_score\": 75,\n\"recommendation\": \"謹慎買入\",\n\"reason\": \"股價站穩均線，投信持續吸籌，但RSI偏高需防回檔。\"\n}",
       "risk_level": "🟡 中風險",
       "trading_plan": {
         "entry_type": "pullback",
         "entry_zone": [
-          153.75,
-          156.82
+          154.28,
+          157.37
         ],
-        "stop_loss": 145.97,
-        "take_profit_1": 170.82,
-        "take_profit_2": 186.34,
+        "stop_loss": 146.47,
+        "take_profit_1": 171.41,
+        "take_profit_2": 186.99,
         "risk_reward": 1.67,
         "action_now": "等回踩，不追價",
         "status": "⏳ 等回踩 MA20",
         "stop_pct": 6.0,
         "exit_strategy": {
-          "initial_stop": 145.97,
+          "initial_stop": 146.47,
           "stage_1": {
-            "target": 170.82,
+            "target": 171.41,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（170.82）"
+            "trigger": "漲幅達 +10%（171.41）"
           },
           "stage_2": {
-            "target": 186.34,
+            "target": 186.99,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（186.34）"
+            "trigger": "漲幅達 +20%（186.99）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 153.75
+            "moving_stop": 154.28
           },
           "time_stop": {
             "days": 20,
@@ -356,7 +428,7 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 60.9,
+            "rsi_current": 68.1,
             "ma50": null,
             "ma50_available": false
           }
@@ -374,50 +446,50 @@
       "net_margin": 2.65,
       "eps": 15.17,
       "inst_buy_days": 1,
-      "margin_change": -1099,
-      "change_5d": -4.96,
-      "volatility": 19.59,
-      "ma5": 243.2,
-      "ma20": 249.5,
-      "rsi": 34.12,
-      "macd": -2.26,
+      "margin_change": -1072,
+      "change_5d": -2.01,
+      "volatility": 20.77,
+      "ma5": 242.2,
+      "ma20": 249.38,
+      "rsi": 36.36,
+      "macd": -2.28,
       "price_above_ma20": false,
-      "current_price": 239.5,
+      "current_price": 244.0,
       "data_source": "finmind",
-      "ev_score": 45,
+      "ev_score": 50,
       "recommendation": "觀望",
-      "reason": "技術面弱於均線，籌碼面融資減少，基本面穩健但技術面拖累。",
-      "raw_response": "{\n\"ev_score\": 45,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術面弱於均線，籌碼面融資減少，基本面穩健但技術面拖累。\"\n}",
+      "reason": "營收強但技術弱，籌碼中性，震盪市觀望。",
+      "raw_response": "{\n\"ev_score\": 50,\n\"recommendation\": \"觀望\",\n\"reason\": \"營收強但技術弱，籌碼中性，震盪市觀望。\"\n}",
       "risk_level": "🟡 中風險",
       "trading_plan": {
         "entry_type": "reclaim",
         "entry_zone": [
-          249.5,
-          254.49
+          249.38,
+          254.37
         ],
-        "stop_loss": 236.88,
-        "take_profit_1": 277.19,
-        "take_profit_2": 302.39,
+        "stop_loss": 236.76,
+        "take_profit_1": 277.06,
+        "take_profit_2": 302.25,
         "risk_reward": 1.67,
         "action_now": "等站回 MA20",
         "status": "⏳ 等站回 MA20",
         "stop_pct": 6.0,
         "exit_strategy": {
-          "initial_stop": 236.88,
+          "initial_stop": 236.76,
           "stage_1": {
-            "target": 277.19,
+            "target": 277.06,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（277.19）"
+            "trigger": "漲幅達 +10%（277.06）"
           },
           "stage_2": {
-            "target": 302.39,
+            "target": 302.25,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（302.39）"
+            "trigger": "漲幅達 +20%（302.25）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 249.5
+            "moving_stop": 249.38
           },
           "time_stop": {
             "days": 20,
@@ -428,7 +500,7 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 34.1,
+            "rsi_current": 36.4,
             "ma50": null,
             "ma50_available": false
           }
@@ -445,51 +517,51 @@
       "gross_margin": 5.54,
       "net_margin": 2.99,
       "eps": 22.95,
-      "inst_buy_days": 2,
-      "margin_change": -192,
-      "change_5d": -5.52,
-      "volatility": 17.68,
-      "ma5": 322.0,
-      "ma20": 333.62,
-      "rsi": 15.07,
-      "macd": -5.48,
+      "inst_buy_days": 4,
+      "margin_change": -242,
+      "change_5d": -1.08,
+      "volatility": 16.75,
+      "ma5": 321.3,
+      "ma20": 333.07,
+      "rsi": 26.51,
+      "macd": -5.46,
       "price_above_ma20": false,
-      "current_price": 316.5,
+      "current_price": 322.0,
       "data_source": "finmind",
-      "ev_score": 45,
+      "ev_score": 65,
       "recommendation": "觀望",
-      "reason": "營收衰退、技術超賣但籌碼轉強，短線反彈可期。",
-      "raw_response": "{\n\"ev_score\": 45,\n\"recommendation\": \"觀望\",\n\"reason\": \"營收衰退、技術超賣但籌碼轉強，短線反彈可期。\"\n}",
+      "reason": "⚠️ 訊號衝突：基本面佳(EV=65)但技術修正中(現價322.00 < MA20 333.07)。短期勿追價，請等待站回均線再評估。",
+      "raw_response": "{\n\"ev_score\": 65,\n\"recommendation\": \"謹慎買入\",\n\"reason\": \"RSI超賣且投信連買，技術面反彈訊號明確。\"\n}",
       "risk_level": "🟡 中風險",
       "trading_plan": {
         "entry_type": "reclaim",
         "entry_zone": [
-          333.62,
-          340.29
+          333.07,
+          339.73
         ],
-        "stop_loss": 316.74,
-        "take_profit_1": 370.65,
-        "take_profit_2": 404.35,
+        "stop_loss": 316.22,
+        "take_profit_1": 370.04,
+        "take_profit_2": 403.68,
         "risk_reward": 1.67,
         "action_now": "等站回 MA20",
         "status": "⏳ 等站回 MA20",
         "stop_pct": 6.0,
         "exit_strategy": {
-          "initial_stop": 316.74,
+          "initial_stop": 316.22,
           "stage_1": {
-            "target": 370.65,
+            "target": 370.04,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（370.65）"
+            "trigger": "漲幅達 +10%（370.04）"
           },
           "stage_2": {
-            "target": 404.35,
+            "target": 403.68,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（404.35）"
+            "trigger": "漲幅達 +20%（403.68）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 333.62
+            "moving_stop": 333.07
           },
           "time_stop": {
             "days": 20,
@@ -500,13 +572,14 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 15.1,
+            "rsi_current": 26.5,
             "ma50": null,
             "ma50_available": false
           }
         }
       },
-      "signal_tag": "短線狙擊"
+      "original_recommendation": "謹慎買入",
+      "signal_tag": "長線配置/短期觀望"
     },
     {
       "code": "3711",
@@ -517,51 +590,51 @@
       "gross_margin": 19.49,
       "net_margin": 8.78,
       "eps": 13.82,
-      "inst_buy_days": 1,
-      "margin_change": 1111,
-      "change_5d": -8.06,
-      "volatility": 53.28,
-      "ma5": 733.2,
-      "ma20": 694.7,
-      "rsi": 45.45,
-      "macd": 26.99,
+      "inst_buy_days": 0,
+      "margin_change": 94,
+      "change_5d": -9.81,
+      "volatility": 53.07,
+      "ma5": 718.6,
+      "ma20": 698.65,
+      "rsi": 45.05,
+      "macd": 20.34,
       "price_above_ma20": false,
-      "current_price": 673.0,
+      "current_price": 671.0,
       "data_source": "finmind",
-      "ev_score": 52,
+      "ev_score": 45,
       "recommendation": "觀望",
-      "reason": "股價跌破均線，高波動風險，籌碼支撐有限。",
-      "raw_response": "{\n\"ev_score\": 52,\n\"recommendation\": \"觀望\",\n\"reason\": \"股價跌破均線，高波動風險，籌碼支撐有限。\"\n}",
+      "reason": "股價跌破均線，短線動能轉弱，籌碼無明顯支撐。",
+      "raw_response": "{\n\"ev_score\": 45,\n\"recommendation\": \"觀望\",\n\"reason\": \"股價跌破均線，短線動能轉弱，籌碼無明顯支撐。\"\n}",
       "risk_level": "🔴 極高風險",
       "trading_plan": {
         "entry_type": "reclaim",
         "entry_zone": [
-          694.7,
-          708.59
+          698.65,
+          712.62
         ],
-        "stop_loss": 617.45,
-        "take_profit_1": 771.81,
-        "take_profit_2": 841.98,
+        "stop_loss": 620.96,
+        "take_profit_1": 776.2,
+        "take_profit_2": 846.76,
         "risk_reward": 0.83,
         "action_now": "等站回 MA20",
         "status": "⏳ 等站回 MA20",
         "stop_pct": 12.0,
         "exit_strategy": {
-          "initial_stop": 617.45,
+          "initial_stop": 620.96,
           "stage_1": {
-            "target": 771.81,
+            "target": 776.2,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（771.81）"
+            "trigger": "漲幅達 +10%（776.2）"
           },
           "stage_2": {
-            "target": 841.98,
+            "target": 846.76,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（841.98）"
+            "trigger": "漲幅達 +20%（846.76）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 694.7
+            "moving_stop": 698.65
           },
           "time_stop": {
             "days": 20,
@@ -572,7 +645,7 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 45.5,
+            "rsi_current": 45.0,
             "ma50": null,
             "ma50_available": false
           }
@@ -590,31 +663,65 @@
       "net_margin": 17.38,
       "eps": 75.02,
       "inst_buy_days": 0,
-      "margin_change": -52,
-      "change_5d": -12.98,
-      "volatility": 54.77,
-      "ma5": 3301.0,
-      "ma20": 3392.0,
-      "rsi": 39.22,
-      "macd": -16.23,
+      "margin_change": -81,
+      "change_5d": -3.63,
+      "volatility": 60.5,
+      "ma5": 3276.0,
+      "ma20": 3402.0,
+      "rsi": 45.05,
+      "macd": -19.24,
       "price_above_ma20": false,
-      "current_price": 3085.0,
+      "current_price": 3315.0,
       "data_source": "finmind",
-      "ev_score": 25,
-      "recommendation": "避開",
-      "reason": "技術破位且高波動，籌碼無支撐。",
-      "raw_response": "{\n\"ev_score\": 25,\n\"recommendation\": \"避開\",\n\"reason\": \"技術破位且高波動，籌碼無支撐。\"\n}",
+      "ev_score": 50,
+      "recommendation": "觀望",
+      "reason": "技術面弱於均線，籌碼無支撐，高波動風險。",
+      "raw_response": "{\n\"ev_score\": 50,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術面弱於均線，籌碼無支撐，高波動風險。\"\n}",
       "risk_level": "🔴 極高風險",
       "trading_plan": {
-        "entry_type": "none",
-        "entry_zone": null,
-        "stop_loss": null,
-        "take_profit_1": null,
-        "take_profit_2": null,
-        "risk_reward": null,
-        "action_now": "不進場",
-        "status": "🔴 無交易計畫",
-        "exit_strategy": null
+        "entry_type": "reclaim",
+        "entry_zone": [
+          3402.0,
+          3470.04
+        ],
+        "stop_loss": 3023.7,
+        "take_profit_1": 3779.62,
+        "take_profit_2": 4123.22,
+        "risk_reward": 0.83,
+        "action_now": "等站回 MA20",
+        "status": "⏳ 等站回 MA20",
+        "stop_pct": 12.0,
+        "exit_strategy": {
+          "initial_stop": 3023.7,
+          "stage_1": {
+            "target": 3779.62,
+            "action": "賣 1/3，停損上移至成本價",
+            "trigger": "漲幅達 +10%（3779.62）"
+          },
+          "stage_2": {
+            "target": 4123.22,
+            "action": "再賣 1/3，停損上移至 +10%",
+            "trigger": "漲幅達 +20%（4123.22）"
+          },
+          "stage_3": {
+            "action": "剩餘 1/3 設 MA20 移動停利",
+            "trigger": "跌破 MA20 全數出場",
+            "moving_stop": 3402.0
+          },
+          "time_stop": {
+            "days": 20,
+            "action": "持有 20 天未達 +10% 則出場",
+            "reason": "避免機會成本"
+          },
+          "technical_exit": {
+            "rsi_overbought": 75,
+            "action": "RSI > 75 或跌破 MA50 出場",
+            "reason": "技術面轉弱",
+            "rsi_current": 45.0,
+            "ma50": null,
+            "ma50_available": false
+          }
+        }
       },
       "signal_tag": "短線狙擊"
     },
@@ -627,51 +734,51 @@
       "gross_margin": 24.12,
       "net_margin": 11.19,
       "eps": 2.76,
-      "inst_buy_days": 0,
-      "margin_change": 36,
-      "change_5d": -5.59,
-      "volatility": 26.8,
-      "ma5": 70.64,
-      "ma20": 69.87,
-      "rsi": 52.34,
+      "inst_buy_days": 3,
+      "margin_change": 33,
+      "change_5d": -2.79,
+      "volatility": 26.14,
+      "ma5": 70.24,
+      "ma20": 69.91,
+      "rsi": 54.14,
       "macd": 0.29,
       "price_above_ma20": false,
-      "current_price": 69.2,
+      "current_price": 69.7,
       "data_source": "finmind",
-      "ev_score": 48,
+      "ev_score": 55,
       "recommendation": "觀望",
-      "reason": "股價弱於均線，籌碼無優勢，震盪市觀望。",
-      "raw_response": "{\n\"ev_score\": 48,\n\"recommendation\": \"觀望\",\n\"reason\": \"股價弱於均線，籌碼無優勢，震盪市觀望。\"\n}",
+      "reason": "基本面穩健但技術面弱於均線，籌碼面投信買盤支撐，整體中性偏多。",
+      "raw_response": "{\n\"ev_score\": 55,\n\"recommendation\": \"觀望\",\n\"reason\": \"基本面穩健但技術面弱於均線，籌碼面投信買盤支撐，整體中性偏多。\"\n}",
       "risk_level": "🟡 中風險",
       "trading_plan": {
         "entry_type": "now",
         "entry_zone": [
-          68.51,
-          69.89
+          69.0,
+          70.4
         ],
-        "stop_loss": 64.56,
-        "take_profit_1": 76.12,
-        "take_profit_2": 83.04,
-        "risk_reward": 1.49,
+        "stop_loss": 65.15,
+        "take_profit_1": 76.67,
+        "take_profit_2": 83.64,
+        "risk_reward": 1.53,
         "action_now": "現在可進場",
         "status": "🟢 現在可進場",
-        "stop_pct": 6.7,
+        "stop_pct": 6.5,
         "exit_strategy": {
-          "initial_stop": 64.56,
+          "initial_stop": 65.15,
           "stage_1": {
-            "target": 76.12,
+            "target": 76.67,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（76.12）"
+            "trigger": "漲幅達 +10%（76.67）"
           },
           "stage_2": {
-            "target": 83.04,
+            "target": 83.64,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（83.04）"
+            "trigger": "漲幅達 +20%（83.64）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 69.87
+            "moving_stop": 69.91
           },
           "time_stop": {
             "days": 20,
@@ -682,7 +789,7 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 52.3,
+            "rsi_current": 54.1,
             "ma50": null,
             "ma50_available": false
           }
@@ -700,50 +807,50 @@
       "net_margin": 19.65,
       "eps": 15.28,
       "inst_buy_days": 0,
-      "margin_change": 62,
-      "change_5d": -7.55,
-      "volatility": 48.34,
-      "ma5": 683.6,
-      "ma20": 696.35,
-      "rsi": 35.75,
-      "macd": -10.37,
+      "margin_change": -65,
+      "change_5d": -5.2,
+      "volatility": 48.01,
+      "ma5": 676.4,
+      "ma20": 694.45,
+      "rsi": 39.09,
+      "macd": -11.47,
       "price_above_ma20": false,
-      "current_price": 649.0,
+      "current_price": 656.0,
       "data_source": "finmind",
       "ev_score": 45,
       "recommendation": "觀望",
-      "reason": "技術面破位且波動高，籌碼無支撐。",
-      "raw_response": "{\n\"ev_score\": 45,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術面破位且波動高，籌碼無支撐。\"\n}",
+      "reason": "技術面弱於均線，籌碼無支撐，高波動風險。",
+      "raw_response": "{\n\"ev_score\": 45,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術面弱於均線，籌碼無支撐，高波動風險。\"\n}",
       "risk_level": "🔴 極高風險",
       "trading_plan": {
         "entry_type": "reclaim",
         "entry_zone": [
-          696.35,
-          710.28
+          694.45,
+          708.34
         ],
-        "stop_loss": 618.92,
-        "take_profit_1": 773.64,
-        "take_profit_2": 843.98,
+        "stop_loss": 617.23,
+        "take_profit_1": 771.53,
+        "take_profit_2": 841.67,
         "risk_reward": 0.83,
         "action_now": "等站回 MA20",
         "status": "⏳ 等站回 MA20",
         "stop_pct": 12.0,
         "exit_strategy": {
-          "initial_stop": 618.92,
+          "initial_stop": 617.23,
           "stage_1": {
-            "target": 773.64,
+            "target": 771.53,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（773.64）"
+            "trigger": "漲幅達 +10%（771.53）"
           },
           "stage_2": {
-            "target": 843.98,
+            "target": 841.67,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（843.98）"
+            "trigger": "漲幅達 +20%（841.67）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 696.35
+            "moving_stop": 694.45
           },
           "time_stop": {
             "days": 20,
@@ -754,7 +861,7 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 35.8,
+            "rsi_current": 39.1,
             "ma50": null,
             "ma50_available": false
           }
@@ -772,50 +879,50 @@
       "net_margin": 33.22,
       "eps": 6.65,
       "inst_buy_days": 1,
-      "margin_change": -10500,
-      "change_5d": -10.1,
-      "volatility": 50.6,
-      "ma5": 142.0,
-      "ma20": 150.22,
-      "rsi": 20.88,
-      "macd": -2.25,
+      "margin_change": -71,
+      "change_5d": -9.83,
+      "volatility": 49.53,
+      "ma5": 139.1,
+      "ma20": 149.95,
+      "rsi": 20.65,
+      "macd": -3.41,
       "price_above_ma20": false,
-      "current_price": 133.5,
+      "current_price": 133.0,
       "data_source": "finmind",
       "ev_score": 45,
       "recommendation": "觀望",
-      "reason": "技術超賣但趨勢弱，波動高，籌碼未轉強。",
-      "raw_response": "{\n\"ev_score\": 45,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術超賣但趨勢弱，波動高，籌碼未轉強。\"\n}",
+      "reason": "技術超賣但趨勢弱，波動高，籌碼支撐有限。",
+      "raw_response": "{\n\"ev_score\": 45,\n\"recommendation\": \"觀望\",\n\"reason\": \"技術超賣但趨勢弱，波動高，籌碼支撐有限。\"\n}",
       "risk_level": "🔴 極高風險",
       "trading_plan": {
         "entry_type": "reclaim",
         "entry_zone": [
-          150.22,
-          153.22
+          149.95,
+          152.95
         ],
-        "stop_loss": 133.52,
-        "take_profit_1": 166.89,
-        "take_profit_2": 182.07,
+        "stop_loss": 133.28,
+        "take_profit_1": 166.59,
+        "take_profit_2": 181.74,
         "risk_reward": 0.83,
         "action_now": "等站回 MA20",
         "status": "⏳ 等站回 MA20",
         "stop_pct": 12.0,
         "exit_strategy": {
-          "initial_stop": 133.52,
+          "initial_stop": 133.28,
           "stage_1": {
-            "target": 166.89,
+            "target": 166.59,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（166.89）"
+            "trigger": "漲幅達 +10%（166.59）"
           },
           "stage_2": {
-            "target": 182.07,
+            "target": 181.74,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（182.07）"
+            "trigger": "漲幅達 +20%（181.74）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 150.22
+            "moving_stop": 149.95
           },
           "time_stop": {
             "days": 20,
@@ -826,7 +933,7 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 20.9,
+            "rsi_current": 20.6,
             "ma50": null,
             "ma50_available": false
           }
@@ -843,51 +950,51 @@
       "gross_margin": null,
       "net_margin": null,
       "eps": 8.48,
-      "inst_buy_days": 0,
-      "margin_change": -202,
-      "change_5d": 0.44,
-      "volatility": 21.49,
-      "ma5": 113.0,
-      "ma20": 111.9,
-      "rsi": 55.17,
-      "macd": 0.51,
+      "inst_buy_days": 1,
+      "margin_change": 497,
+      "change_5d": 5.45,
+      "volatility": 21.4,
+      "ma5": 114.2,
+      "ma20": 112.2,
+      "rsi": 63.64,
+      "macd": 0.82,
       "price_above_ma20": true,
-      "current_price": 113.5,
+      "current_price": 116.0,
       "data_source": "finmind",
       "ev_score": 65,
-      "recommendation": "觀望",
-      "reason": "金融股EPS佳，技術面轉強，但籌碼無投信買盤支撐。",
-      "raw_response": "{\n\"ev_score\": 65,\n\"recommendation\": \"觀望\",\n\"reason\": \"金融股EPS佳，技術面轉強，但籌碼無投信買盤支撐。\"\n}",
+      "recommendation": "謹慎買入",
+      "reason": "金融股籌碼轉強，技術面突破均線，但波動率偏高需留意回檔。（缺失欄位：毛利率、淨利率）",
+      "raw_response": "{\n\"ev_score\": 65,\n\"recommendation\": \"謹慎買入\",\n\"reason\": \"金融股籌碼轉強，技術面突破均線，但波動率偏高需留意回檔。（缺失欄位：毛利率、淨利率）\"\n}",
       "risk_level": "🟡 中風險",
       "trading_plan": {
-        "entry_type": "now",
+        "entry_type": "pullback",
         "entry_zone": [
-          112.36,
-          114.64
+          112.2,
+          114.44
         ],
-        "stop_loss": 106.69,
-        "take_profit_1": 124.85,
-        "take_profit_2": 136.2,
+        "stop_loss": 106.52,
+        "take_profit_1": 124.65,
+        "take_profit_2": 135.99,
         "risk_reward": 1.67,
-        "action_now": "現在可進場",
-        "status": "🟢 現在可進場",
+        "action_now": "等回踩，不追價",
+        "status": "⏳ 等回踩 MA20",
         "stop_pct": 6.0,
         "exit_strategy": {
-          "initial_stop": 106.69,
+          "initial_stop": 106.52,
           "stage_1": {
-            "target": 124.85,
+            "target": 124.65,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（124.85）"
+            "trigger": "漲幅達 +10%（124.65）"
           },
           "stage_2": {
-            "target": 136.2,
+            "target": 135.99,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（136.2）"
+            "trigger": "漲幅達 +20%（135.99）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 111.9
+            "moving_stop": 112.2
           },
           "time_stop": {
             "days": 20,
@@ -898,13 +1005,13 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 55.2,
+            "rsi_current": 63.6,
             "ma50": null,
             "ma50_available": false
           }
         }
       },
-      "signal_tag": "短線狙擊"
+      "signal_tag": "長線配置"
     },
     {
       "code": "2412",
@@ -915,51 +1022,51 @@
       "gross_margin": 36.49,
       "net_margin": 16.98,
       "eps": 5.09,
-      "inst_buy_days": 2,
-      "margin_change": 130,
-      "change_5d": 4.81,
-      "volatility": 12.7,
-      "ma5": 148.4,
-      "ma20": 145.75,
+      "inst_buy_days": 0,
+      "margin_change": 21,
+      "change_5d": 4.44,
+      "volatility": 12.64,
+      "ma5": 149.7,
+      "ma20": 146.22,
       "rsi": 80.0,
-      "macd": 1.79,
+      "macd": 2.11,
       "price_above_ma20": true,
-      "current_price": 152.5,
+      "current_price": 153.0,
       "data_source": "finmind",
-      "ev_score": 70,
+      "ev_score": 75,
       "recommendation": "謹慎買入",
-      "reason": "基本面穩健，技術面超買，籌碼偏多。",
-      "raw_response": "{\n\"ev_score\": 70,\n\"recommendation\": \"謹慎買入\",\n\"reason\": \"基本面穩健，技術面超買，籌碼偏多。\"\n}",
+      "reason": "基本面穩健，技術面過熱，籌碼中性。",
+      "raw_response": "{\n\"ev_score\": 75,\n\"recommendation\": \"謹慎買入\",\n\"reason\": \"基本面穩健，技術面過熱，籌碼中性。\"\n}",
       "risk_level": "🟢 低風險",
       "trading_plan": {
         "entry_type": "pullback",
         "entry_zone": [
-          145.75,
-          148.66
+          146.22,
+          149.14
         ],
-        "stop_loss": 138.38,
-        "take_profit_1": 161.93,
-        "take_profit_2": 176.65,
+        "stop_loss": 138.82,
+        "take_profit_1": 162.45,
+        "take_profit_2": 177.22,
         "risk_reward": 1.67,
         "action_now": "等回踩，不追價",
         "status": "⏳ 等回踩 MA20",
         "stop_pct": 6.0,
         "exit_strategy": {
-          "initial_stop": 138.38,
+          "initial_stop": 138.82,
           "stage_1": {
-            "target": 161.93,
+            "target": 162.45,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（161.93）"
+            "trigger": "漲幅達 +10%（162.45）"
           },
           "stage_2": {
-            "target": 176.65,
+            "target": 177.22,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（176.65）"
+            "trigger": "漲幅達 +20%（177.22）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 145.75
+            "moving_stop": 146.22
           },
           "time_stop": {
             "days": 20,
@@ -987,51 +1094,51 @@
       "gross_margin": 4.27,
       "net_margin": -0.34,
       "eps": -0.21,
-      "inst_buy_days": 0,
-      "margin_change": 1296,
-      "change_5d": 1.58,
-      "volatility": 13.92,
-      "ma5": 19.21,
-      "ma20": 18.91,
-      "rsi": 65.79,
-      "macd": 0.14,
+      "inst_buy_days": 3,
+      "margin_change": 800,
+      "change_5d": 3.17,
+      "volatility": 14.77,
+      "ma5": 19.33,
+      "ma20": 18.95,
+      "rsi": 70.45,
+      "macd": 0.17,
       "price_above_ma20": true,
-      "current_price": 19.25,
+      "current_price": 19.55,
       "data_source": "finmind",
-      "ev_score": 65,
-      "recommendation": "謹慎買入",
-      "reason": "技術轉強，但基本面虧損且籌碼無明顯支撐。",
-      "raw_response": "{\n\"ev_score\": 65,\n\"recommendation\": \"謹慎買入\",\n\"reason\": \"技術轉強，但基本面虧損且籌碼無明顯支撐。\"\n}",
+      "ev_score": 60,
+      "recommendation": "觀望",
+      "reason": "獲利轉虧且RSI超買，雖站上均線但籌碼力道不足。",
+      "raw_response": "{\n\"ev_score\": 60,\n\"recommendation\": \"觀望\",\n\"reason\": \"獲利轉虧且RSI超買，雖站上均線但籌碼力道不足。\"\n}",
       "risk_level": "🟢 低風險",
       "trading_plan": {
-        "entry_type": "now",
+        "entry_type": "pullback",
         "entry_zone": [
-          19.06,
-          19.44
+          18.95,
+          19.33
         ],
-        "stop_loss": 18.09,
-        "take_profit_1": 21.18,
-        "take_profit_2": 23.1,
+        "stop_loss": 17.99,
+        "take_profit_1": 21.05,
+        "take_profit_2": 22.97,
         "risk_reward": 1.67,
-        "action_now": "現在可進場",
-        "status": "🟢 現在可進場",
+        "action_now": "等回踩，不追價",
+        "status": "⏳ 等回踩 MA20",
         "stop_pct": 6.0,
         "exit_strategy": {
-          "initial_stop": 18.09,
+          "initial_stop": 17.99,
           "stage_1": {
-            "target": 21.18,
+            "target": 21.05,
             "action": "賣 1/3，停損上移至成本價",
-            "trigger": "漲幅達 +10%（21.18）"
+            "trigger": "漲幅達 +10%（21.05）"
           },
           "stage_2": {
-            "target": 23.1,
+            "target": 22.97,
             "action": "再賣 1/3，停損上移至 +10%",
-            "trigger": "漲幅達 +20%（23.1）"
+            "trigger": "漲幅達 +20%（22.97）"
           },
           "stage_3": {
             "action": "剩餘 1/3 設 MA20 移動停利",
             "trigger": "跌破 MA20 全數出場",
-            "moving_stop": 18.91
+            "moving_stop": 18.95
           },
           "time_stop": {
             "days": 20,
@@ -1042,13 +1149,13 @@
             "rsi_overbought": 75,
             "action": "RSI > 75 或跌破 MA50 出場",
             "reason": "技術面轉弱",
-            "rsi_current": 65.8,
+            "rsi_current": 70.5,
             "ma50": null,
             "ma50_available": false
           }
         }
       },
-      "signal_tag": "長線配置"
+      "signal_tag": "短線狙擊"
     }
   ],
   "skipped_stocks": []

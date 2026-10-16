@@ -1,19 +1,19 @@
 {
-  "total_predictions": 556,
-  "verified_count": 406,
-  "correct_count": 245,
-  "incorrect_count": 161,
+  "total_predictions": 570,
+  "verified_count": 420,
+  "correct_count": 251,
+  "incorrect_count": 169,
   "pending_count": 114,
-  "accuracy_rate": 60.3,
+  "accuracy_rate": 59.8,
   "current_version": 1,
-  "last_updated": "2026-10-16T02:01:09.213053+08:00",
+  "last_updated": "2026-10-17T01:48:54.167159+08:00",
   "version_stats": [
     {
       "version": 1,
-      "predictions": 556,
-      "verified": 406,
-      "correct": 245,
-      "accuracy": 60.3
+      "predictions": 570,
+      "verified": 420,
+      "correct": 251,
+      "accuracy": 59.8
     }
   ],
   "model_stats": {
@@ -24,36 +24,36 @@
       "accuracy": null
     },
     "groq": {
-      "predictions": 556,
-      "verified": 406,
-      "correct": 245,
-      "accuracy": 60.3
+      "predictions": 570,
+      "verified": 420,
+      "correct": 251,
+      "accuracy": 59.8
     }
   },
-  "expectancy": 0.96,
-  "avg_win_pct": -0.12,
-  "avg_loss_pct": 2.6,
-  "expectancy_sample_count": 406,
+  "expectancy": 0.81,
+  "avg_win_pct": -0.24,
+  "avg_loss_pct": 2.37,
+  "expectancy_sample_count": 420,
   "alpha_stats": {
-    "graded_records": 42,
-    "trade_records": 6,
-    "classification_accuracy_pct": 21.4,
-    "trade_hit_rate_pct": 33.3,
-    "avg_alpha_pct": 0.17,
-    "avg_win_pct": 2.93,
+    "graded_records": 56,
+    "trade_records": 7,
+    "classification_accuracy_pct": 26.8,
+    "trade_hit_rate_pct": 42.9,
+    "avg_alpha_pct": 0.59,
+    "avg_win_pct": 3.27,
     "avg_loss_pct": 6.1,
-    "expectancy_pct": -3.09
+    "expectancy_pct": -2.08
   },
   "raw_category_accuracy": {
     "buy": {
-      "verified": 26,
-      "correct": 15,
-      "accuracy": 57.7
+      "verified": 27,
+      "correct": 16,
+      "accuracy": 59.3
     },
     "filter": {
-      "verified": 380,
-      "correct": 230,
-      "accuracy": 60.5
+      "verified": 393,
+      "correct": 235,
+      "accuracy": 59.8
     }
   },
   "verify_criteria_version": 2,
