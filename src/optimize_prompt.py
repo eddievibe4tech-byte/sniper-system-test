@@ -220,6 +220,12 @@ class ActionStripCodeFences(BTNode):
         if stripped.strip() != original.strip():
             ctx.cleaned_text = stripped.strip()
             ctx.repair_logs.append("已移除 Markdown 圍欄")
+        else:
+            ctx.cleaned_text = stripped.strip()
+        # 🛡️ 最終檢查：若清洗後仍包含 ```，視為失敗（理論上不該發生，因步驟 4 已兜底清除）
+        if "```" in ctx.cleaned_text:
+            ctx.problems.append("仍包含 Markdown 代碼塊標記 (```)")
+            return BTStatus.FAILURE
         return BTStatus.SUCCESS
 
 
@@ -456,6 +462,13 @@ def generate_with_smart_retry(system_prompt: str, user_prompt: str,
 
         # 透過行為樹進行本地清洗與合規檢驗（0 Token 優先修復）
         cleaned_rules, problems = clean_and_validate_with_bt(raw)
+
+        # 🛡️ 最終檢查：確保沒有 Markdown 代碼塊（雙重保險，防止清洗管線漏網）
+        if cleaned_rules and "```" in cleaned_rules:
+            logger.warning("⚠️ 清洗後仍包含 Markdown，視為失敗")
+            problems = list(problems) + ["最終輸出仍包含 Markdown 代碼塊"]
+            cleaned_rules = None
+
         if cleaned_rules:
             logger.info("✅ 第 %d 次嘗試通過準則驗證", attempt)
             return cleaned_rules
@@ -467,7 +480,8 @@ def generate_with_smart_retry(system_prompt: str, user_prompt: str,
             f"你先前產出的策略規則存在以下問題：{', '.join(problems)}。\n"
             f"【先前草稿】：\n{raw}\n\n"
             "請在維持原有良好邏輯的前提下修正上述問題。"
-            "請注意：只需輸出純交易準則條列，嚴禁提及任何格式或 JSON。"
+            "⚠️ 重要提醒：請輸出純交易準則條列，嚴禁使用任何 Markdown 代碼塊（```），"
+            "嚴禁提及任何格式或 JSON。"
         )
 
     return None
@@ -527,20 +541,27 @@ def main() -> int:
         "1. 只需輸出準則文字（含條列點），嚴禁輸出程式碼、佔位符或 JSON 範例。\n"
         "2. 必須涵蓋：金融股例外處理、假突破防守、法人/散戶融資逆向警訊。\n"
         "3. 缺失欄位不得視為 0 或負面證據。\n"
-        "4. 長度控制在 150-2500 字，具體可操作（附數值門檻）。"
+        "4. 長度控制在 150-2500 字，具體可操作（附數值門檻）。\n"
+        "5. 輸出必須是純文本的策略規則，嚴禁使用任何 Markdown 代碼塊（```）。"
     )
     user = (
         f"當前模型勝率：{acc:.1f}%（已驗證 {len(verified)} 筆）。\n"
-        f"現行 V{cur} 決策規則參考：\n```\n{tpl[:1200]}\n```\n\n"
+        f"現行 V{cur} 決策規則參考：\n{tpl[:1200]}\n\n"
         f"近期典型虧損樣本（系統建議 vs 實際結果）：\n"
         f"{json.dumps(errors, ensure_ascii=False, indent=1)}\n\n"
         "請提煉出 4~6 條具體、可操作的決策檢驗準則，供分析模型作為判斷指引。"
-        "只輸出準則條列本身。"
+        "只輸出準則條列本身，不要包含任何 Markdown 標記。"
     )
 
     strategy_rules = generate_with_smart_retry(system, user, max_retries=3)
     if not strategy_rules:
         logger.error("🚨 重試後仍無法取得可用策略準則，維持舊版本（V%d）", cur)
+        return 1
+
+    # 🛡️ 最終檢查：確保沒有 Markdown 代碼塊（寫入前最後防線）
+    if "```" in strategy_rules:
+        logger.error("🚨 最終檢查失敗：策略規則仍包含 Markdown 代碼塊")
+        logger.error("內容預覽：%s", strategy_rules[:500])
         return 1
 
     # 本地縫合：保證 14 個佔位符 100% 完整
