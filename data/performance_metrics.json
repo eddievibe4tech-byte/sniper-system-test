@@ -5,8 +5,8 @@
   "incorrect_count": 169,
   "pending_count": 114,
   "accuracy_rate": 59.8,
-  "current_version": 1,
-  "last_updated": "2026-10-17T01:48:54.167159+08:00",
+  "current_version": 2,
+  "last_updated": "2026-10-18T11:36:37.740170+08:00",
   "version_stats": [
     {
       "version": 1,
@@ -41,7 +41,7 @@
     "trade_hit_rate_pct": 42.9,
     "avg_alpha_pct": 0.59,
     "avg_win_pct": 3.27,
-    "avg_loss_pct": 6.1,
+    "avg_loss_pct": 6.09,
     "expectancy_pct": -2.08
   },
   "raw_category_accuracy": {
