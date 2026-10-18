@@ -950,6 +950,20 @@ jobs:
 
 ## 版本資訊
 
+### v2.9.2（2026-10-18）
+
+**🔧 特價獵人前端欄位結構修正 — 對齊後端扁平輸出**
+
+修正 `index.html` 中 `loadDiscountHunter()` 讀取不存在的嵌套結構（`t.zones.small_zone`／`t.budget_allocation.first_batch`／`t.proximity.status`），導致特價區間顯示為「-」的問題：
+
+1. **改用後端實際扁平欄位**：`t.small_zone`、`t.big_zone`、`t.first_batch_budget`、`t.hunt_reserve_budget`、`t.status`、`t.action`。
+2. **新增漲跌幅顯示**：顯示 `change_pct`（相對基準價）與「距離小特價 %」計算。
+3. **狀態著色簡化**：直接依 `status` 字串中的 🟢／🟡／⚠️ 著色；錯誤時以 `console.error` 記錄並顯示載入失敗提示。
+
+**其他變更**
+- Dashboard 標題版本號同步為 v2.9.2（原滯留 v2.6.0）。
+- `src/quant_engine/__init__.py`：`__version__` 2.9.1 → 2.9.2。
+
 ### v2.6.0（2026-10-11）
 
 **🔄 DCA Allocator 白話化重構 — 先給動作、再給理由、最後給數據**
