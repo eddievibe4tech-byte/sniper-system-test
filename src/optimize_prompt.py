@@ -9,6 +9,11 @@
   - 原本 workflow 引用不存在的 src.optimize_prompt 模組 → 補齊本模組。
   - secret 名稱對齊既有 GROQ_API_KEY（與 src/groq_client.py 一致）。
   - history schema 相容：prompt_history.json 使用 "versions" 陣列（非 "history"）。
+
+🛡️ 三重防護修正（解決 Groq 模型產生格式錯誤的問題）：
+  1. 減少錯誤樣本至 10 筆，避免淹沒系統指令。
+  2. 強化 System Prompt，加入明確的 Few-shot 範例與硬約束警告。
+  3. 增加最多 3 次的自動重試機制，並將驗證失敗原因回饋給模型修正。
 """
 import json
 import logging
@@ -70,7 +75,7 @@ def groq_complete(system: str, user: str) -> str:
     last_err = None
     for model in _model_chain():
         payload = {"model": model,
-                   "temperature": 0.4,
+                   "temperature": 0.2,  # 🛡️ 降低 temperature 提升格式遵循度
                    "messages": [{"role": "system", "content": system},
                                 {"role": "user", "content": user}]}
         for attempt in range(1, max_attempts + 1):
@@ -108,12 +113,12 @@ def groq_complete(system: str, user: str) -> str:
     raise RuntimeError(f"Groq 全模型鏈失敗：{last_err}")
 
 
-def validate(text: str):
+def validate(text: str) -> list:
     """契約驗證：佔位符、輸出 JSON 契約欄位、長度範圍。回傳問題清單（空＝通過）。"""
     problems = [f"缺佔位符{x}" for x in REQUIRED_PLACEHOLDERS if x not in text]
     problems += [f"缺契約{x}" for x in REQUIRED_CONTRACT if x not in text]
     if not (200 < len(text) < 4000):
-        problems.append("長度異常")
+        problems.append(f"長度異常 (目前 {len(text)} 字)")
     return problems
 
 
@@ -149,6 +154,7 @@ def main() -> int:
 
     # 🆕 v2.1：錯誤樣本帶入 alpha/net/hurdle/criteria 審計欄，
     # 讓優化器吃到的是「alpha 級錯誤」（例如追高跑輸大盤），而非單純跌漲。
+    # 🛡️ 修正 1：減少錯誤樣本數量（20 → 10），避免淹沒系統指令
     errors = [{
         "code": r.get("stock_code"), "name": r.get("stock_name"),
         "recommendation": (r.get("prediction") or {}).get("recommendation"),
@@ -158,20 +164,67 @@ def main() -> int:
         "alpha": r["actual_result"].get("alpha_pct"),
         "hurdle": r["actual_result"].get("hurdle_pct"),
         "failed_criteria": r["actual_result"].get("criteria"),
-    } for r in verified if not r["actual_result"].get("was_correct")][:20]
+    } for r in verified if not r["actual_result"].get("was_correct")][:10]
 
-    system = ("你是量化 prompt 工程師。重寫台股分析 prompt 以提升 alpha 級勝率。硬約束："
-              f"保留佔位符 {', '.join(REQUIRED_PLACEHOLDERS)}；"
-              '僅輸出含 "ev_score","recommendation","reason" 的 JSON；'
-              "缺失欄位不得視為 0；金融股忽略營收/EPS；只輸出新 prompt 本文。")
-    user = (f"現行 V{cur} prompt：\n```\n{tpl}\n```\n勝率 {acc:.1f}%（{len(verified)} 筆）。\n"
-            f"錯誤樣本（含 alpha 與失敗條件）：\n{json.dumps(errors, ensure_ascii=False, indent=2)}\n"
-            "請歸因錯誤模式（追高、忽略籌碼、震盪市誤判、避開標準過鬆）並產出改進版。")
+    # 🛡️ 修正 2：強化系統提示，加入 Few-shot 範例與明確警告
+    system = (
+        "你是量化 prompt 工程師。你的任務是**重寫台股分析 prompt**，輸出必須是**完整的 prompt 文本**（不是 JSON）。\n\n"
+        "【硬約束】（違反任何一項都會導致驗證失敗）：\n"
+        f"1. 必須保留所有 14 個佔位符：{', '.join(REQUIRED_PLACEHOLDERS)}\n"
+        '2. 必須要求模型輸出 JSON，且包含 "ev_score"（0-100）、"recommendation"（積極買入/謹慎買入/觀望/避開）、"reason"（≤30字）\n'
+        "3. 缺失欄位不得視為 0 或負面證據\n"
+        "4. 金融股忽略營收/EPS，改看股價位置與籌碼\n"
+        "5. 輸出必須是完整的 prompt 文本，長度 200-4000 字\n\n"
+        "【正確範例】（你的輸出應該類似這種結構）：\n"
+        "```text\n"
+        "請分析以下台股數據：\n"
+        "股票代碼：{code}\n"
+        "股票名稱：{name}\n"
+        "市場體制：{regime}\n"
+        "營收YoY：{revenue_yoy}%\n"
+        "...\n"
+        "請輸出 JSON：{\"ev_score\": 75, \"recommendation\": \"謹慎買入\", \"reason\": \"基本面穩但籌碼弱\"}\n"
+        "```\n\n"
+        "請基於錯誤樣本歸因錯誤模式（追高、忽略籌碼、震盪市誤判），並產出改進版 prompt。"
+    )
+    user = (f"現行 V{cur} prompt：\n```\n{tpl}\n```\n\n"
+            f"當前勝率：{acc:.1f}%（已驗證 {len(verified)} 筆）。\n\n"
+            f"錯誤樣本（系統建議 vs 實際結果）：\n{json.dumps(errors, ensure_ascii=False, indent=2)}\n\n"
+            "請分析這些錯誤的共同模式，並產出改進版 prompt。記住：輸出必須是完整的 prompt 文本，包含所有 14 個佔位符。")
 
-    new_tpl = extract_new_prompt(groq_complete(system, user))
-    problems = validate(new_tpl)
-    if problems:
-        logger.error("契約驗證失敗：%s", problems)
+    # 🛡️ 修正 3：增加重試機制（最多 3 次），並將失敗原因回饋給模型
+    max_retries = 3
+    new_tpl = None
+    current_system = system
+
+    for attempt in range(max_retries):
+        try:
+            raw_response = groq_complete(current_system, user)
+            new_tpl = extract_new_prompt(raw_response)
+            problems = validate(new_tpl)
+
+            if not problems:
+                logger.info("✅ 第 %d 次嘗試通過驗證", attempt + 1)
+                break
+            else:
+                logger.warning("⚠️ 第 %d 次嘗試驗證失敗：%s", attempt + 1, problems)
+                if attempt < max_retries - 1:
+                    # 下次嘗試時，明確告訴模型哪裡錯了
+                    current_system += f"\n\n【上次嘗試失敗原因，請務必修正】：{', '.join(problems)}"
+                continue
+        except Exception as e:
+            logger.error("❌ 第 %d 次嘗試發生異常：%s", attempt + 1, e)
+            if attempt < max_retries - 1:
+                continue
+
+    if not new_tpl:
+        logger.error("🚨 重試 %d 次後仍無法生成符合契約的 prompt，請檢查 Groq API 或手動調整現有 prompt", max_retries)
+        return 1
+
+    # 最終安全檢查
+    final_problems = validate(new_tpl)
+    if final_problems:
+        logger.error("🚨 最終驗證仍失敗：%s", final_problems)
         return 1
 
     nv = cur + 1
@@ -192,7 +245,7 @@ def main() -> int:
     meta["total_runs"] = int(meta.get("total_runs", 0)) + 1
     (DATA_DIR / "prompt_history.json").write_text(
         json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8")
-    logger.info("✅ 產出 main_analysis_v%d.txt（V%d → V%d）", nv, cur, nv)
+    logger.info("🎉 成功產出 main_analysis_v%d.txt（V%d → V%d）", nv, cur, nv)
     return 0
 
 
