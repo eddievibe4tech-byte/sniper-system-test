@@ -9,5 +9,5 @@ from .config import EngineConfig, MarketFSMConfig, PortfolioFSMConfig, Execution
 from .engine import DecisionEngine
 from .records import DecisionRecord
 
-__version__ = "1.0.0"
+__version__ = "2.8.0"
 __all__ = ["DecisionEngine", "EngineConfig", "DecisionRecord"]
