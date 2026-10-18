@@ -36,6 +36,15 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest
+
+      # 🛡️ 前置自檢：行為樹文字清洗管線 smoke test，失敗立即中斷，
+      #    避免在引擎已損壞的狀態下產生錯誤分析數據。
+      - name: Run Self-Diagnostic Tests (行為樹與決策引擎自檢)
+        env:
+          PYTHONPATH: .
+        run: |
+          pytest tests/unit/test_rules_cleaner.py -q
 
       - name: Execute Daily Analysis (Full Mode)
         env:

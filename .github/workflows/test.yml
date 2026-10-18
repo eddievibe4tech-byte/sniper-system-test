@@ -1,0 +1,39 @@
+name: Unit Tests & Quality Gate
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # 支援在 GitHub 介面手動觸發
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip" # 自動快取 pip 套件，加快重複執行速度
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest pytest-cov
+
+      - name: Run Pytest Suite
+        env:
+          # 設定 PYTHONPATH 確保 tests/ 可直接 import src 下的模組
+          PYTHONPATH: .
+        run: |
+          pytest tests/unit/test_rules_cleaner.py -v \
+            --cov=src/optimize_prompt \
+            --cov-report=term-missing \
+            --durations=10
