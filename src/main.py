@@ -621,6 +621,22 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
     # 🔴 修訂：期望值只計買入訊號、avg_loss 取絕對值——详见 compute_alpha_stats()。
     alpha_stats = compute_alpha_stats(verified_records)
 
+    # 🛡️ 修正：優先從 prompt_history.json 讀取 current_version，確保前端顯示與實際優化版本同步。
+    # 舊邏輯（max(version_stats)）只看 telemetry 記錄中出現過的版本，若新版本（如 V2）
+    # 剛由 Weekly Optimization 產出、尚未有對應 telemetry 記錄，儀表板會停留在舊版本号。
+    history_path = DATA_DIR / 'prompt_history.json'
+    current_version = 1
+    if history_path.exists():
+        try:
+            history = json.loads(history_path.read_text(encoding='utf-8'))
+            current_version = int(history.get('current_version', 1))
+            logger.info(f"📌 從 prompt_history.json 讀取當前版本: V{current_version}")
+        except Exception as e:
+            logger.warning(f"讀取 prompt_history.json 失敗: {e}，退回 telemetry 計算")
+            current_version = max(int(v) for v in version_stats.keys()) if version_stats else 1
+    else:
+        current_version = max(int(v) for v in version_stats.keys()) if version_stats else 1
+
     metrics = {
         'total_predictions': total_predictions,
         'verified_count': verified_count,
@@ -628,7 +644,7 @@ def update_performance_metrics(telemetry_data: Optional[Dict] = None):
         'incorrect_count': incorrect_count,
         'pending_count': pending_count,
         'accuracy_rate': accuracy_display,
-        'current_version': max(int(v) for v in version_stats.keys()) if version_stats else 1,
+        'current_version': current_version,  # ✅ 使用修正後的版本號（優先 prompt_history.json）
         'last_updated': now.isoformat(),
         'version_stats': version_stats_list,
         'model_stats': model_stats,  # 🆕 P2-2：rule-based-engine vs groq 勝率
