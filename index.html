@@ -2449,6 +2449,23 @@
                 };
                 const colorOf = a => a === 'STOP_LOSS' ? palette.red : a === 'TAKE_PROFIT' ? palette.green : palette.blue;
 
+                // 🛡️ Review 建議4：reasons 分層渲染——只顯關鍵理由（最多 2 條），
+                // 過程性攔截理由收進 details，避免 50 檔股票的理由陣列淹沒重點
+                function renderReasons(dec) {
+                    const critical = (dec.reasons_critical && dec.reasons_critical.length)
+                        ? dec.reasons_critical
+                        : (dec.reasons || []).slice(0, 2);
+                    const process = (dec.reasons_process || [])
+                        .concat((dec.reasons || []).slice(critical.length));
+                    let out = `<p class="text-xs text-gray-500 mt-1">理由: ${critical.map(escapeHTML).join('; ')}</p>`;
+                    if (process.length > 0) {
+                        out += `<details class="mt-1"><summary class="text-xs text-gray-400 cursor-pointer">其餘 ${process.length} 條過程記錄（點擊展開）</summary>` +
+                               process.map(r => `<p class="text-xs text-gray-400">· ${escapeHTML(r)}</p>`).join('') +
+                               '</details>';
+                    }
+                    return out;
+                }
+
                 let html = '<div class="space-y-2">' + html_env;
 
                 if (active.length > 0) {
@@ -2462,8 +2479,7 @@
                             </div>
                             <p class="text-sm">${escapeHTML(dec.decision_text)}</p>
                             <p class="text-xs text-gray-600 mt-1">大盤: ${escapeHTML(dec.market_state)} ｜ 帳戶: ${escapeHTML(dec.portfolio_state)}</p>
-                            <p class="text-xs text-gray-500 mt-1">理由: ${(dec.reasons || []).map(escapeHTML).join('; ')}</p>
-                        </div>`;
+                            ${renderReasons(dec)}</div>`;
                     });
                 }
 

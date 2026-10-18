@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-18T10:24:54.016186+08:00",
+  "updated_at": "2026-10-18T10:40:37.205946+08:00",
   "environment": {
     "market_state": "BULL",
     "market_state_label": "牛市 (可積極做多)",
@@ -9,7 +9,9 @@
     "locked_until": null,
     "peak_capital": 1000000.0,
     "drawdown_pct": 0.0,
-    "reasons": []
+    "reasons": [
+      "大盤站上季線與年線，進入牛市"
+    ]
   },
   "market_snapshot": {
     "index": 108.9,
@@ -22,7 +24,7 @@
   },
   "decisions": [
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "2330",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -32,10 +34,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "未突破 20MA (收盤 2420.0 ≤ MA20 2491.0)"
+      ],
+      "reasons_critical": [],
+      "reasons_process": [
+        "未突破 20MA (收盤 2420.0 ≤ MA20 2491.0)"
       ]
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "2308",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -45,10 +51,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "未突破 20MA (收盤 1635.0 ≤ MA20 1848.25)"
+      ],
+      "reasons_critical": [],
+      "reasons_process": [
+        "未突破 20MA (收盤 1635.0 ≤ MA20 1848.25)"
       ]
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "2454",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -58,10 +68,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "未突破 20MA (收盤 4250.0 ≤ MA20 4790.5)"
+      ],
+      "reasons_critical": [],
+      "reasons_process": [
+        "未突破 20MA (收盤 4250.0 ≤ MA20 4790.5)"
       ]
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "2881",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -71,10 +85,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "突破 20MA (收盤 161.5 > MA20 154.28)"
-      ]
+      ],
+      "reasons_critical": [
+        "突破 20MA (收盤 161.5 > MA20 154.28)"
+      ],
+      "reasons_process": []
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "2317",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -84,10 +102,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "未突破 20MA (收盤 244.0 ≤ MA20 249.38)"
+      ],
+      "reasons_critical": [],
+      "reasons_process": [
+        "未突破 20MA (收盤 244.0 ≤ MA20 249.38)"
       ]
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "2382",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -97,10 +119,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "未突破 20MA (收盤 322.0 ≤ MA20 333.07)"
+      ],
+      "reasons_critical": [],
+      "reasons_process": [
+        "未突破 20MA (收盤 322.0 ≤ MA20 333.07)"
       ]
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "3711",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -110,10 +136,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "未突破 20MA (收盤 671.0 ≤ MA20 698.65)"
+      ],
+      "reasons_critical": [],
+      "reasons_process": [
+        "未突破 20MA (收盤 671.0 ≤ MA20 698.65)"
       ]
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "3017",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -123,10 +153,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "未突破 20MA (收盤 3315.0 ≤ MA20 3402.0)"
+      ],
+      "reasons_critical": [],
+      "reasons_process": [
+        "未突破 20MA (收盤 3315.0 ≤ MA20 3402.0)"
       ]
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "1504",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -136,10 +170,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "未突破 20MA (收盤 69.7 ≤ MA20 69.91)"
+      ],
+      "reasons_critical": [],
+      "reasons_process": [
+        "未突破 20MA (收盤 69.7 ≤ MA20 69.91)"
       ]
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "1519",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -149,10 +187,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "未突破 20MA (收盤 656.0 ≤ MA20 694.45)"
+      ],
+      "reasons_critical": [],
+      "reasons_process": [
+        "未突破 20MA (收盤 656.0 ≤ MA20 694.45)"
       ]
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "2303",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -162,10 +204,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "未突破 20MA (收盤 133.0 ≤ MA20 149.95)"
+      ],
+      "reasons_critical": [],
+      "reasons_process": [
+        "未突破 20MA (收盤 133.0 ≤ MA20 149.95)"
       ]
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "2882",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -175,10 +221,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "突破 20MA (收盤 116.0 > MA20 112.2)"
-      ]
+      ],
+      "reasons_critical": [
+        "突破 20MA (收盤 116.0 > MA20 112.2)"
+      ],
+      "reasons_process": []
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "2412",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -188,10 +238,14 @@
       "config_version": "1.0.0",
       "reasons": [
         "突破 20MA (收盤 153.0 > MA20 146.22)"
-      ]
+      ],
+      "reasons_critical": [
+        "突破 20MA (收盤 153.0 > MA20 146.22)"
+      ],
+      "reasons_process": []
     },
     {
-      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "timestamp": "2026-10-18T10:40:37.205946+08:00",
       "symbol": "2002",
       "market_state": "牛市 (可積極做多)",
       "portfolio_state": "正常運行",
@@ -201,7 +255,11 @@
       "config_version": "1.0.0",
       "reasons": [
         "突破 20MA (收盤 19.55 > MA20 18.95)"
-      ]
+      ],
+      "reasons_critical": [
+        "突破 20MA (收盤 19.55 > MA20 18.95)"
+      ],
+      "reasons_process": []
     }
   ],
   "config": {

@@ -29,6 +29,9 @@ class StockData:
     ma20: float = 0.0
     has_position: bool = False
     tp_taken: bool = False   # 🛡️ 鋼板五：移動停利是否已平過倉（防重複部分平倉）
+    # 🛡️ Review 🔴1：tp_taken 綁定的持倉成本。停利觸發時記下當時 cost_price，
+    # 跨日還原時若 cost_price 改變（換手／加碼）→ 旗標作廢重置，避免「終身免疫」
+    tp_taken_cost_price: float = 0.0
 
 
 @dataclass

@@ -49,6 +49,9 @@ class ActionTakeProfit(BTNode):
 
     def tick(self, bb: Blackboard) -> NodeStatus:
         bb.stock.tp_taken = True  # 🛡️ 標記，防重複平倉
+        # 🛡️ Review 🔴1：旗標綁定當前持倉成本——日後 cost_price 改變（換手／加碼）
+        # 即視為新倉位，持久化還原時 tp_taken 應重置，避免該股票「終身免疫」停利保護
+        bb.stock.tp_taken_cost_price = bb.stock.cost_price
         bb.action = "TAKE_PROFIT"
         bb.decision = f"【移動停利】{bb.stock.symbol} 自高點回檔，平倉 {self.cfg.tp_close_ratio:.0%}。"
         return NodeStatus.SUCCESS

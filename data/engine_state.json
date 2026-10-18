@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-18T10:24:55.029054+08:00",
+  "updated_at": "2026-10-18T10:40:38.231268+08:00",
   "peak_capital": 1000000.0,
   "current_capital": 1000000.0,
   "consecutive_losses": 0,
@@ -8,5 +8,5 @@
   "market_state": "BULL",
   "portfolio_state": "NORMAL",
   "last_market_date": "2026-10-18",
-  "tp_taken_symbols": []
+  "tp_taken_symbols": {}
 }
