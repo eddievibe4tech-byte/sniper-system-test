@@ -149,15 +149,75 @@ class ConditionNoFormatPollution(BTNode):
 
 
 class ActionStripCodeFences(BTNode):
-    """拔除 ```markdown / ```text / ```json 等圍欄外殼，保留內部內容（不丟失資料）"""
+    """🛡️ 加強解析：處理各種 Markdown 圍欄格式（```json / ```text / ```python 等）
+
+    根因修復：LLM 偶爾會模仿範例而把整份準則包進 ```json ... ``` 代碼塊，
+    舊正則未容許圍欄標籤後的首行空白/縮排，導致脫圍欄失敗、測試紅燈。
+    策略：先以多行模式逐行拔除圍欄行（含前後空白），再兜底清除任何殘留 ```。
+    """
+    _FENCE_LINE_RE = re.compile(r"^[ \t]*```[a-zA-Z0-9_-]*[ \t]*$", flags=re.M)
+    # 成對內嵌圍欄：開圍欄必須「整行僅含 ```（可帶語言標籤與前後空白）」，
+    # 內容非貪婪、收圍欄同樣須整行成立 → 絕不會跨越/誤吞有效準則文字。
+    _FENCE_PAIR_RE = re.compile(
+        r"(?:^|(?<=\n))[ \t]*```[a-zA-Z0-9_-]*[ \t]*\n.*?\n[ \t]*```[ \t]*(?=\n|$)",
+        flags=re.S)
+    # 開圍欄「前面」允許任意行內前綴（如碎碎念 "…JSON 格式如下：```json"）：
+    # 先錨定行首/換行、僅容許同行內文字，再非貪婪吞掉整段雜訊；合法準則文字不含 ``` → 不會跨越誤刪。
+    _FENCE_INLINE_OPEN_RE = re.compile(
+        r"(?:^|(?<=\n))[^\n]*?[ \t]*```[a-zA-Z0-9_-]*[ \t]*\n.*?\n[ \t]*```[ \t]*(?=\n|$)",
+        flags=re.S)
+
+    @classmethod
+    def _drop_outermost_pair(cls, text: str):
+        """若最外層是一对「整行開圍欄 + 整行收圍欄」（LLM 把全文包進代碼塊），
+        剝除外殼、保留內部內容（零資料遺失）。回傳新文字或 None。"""
+        m_open = re.match(r"[ \t]*```[a-zA-Z0-9_-]*[ \t]*\n", text)
+        if not m_open:
+            return None
+        body = text[m_open.end():]
+        m_close = re.search(r"\n[ \t]*```[ \t]*$", body)
+        if not m_close:
+            return None
+        inner = body[:m_close.start()].strip()
+        return inner or None
+
     def tick(self, ctx: CleanContext) -> BTStatus:
-        text = ctx.cleaned_text or ctx.raw_text
-        stripped = re.sub(r"^```[a-zA-Z]*\s*\n?", "", text)
-        stripped = re.sub(r"\n?```\s*$", "", stripped)
-        # 處理內嵌 ```json ... ``` 包夾：只去圍欄行、留內容
-        stripped = re.sub(r"```[a-zA-Z]*\n", "", stripped)
-        stripped = re.sub(r"```", "", stripped)
-        if stripped.strip() != text.strip():
+        original = ctx.cleaned_text or ctx.raw_text
+        text = original
+        # 0a) 🛡️ 最外殼剝除：整份準則被包進 ```markdown ... ``` 時，只去外殼留內容。
+        outer = self._drop_outermost_pair(text)
+        if outer is not None:
+            text = outer
+        # 0b) 切除「內嵌 ```json ... ``` 成對區塊」（純格式雜訊，整塊丟棄）。
+        #     必須在通用圍欄行拔除「之前」執行：若先拔圍欄行，碎碎念（如
+        #     "請輸出合法的 JSON 格式如下："）會與 JSON 資料行失去邊界而殘留。
+        pruned = self._FENCE_PAIR_RE.sub("\n", text).strip()
+        if pruned and "```" not in pruned:
+            text = pruned
+        else:
+            # 0c) 內嵌圍欄前帶行內前綴（如碎碎念 "…JSON 格式如下：```json\n{...}\n```"）：
+            #     連同前綴整塊切除；合法準則文字不含 ``` → 非貪婪匹配不會跨越誤刪。
+            pruned2 = self._FENCE_INLINE_OPEN_RE.sub("\n", text).strip()
+            if pruned2 and "```" not in pruned2:
+                text = pruned2
+            else:
+                # 0d) 黏行兜底：碎碎念與開圍欄同行且無收圍欄等罕見變體，
+                #     以「JSON 字眼 + 圍欄」共現為強訊號，從該行起整段切除
+                #     （合法範本絕不會同時出現兩者 → 不誤刪；僅當保留正文 >120 字才採用）。
+                m = re.search(r"^.*?\bJSON\b.*?```.*$", text, flags=re.S | re.M)
+                if m:
+                    head = text[:m.start()].rstrip()
+                    if len(head) > 120:
+                        text = head
+        # 1) 逐行拔除「整行圍欄」（```json / ```text / ``` / ```python，容忍前後空白與縮排）
+        stripped = self._FENCE_LINE_RE.sub("", text)
+        # 2) 拔除「行首開圍欄」但同行有內文的情況（如 "```json {...}"）：只去圍欄標記、留內容
+        stripped = re.sub(r"^[ \t]*```[a-zA-Z0-9_-]*(?=[ \t]|\b)[ \t]*", "", stripped, flags=re.M)
+        # 3) 拔除「行尾收圍欄」（如 "{...} ```"）
+        stripped = re.sub(r"[ \t]*```[ \t]*$", "", stripped, flags=re.M)
+        # 4) 兜底：清除任何殘留 ``` 標記，保留內部內容（不丟失資料）
+        stripped = stripped.replace("```", "")
+        if stripped.strip() != original.strip():
             ctx.cleaned_text = stripped.strip()
             ctx.repair_logs.append("已移除 Markdown 圍欄")
         return BTStatus.SUCCESS
@@ -185,7 +245,6 @@ class ActionPruneFormatNoise(BTNode):
                 continue
             break
         cleaned = "\n".join(lines[:cut]).strip()
-        cleaned = re.sub(r"```json.*?```", "", cleaned, flags=re.S).strip()
 
         if cleaned != original.strip():
             ctx.cleaned_text = cleaned
@@ -493,6 +552,12 @@ def main() -> int:
 
     nv = cur + 1
     (PROMPTS_DIR / f"main_analysis_v{nv}.txt").write_text(new_tpl, encoding="utf-8")
+
+    # 🛡️ 最終防線：組裝完成仍殘留 Markdown 圍欄 → 就地剝除，避免污染下游 LLM 輸出
+    if "```" in new_tpl:
+        logger.warning("⚠️ 組裝後模板仍含 Markdown 圍欄，執行最終剝除（V%d）", nv)
+        new_tpl = re.sub(r"[ \t]*```[a-zA-Z0-9_-]*[ \t]*\n?", "", new_tpl).strip() + "\n"
+        (PROMPTS_DIR / f"main_analysis_v{nv}.txt").write_text(new_tpl, encoding="utf-8")
 
     history["current_version"] = nv
     versions = history.setdefault("versions", [])
