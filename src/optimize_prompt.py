@@ -149,17 +149,92 @@ class ConditionNoFormatPollution(BTNode):
 
 
 class ActionStripCodeFences(BTNode):
-    """拔除 ```markdown / ```text / ```json 等圍欄外殼，保留內部內容（不丟失資料）"""
+    """🛡️ 加強解析：處理各種 Markdown 圍欄格式（```json / ```text / ```python 等）
+
+    根因修復：LLM 偶爾會模仿範例而把整份準則包進 ```json ... ``` 代碼塊，
+    舊正則未容許圍欄標籤後的首行空白/縮排，導致脫圍欄失敗、測試紅燈。
+    策略：先以多行模式逐行拔除圍欄行（含前後空白），再兜底清除任何殘留 ```。
+    """
+    _FENCE_LINE_RE = re.compile(r"^[ \t]*```[a-zA-Z0-9_-]*[ \t]*$", flags=re.M)
+    # 成對內嵌圍欄：開圍欄必須「整行僅含 ```（可帶語言標籤與前後空白）」，
+    # 內容非貪婪、收圍欄同樣須整行成立 → 絕不會跨越/誤吞有效準則文字。
+    _FENCE_PAIR_RE = re.compile(
+        r"(?:^|(?<=\n))[ \t]*```[a-zA-Z0-9_-]*[ \t]*\n.*?\n[ \t]*```[ \t]*(?=\n|$)",
+        flags=re.S)
+    # 開圍欄「前面」允許任意行內前綴（如碎碎念 "…JSON 格式如下：```json"）：
+    # 先錨定行首/換行、僅容許同行內文字，再非貪婪吞掉整段雜訊；合法準則文字不含 ``` → 不會跨越誤刪。
+    _FENCE_INLINE_OPEN_RE = re.compile(
+        r"(?:^|(?<=\n))[^\n]*?[ \t]*```[a-zA-Z0-9_-]*[ \t]*\n.*?\n[ \t]*```[ \t]*(?=\n|$)",
+        flags=re.S)
+
+    # ⚠️ CI Review 修復：外殼剝除必須用 \A/\Z（字串絕對開頭/結尾），
+    # 絕不可用 re.M —— 否則「正文 + 文末 ```json 範例」情境會誤匹配文末圍欄，
+    # 把整篇核心準則丟棄、只剩 JSON（嚴重資料遺失 Bug）。
+    _OUTER_FENCE_RE = re.compile(
+        r"\A\s*```[a-zA-Z0-9_-]*\s*\n(.*?)\n\s*```\s*\Z", flags=re.S)
+
     def tick(self, ctx: CleanContext) -> BTStatus:
-        text = ctx.cleaned_text or ctx.raw_text
-        stripped = re.sub(r"^```[a-zA-Z]*\s*\n?", "", text)
-        stripped = re.sub(r"\n?```\s*$", "", stripped)
-        # 處理內嵌 ```json ... ``` 包夾：只去圍欄行、留內容
-        stripped = re.sub(r"```[a-zA-Z]*\n", "", stripped)
-        stripped = re.sub(r"```", "", stripped)
-        if stripped.strip() != text.strip():
+        original = ctx.cleaned_text or ctx.raw_text
+        text = original
+
+        # 策略 1：僅當「整個文本」被最外殼代碼塊包裹時才提取內部內容（\A/\Z 錨定，零誤吞）
+        fence_match = self._OUTER_FENCE_RE.match(text)
+        if fence_match:
+            inner = fence_match.group(1).strip()
+            if inner and "```" not in inner:
+                text = inner
+                ctx.repair_logs.append("提取代碼塊內部內容")
+
+        # 策略 2：切除內嵌 ```json ... ``` 成對區塊（純格式雜訊，整塊丟棄）。
+        #     必須在通用圍欄行拔除「之前」執行：若先拔圍欄行，碎碎念（如
+        #     "請輸出合法的 JSON 格式如下："）會與 JSON 資料行失去邊界而殘留。
+        pruned = self._FENCE_PAIR_RE.sub("\n", text).strip()
+        if pruned and "```" not in pruned:
+            text = pruned
+        else:
+            # 內嵌圍欄前帶行內前綴（如碎碎念 "…JSON 格式如下：```json\n{...}\n```"）：
+            # 連同前綴整塊切除；合法準則文字不含 ``` → 非貪婪匹配不會跨越誤刪。
+            pruned2 = self._FENCE_INLINE_OPEN_RE.sub("\n", text).strip()
+            if pruned2 and "```" not in pruned2:
+                text = pruned2
+            else:
+                # 黏行兜底：碎碎念與開圍欄同行且無收圍欄等罕見變體，
+                # 以「JSON 字眼 + 圍欄」共現為強訊號，從該行起整段切除
+                # （合法範本絕不會同時出現兩者 → 不誤刪；僅當保留正文 >120 字才採用）。
+                m = re.search(r"^.*?\bJSON\b.*?```.*$", text, flags=re.S | re.M)
+                if m:
+                    head = text[:m.start()].rstrip()
+                    if len(head) > 120:
+                        text = head
+        # 1) 逐行拔除「整行圍欄」（```json / ```text / ``` / ```python，容忍前後空白與縮排）
+        stripped = self._FENCE_LINE_RE.sub("", text)
+        # 2) 拔除「行首開圍欄」但同行有內文的情況（如 "```json {...}"）：只去圍欄標記、留內容
+        stripped = re.sub(r"^[ \t]*```[a-zA-Z0-9_-]*(?=[ \t]|\b)[ \t]*", "", stripped, flags=re.M)
+        # 3) 拔除「行尾收圍欄」（如 "{...} ```"）
+        stripped = re.sub(r"[ \t]*```[ \t]*$", "", stripped, flags=re.M)
+        # 4) ⚠️ CI Review 修復：移除「通用成對正則提取圍欄內文」兜底（原 re.sub(r'```...\n(.*?)\n...```', r'\1')）。
+        #    該寫法與策略 2「整塊切除格式雜訊」互相矛盾，會把漏網的無效 JSON／格式說明「還原放回」污染正文。
+        #    至此所有合法路徑均已處理，直接暴力清除一切殘留 ``` 標記即可。
+        stripped = stripped.replace('```', '')
+        # 5) 順序調整修復：若中途步驟已把「內嵌圍欄＋碎碎念」退化為裸 JSON 行，
+        #    補做一次文末格式雜訊剔除（NAG 行掃描），避免碎碎念文字與 JSON 失去邊界而殘留。
+        _nag = ActionPruneFormatNoise._NAG_RE
+        _ls = stripped.splitlines()
+        if any(_nag.search(l) for l in _ls[-6:]):
+            pre_prune = ctx.cleaned_text
             ctx.cleaned_text = stripped.strip()
-            ctx.repair_logs.append("已移除 Markdown 圍欄")
+            ActionPruneFormatNoise().tick(ctx)
+            stripped = ctx.cleaned_text
+            ctx.cleaned_text = pre_prune  # 還原，交由下方統一賦值
+        if stripped.strip() != original.strip():
+            ctx.cleaned_text = stripped.strip()
+            ctx.repair_logs.append("已移除所有 Markdown 代碼塊／圍欄標記")
+        else:
+            ctx.cleaned_text = stripped.strip()
+        # 🛡️ 最終檢查：若清洗後仍包含 ```，視為失敗（理論上不該發生，因步驟 4 已兜底清除）
+        if "```" in ctx.cleaned_text:
+            ctx.problems.append("仍包含 Markdown 代碼塊標記 (```)")
+            return BTStatus.FAILURE
         return BTStatus.SUCCESS
 
 
@@ -185,7 +260,6 @@ class ActionPruneFormatNoise(BTNode):
                 continue
             break
         cleaned = "\n".join(lines[:cut]).strip()
-        cleaned = re.sub(r"```json.*?```", "", cleaned, flags=re.S).strip()
 
         if cleaned != original.strip():
             ctx.cleaned_text = cleaned
@@ -397,6 +471,18 @@ def generate_with_smart_retry(system_prompt: str, user_prompt: str,
 
         # 透過行為樹進行本地清洗與合規檢驗（0 Token 優先修復）
         cleaned_rules, problems = clean_and_validate_with_bt(raw)
+
+        # 🛡️ 最終檢查：確保沒有 Markdown 代碼塊（雙重保險，防止清洗管線漏網）
+        if cleaned_rules:
+            if "```" in cleaned_rules:
+                logger.warning("⚠️ 清洗後仍包含 Markdown，視為失敗")
+                problems = list(problems) + ["最終輸出仍包含 Markdown 代碼塊"]
+                cleaned_rules = None
+            elif len(cleaned_rules) < 150:
+                logger.warning("⚠️ 清洗後長度不足 (%d 字)", len(cleaned_rules))
+                problems = list(problems) + [f"長度不足 ({len(cleaned_rules)} 字)"]
+                cleaned_rules = None
+
         if cleaned_rules:
             logger.info("✅ 第 %d 次嘗試通過準則驗證", attempt)
             return cleaned_rules
@@ -407,8 +493,12 @@ def generate_with_smart_retry(system_prompt: str, user_prompt: str,
         current_user_prompt = (
             f"你先前產出的策略規則存在以下問題：{', '.join(problems)}。\n"
             f"【先前草稿】：\n{raw}\n\n"
-            "請在維持原有良好邏輯的前提下修正上述問題。"
-            "請注意：只需輸出純交易準則條列，嚴禁提及任何格式或 JSON。"
+            "請在維持原有良好邏輯的前提下修正上述問題。\n"
+            "⚠️ 重要提醒：\n"
+            "1. 請輸出純文本的策略規則條列\n"
+            "2. 嚴禁使用任何 Markdown 代碼塊（```）\n"
+            "3. 嚴禁提及任何格式或 JSON\n"
+            "4. 只需輸出策略規則內容本身"
         )
 
     return None
@@ -468,20 +558,30 @@ def main() -> int:
         "1. 只需輸出準則文字（含條列點），嚴禁輸出程式碼、佔位符或 JSON 範例。\n"
         "2. 必須涵蓋：金融股例外處理、假突破防守、法人/散戶融資逆向警訊。\n"
         "3. 缺失欄位不得視為 0 或負面證據。\n"
-        "4. 長度控制在 150-2500 字，具體可操作（附數值門檻）。"
+        "4. 長度控制在 150-2500 字，具體可操作（附數值門檻）。\n"
+        "5. 輸出必須是純文本的策略規則，嚴禁使用任何 Markdown 代碼塊（```）。\n"
+        "6. 只需輸出策略規則內容本身，不要附加任何開場白、結語或格式說明。"
     )
     user = (
         f"當前模型勝率：{acc:.1f}%（已驗證 {len(verified)} 筆）。\n"
-        f"現行 V{cur} 決策規則參考：\n```\n{tpl[:1200]}\n```\n\n"
+        f"現行 V{cur} 決策規則參考：\n{tpl[:1200]}\n\n"
         f"近期典型虧損樣本（系統建議 vs 實際結果）：\n"
         f"{json.dumps(errors, ensure_ascii=False, indent=1)}\n\n"
         "請提煉出 4~6 條具體、可操作的決策檢驗準則，供分析模型作為判斷指引。"
-        "只輸出準則條列本身。"
+        "只輸出準則條列本身，不要包含任何 Markdown 標記。"
     )
 
     strategy_rules = generate_with_smart_retry(system, user, max_retries=3)
     if not strategy_rules:
         logger.error("🚨 重試後仍無法取得可用策略準則，維持舊版本（V%d）", cur)
+        return 1
+
+    # 🛡️ 最終檢查：確保沒有 Markdown 代碼塊（寫入前最後防線）
+    if "```" in strategy_rules:
+        logger.error("🚨 最終檢查失敗：策略規則仍包含 Markdown 代碼塊")
+        logger.error("內容預覽（前 500 字）：%s", strategy_rules[:500])
+        logger.error("...")
+        logger.error("內容預覽（後 500 字）：%s", strategy_rules[-500:])
         return 1
 
     # 本地縫合：保證 14 個佔位符 100% 完整
@@ -493,6 +593,12 @@ def main() -> int:
 
     nv = cur + 1
     (PROMPTS_DIR / f"main_analysis_v{nv}.txt").write_text(new_tpl, encoding="utf-8")
+
+    # 🛡️ 最終防線：組裝完成仍殘留 Markdown 圍欄 → 就地剝除，避免污染下游 LLM 輸出
+    if "```" in new_tpl:
+        logger.warning("⚠️ 組裝後模板仍含 Markdown 圍欄，執行最終剝除（V%d）", nv)
+        new_tpl = re.sub(r"[ \t]*```[a-zA-Z0-9_-]*[ \t]*\n?", "", new_tpl).strip() + "\n"
+        (PROMPTS_DIR / f"main_analysis_v{nv}.txt").write_text(new_tpl, encoding="utf-8")
 
     history["current_version"] = nv
     versions = history.setdefault("versions", [])
