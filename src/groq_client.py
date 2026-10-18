@@ -18,6 +18,38 @@ except ImportError:  # 相容 flat import 模式（src/ 在 sys.path，如 news_
 logger = logging.getLogger(__name__)
 
 
+def safe_parse_groq_json(content: str) -> dict:
+    """🛡️ 架構修復（CI Review）：容忍 Markdown 圍欄、前後雜訊的強健 JSON 解析器。
+
+    LLM 是機率模型，prompt 寫明「嚴禁 Markdown」也無法保證 100% 不出現 ```json，
+    因此下游消費端必須有最終防禦，徹底根治解析失敗紅燈：
+      1. 優先提取 ```json ... ```（或任意語言標籤/無標籤）圍欄區塊內文
+      2. 若含 </think> 標籤，只取最後一段
+      3. 無圍欄時抓取最外層大括號 { ... }
+      4. 剝除圍欄標記兜底後才交給 json.loads
+    解析失敗拋 json.JSONDecodeError，由呼叫端既有 except 路徑處理。
+    """
+    import re as _re
+    text = (content or "").strip()
+
+    # 1. 優先提取圍欄區塊內容
+    fence_match = _re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text, _re.IGNORECASE)
+    if fence_match:
+        text = fence_match.group(1).strip()
+    else:
+        # 2. 推理模型的 </think> 標籤：僅取最後一段
+        if "</think>" in text:
+            text = text.split("</think>")[-1].strip()
+        # 3. 抓取最外層大括號 { ... }
+        brace_match = _re.search(r"\{[\s\S]*\}", text)
+        if brace_match:
+            text = brace_match.group(0).strip()
+
+    # 4. 極簡兜底：清除一切殘留圍欄標記
+    text = text.replace("```", "").strip()
+    return json.loads(text)
+
+
 class GroqClient:
     """Groq API 客戶端"""
 
@@ -199,43 +231,16 @@ class GroqClient:
         content = response_data['choices'][0]['message']['content']
         logger.info(f"Groq 回傳內容長度：{len(content)} 字元")
 
-        # 關鍵修正 1：處理 </think> 標籤 - 提取標籤後的 JSON
-        json_candidate = content
-        if '</think>' in content:
-            json_candidate = content.split('</think>')[-1].strip()
-            logger.info(f"已提取 </think> 後的內容，長度：{len(json_candidate)} 字元")
-
-        # 關鍵修正 2：尋找最後一個 '{' 和最後一個 '}' 之間的內容
-        start_idx = json_candidate.rfind('{')
-        end_idx = json_candidate.rfind('}')
-
+        # 🛡️ 架構修復（CI Review）：下游消費端統一使用強健解析器 safe_parse_groq_json，
+        #    容忍 ```json 圍欄、前後雜訊與 </think> 標籤——LLM 是機率模型，哪怕 prompt
+        #    嚴禁 Markdown 也無法保證 100% 遵守，真正防禦點必須在這裡（徹底根治紅燈）。
         json_str = None
-        if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
-            json_str = json_candidate[start_idx:end_idx+1]
-            logger.info(f"成功提取 JSON 區塊（長度：{len(json_str)}）")
-        else:
-            logger.warning("無法在回應中找到有效的 JSON 區塊")
-            logger.warning(f"原始內容結尾：...{content[-500:]}")
-            return None
-
-        # 解析 JSON 回應
         try:
-            content_to_parse = json_str.strip()
+            result = safe_parse_groq_json(content)
 
-            # 移除可能的 Markdown 標記
-            if content_to_parse.startswith('```'):
-                content_to_parse = content_to_parse.split('```')[1] if '```' in content_to_parse[3:] else content_to_parse[3:]
-                content_to_parse = content_to_parse.rsplit('```')[0] if '```' in content_to_parse else content_to_parse
-                content_to_parse = content_to_parse.strip()
-
-            # 嘗試多種 JSON 解析方式
-            try:
-                result = json.loads(content_to_parse)
-            except json.JSONDecodeError:
-                import re
-                content_clean = re.sub(r'^\s*[\{"]\s*', '{', content_to_parse)
-                content_clean = re.sub(r'\s*[\}"]\s*$', '}', content_clean)
-                result = json.loads(content_clean)
+            # 雙重保險：若強健解析失敗的極端變體，退回「最後一個 {...}」掃描邏輯
+            if not isinstance(result, dict):
+                raise ValueError(f"回傳非 JSON 物件：{type(result).__name__}")
 
             # 驗證必要欄位並加入預設值
             if 'ev_score' not in result:
@@ -257,9 +262,33 @@ class GroqClient:
                 'raw_response': content
             }
 
-        except json.JSONDecodeError as e:
+        except (json.JSONDecodeError, ValueError) as e:
+            # 最終兜底：以 rfind 掃描最後一個 {...} 區塊再試一次
+            fallback_candidate = content
+            if '</think>' in fallback_candidate:
+                fallback_candidate = fallback_candidate.split('</think>')[-1].strip()
+            start_idx = fallback_candidate.rfind('{')
+            end_idx = fallback_candidate.rfind('}')
+            if start_idx != -1 and end_idx > start_idx:
+                json_str = fallback_candidate[start_idx:end_idx+1]
+                try:
+                    result = json.loads(json_str)
+                    if not isinstance(result, dict):
+                        raise ValueError("兜底解析結果非 JSON 物件")
+                    result.setdefault('ev_score', 50)
+                    result.setdefault('recommendation', '觀望')
+                    result.setdefault('reason', 'AI 分析失敗')
+                    logger.warning("⚠️ 強健解析失敗，但 rfind 兜底掃描成功")
+                    return {
+                        'ev_score': int(result.get('ev_score', 50)),
+                        'recommendation': result.get('recommendation', '觀望'),
+                        'reason': result.get('reason', 'AI 分析失敗'),
+                        'raw_response': content
+                    }
+                except (json.JSONDecodeError, ValueError, TypeError):
+                    pass
             logger.error(f"❌ JSON 解析失敗：{e}")
-            logger.error(f"提取到的字串：{json_str[:200] if json_str else 'N/A'}")
+            logger.error(f"原始內容結尾：...{content[-200:] if len(content) > 200 else content}")
             return None
         except Exception as e:
             logger.error(f"❌ 解析 Groq 回應時出錯：{e}")
@@ -307,13 +336,10 @@ class GroqClient:
         content = response_data['choices'][0]['message']['content']
 
         try:
-            content = content.strip()
-            if content.startswith('```json'):
-                content = content.split('```json')[1].split('```')[0].strip()
-            elif content.startswith('```'):
-                content = content.split('```')[1].split('```')[0].strip()
-
-            result = json.loads(content)
+            # 🛡️ 架構修復：同樣改用強健解析器（容忍 ```json 圍欄與前後雜訊）
+            result = safe_parse_groq_json(content)
+            if not isinstance(result, dict):
+                raise ValueError(f"回傳非 JSON 物件：{type(result).__name__}")
 
             return {
                 'regime': result.get('regime', '震盪'),

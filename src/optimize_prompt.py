@@ -167,12 +167,18 @@ class ActionStripCodeFences(BTNode):
         r"(?:^|(?<=\n))[^\n]*?[ \t]*```[a-zA-Z0-9_-]*[ \t]*\n.*?\n[ \t]*```[ \t]*(?=\n|$)",
         flags=re.S)
 
+    # ⚠️ CI Review 修復：外殼剝除必須用 \A/\Z（字串絕對開頭/結尾），
+    # 絕不可用 re.M —— 否則「正文 + 文末 ```json 範例」情境會誤匹配文末圍欄，
+    # 把整篇核心準則丟棄、只剩 JSON（嚴重資料遺失 Bug）。
+    _OUTER_FENCE_RE = re.compile(
+        r"\A\s*```[a-zA-Z0-9_-]*\s*\n(.*?)\n\s*```\s*\Z", flags=re.S)
+
     def tick(self, ctx: CleanContext) -> BTStatus:
         original = ctx.cleaned_text or ctx.raw_text
         text = original
 
-        # 策略 1：提取「整個文本被最外殼代碼塊包裹」的內部內容（零資料遺失）
-        fence_match = re.search(r'^[ \t]*```[a-zA-Z0-9_-]*\s*\n(.*?)\n[ \t]*```[ \t]*$', text, flags=re.S | re.M)
+        # 策略 1：僅當「整個文本」被最外殼代碼塊包裹時才提取內部內容（\A/\Z 錨定，零誤吞）
+        fence_match = self._OUTER_FENCE_RE.match(text)
         if fence_match:
             inner = fence_match.group(1).strip()
             if inner and "```" not in inner:
@@ -206,9 +212,9 @@ class ActionStripCodeFences(BTNode):
         stripped = re.sub(r"^[ \t]*```[a-zA-Z0-9_-]*(?=[ \t]|\b)[ \t]*", "", stripped, flags=re.M)
         # 3) 拔除「行尾收圍欄」（如 "{...} ```"）
         stripped = re.sub(r"[ \t]*```[ \t]*$", "", stripped, flags=re.M)
-        # 4) 🛡️ 極簡暴力兜底（依建議方案）：先以通用成對正則提取圍欄「內部內容」
-        #    （LLM 把 JSON/準則包進 ```json ... ``` 時保留實質資料），再清除一切殘留 ``` 標記。
-        stripped = re.sub(r'```[a-zA-Z0-9_-]*\s*\n(.*?)\n\s*```', r'\1', stripped, flags=re.S)
+        # 4) ⚠️ CI Review 修復：移除「通用成對正則提取圍欄內文」兜底（原 re.sub(r'```...\n(.*?)\n...```', r'\1')）。
+        #    該寫法與策略 2「整塊切除格式雜訊」互相矛盾，會把漏網的無效 JSON／格式說明「還原放回」污染正文。
+        #    至此所有合法路徑均已處理，直接暴力清除一切殘留 ``` 標記即可。
         stripped = stripped.replace('```', '')
         # 5) 順序調整修復：若中途步驟已把「內嵌圍欄＋碎碎念」退化為裸 JSON 行，
         #    補做一次文末格式雜訊剔除（NAG 行掃描），避免碎碎念文字與 JSON 失去邊界而殘留。
