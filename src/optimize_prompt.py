@@ -19,6 +19,17 @@
      不把整包錯誤樣本上下文重送 → 消除重複 Context 消耗。
   3. 【網路異常指數退避】groq_complete 內建 404 換模型、429/5xx sleep 退避，
      嚴禁無退避的連環撞擊觸發更嚴重限流。
+
+🛡️ v2 重試解耦與 0 Token 本地修復（防止乘數放大效應）：
+  4. 【職責切分】網路故障／429／5xx／404 全部留在 groq_complete 處理；
+     全模型鏈失敗直接拋 RuntimeError 中斷程序，外層不再盲目重撞
+     （避免內層 model×attempt 與外層 retry 相乘 → 極端 18 次請求的爆炸）。
+  5. 【0 Token 清洗】clean_and_validate_rules 用正則切除模型碎碎念的
+     「請輸出 JSON…」贅字與 ```json 圍欄，不必花一次 API 呼叫重寫。
+  6. 【寬容修補去噪】最終採納的草稿已過本地正則去噪，不會把衝突的
+     輸出格式描述縫進骨架造成下游格式錯亂。
+  7. 【目錄防護】main() 先 mkdir(parents=True, exist_ok=True)，
+     新容器環境首次執行不再噴 FileNotFoundError。
 """
 import json
 import logging
@@ -158,17 +169,32 @@ def extract_rules(raw: str) -> str:
     return (m.group(1) if m else raw).strip()
 
 
-def validate_rules(rules_text: str) -> list:
-    """針對純策略準則進行驗證（骨架不在這裡驗——由 Python 組裝 guarantees 契约）。"""
+# 🛡️ 0 Token 本地清洗：切除模型碎碎念的輸出格式贅字（不必花 API 呼叫重寫）
+_OUTPUT_FLUFF_RE = re.compile(
+    r"(?:請?輸出|回傳|格式要求|輸出格式).*?(?:JSON|json).*$", re.S)
+_JSON_FENCE_RE = re.compile(r"```json.*?```", re.S)
+# 精確判定「輸出格式描述」殘留（取代死板的 "請輸出"+"JSON" 雙 in 檢查）
+_FORMAT_MENTION_RE = re.compile(r"(?:輸出|格式|回傳)[^\n]{0,20}JSON|```json")
+
+
+def clean_and_validate_rules(rules_text: str) -> tuple:
+    """本地 0 Token 修復：自動清洗多餘格式廢話，並檢查長度。
+
+    回傳 (cleaned_text, problems)；problems 為空清單＝通過。
+    """
+    cleaned = extract_rules(rules_text)
+    # 若模型在文末交代「請輸出 JSON...」等贅字 → Regex 直接切除，不花 Token 重試
+    cleaned = _JSON_FENCE_RE.sub("", cleaned)
+    cleaned = _OUTPUT_FLUFF_RE.sub("", cleaned).strip()
+
     problems = []
-    if len(rules_text) < 150:
+    if len(cleaned) < 150:
         problems.append("策略規則過於簡短 (少於 150 字)")
-    if len(rules_text) > 2500:
+    if len(cleaned) > 2500:
         problems.append("策略規則過於冗長 (大於 2500 字)")
-    # 檢查是否寫入無效幻覺或自我對話（模型跑偏去描述輸出格式而非交易準則）
-    if "請輸出" in rules_text and "JSON" in rules_text:
-        problems.append("包含了不需要的輸出格式描述，請僅專注於交易準則")
-    return problems
+    if _FORMAT_MENTION_RE.search(cleaned):
+        problems.append("仍殘留輸出格式描述，請僅專注於交易準則")
+    return cleaned, problems
 
 
 def assemble_prompt(strategy_rules: str) -> str:
@@ -187,51 +213,60 @@ def assemble_prompt(strategy_rules: str) -> str:
 
 def generate_with_smart_retry(system_prompt: str, user_prompt: str,
                               max_retries: int = 3) -> Optional[str]:
-    """具備退避機制與低 Token 消耗的修復迴圈。
+    """外層僅處理【語意內容修復】，內層 groq_complete 負責【網路與模型退避】。
 
-    - 內容驗證失敗 → 輕量自我修復：只把有問題的草稿丟回修正，不重送原始大批樣本。
-    - 網路/API 異常 → groq_complete 內部已做 404 換模型與 429/5xx 指數退避；
-      此處再 sleep 一段退避時間後重試，嚴禁無退避的連環撞擊。
+    職責嚴格切分，消除內外層重試的乘數放大效應（極端 model×attempt×retry＝18 次撞擊）：
+    - 網路故障／429／5xx／404 → 全部由 groq_complete 內部退避＋換模型處理；
+      全模型鏈失敗時拋 RuntimeError，此處直接棄投終止，絕不盲目重撞。
+    - 內容驗證失敗 → 輕量自我修復：只把清洗後的問題草稿丟回修正，
+      不重送原始大批樣本上下文。
     """
-    backoff_seconds = 2.0
-    last_rules = ""
+    last_cleaned_rules = ""
+    current_user_prompt = user_prompt
 
-    for attempt in range(max_retries):
+    for attempt in range(1, max_retries + 1):
         try:
-            logger.info("📡 呼叫 Groq API 生成策略準則（第 %d/%d 次）...", attempt + 1, max_retries)
-            raw = groq_complete(system_prompt, user_prompt)
-            rules = extract_rules(raw)
-            problems = validate_rules(rules)
+            logger.info("📡 呼叫 Groq API 生成策略準則（第 %d/%d 次）...", attempt, max_retries)
+            # groq_complete 內部已有 404 換模型與 429/5xx 指數退避；
+            # 全線失敗會拋 RuntimeError —— 屬 API 故障／限流，外層直接棄投。
+            raw = groq_complete(system_prompt, current_user_prompt)
+        except RuntimeError as e:
+            logger.error("🚨 Groq 底層連線徹底失敗，終止優化流程（不再重撞）：%s", e)
+            return None
 
-            if not problems:
-                logger.info("✅ 第 %d 次嘗試通過準則驗證", attempt + 1)
-                return rules
+        cleaned_rules, problems = clean_and_validate_rules(raw)
+        last_cleaned_rules = cleaned_rules
 
-            logger.warning("⚠️ 第 %d 次生成未達標：%s", attempt + 1, problems)
-            last_rules = rules
+        if not problems:
+            logger.info("✅ 第 %d 次嘗試通過準則驗證", attempt)
+            return cleaned_rules
 
-            # 🛡️ 輕量自我修復：只針對草稿局部修正，不重複消耗龐大樣本上下文
-            user_prompt = (
-                f"你先前產出的策略規則存在以下問題：{', '.join(problems)}。\n"
-                f"【原先草稿】：\n{last_rules}\n\n"
-                "請在維持原有良好準則的前提下，針對上述問題進行精準修訂，只輸出修改後的準則內容。"
-            )
-        except Exception as e:
-            logger.error("❌ 第 %d 次嘗試發生異常：%s", attempt + 1, e)
-            if attempt < max_retries - 1:
-                time.sleep(backoff_seconds)
-                backoff_seconds *= 2  # 指數退避，防 rate-limit 連環死鎖
+        logger.warning("⚠️ 第 %d 次準則內容未達標：%s", attempt, problems)
 
-    # 本地降級修補（若長度接近則強制採用，不隨意浪費次數）
-    if len(last_rules) >= 100:
-        logger.info("🛠️ 啟用本地寬容修補，採納可用策略草稿")
-        return last_rules
+        # 🛡️ 輕量自我修復：只針對有問題的草稿局部修正，不重複消耗龐大樣本上下文
+        current_user_prompt = (
+            f"你先前產出的策略規則存在以下問題：{', '.join(problems)}。\n"
+            f"【先前草稿】：\n{last_cleaned_rules}\n\n"
+            "請在維持原有良好邏輯的前提下修正上述問題。"
+            "請注意：只需輸出純交易準則條列，嚴禁提及任何格式或 JSON。"
+        )
+
+    # 最終寬容修補：草稿已過本地正則去噪（不會引入衝突的輸出格式描述），
+    # 長度基本達標（>=120 字）即允許採用，避免最後一次小瑕疵再燒一輪 API。
+    if len(last_cleaned_rules) >= 120:
+        logger.info("🛠️ 啟用本地清洗後之策略草稿（長度：%d 字）", len(last_cleaned_rules))
+        return last_cleaned_rules
     return None
 
 
 def main() -> int:
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # 🛡️ 目錄防護：新容器／CI 環境首次執行時 DATA_DIR／PROMPTS_DIR 可能不存在，
+    # 先建立避免寫入 main_analysis_v{N}.txt / prompt_history.json 噴 FileNotFoundError。
+    PROMPTS_DIR.mkdir(parents=True, exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
     verified = [r for r in load_json(DATA_DIR / "telemetry.json", {"records": []})["records"]
                 if r.get("actual_result")]
     threshold = int(os.getenv("OPTIMIZATION_THRESHOLD", "5"))
