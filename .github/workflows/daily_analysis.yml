@@ -73,6 +73,11 @@ jobs:
       - name: Run Discount Hunter (特價獵人引擎)
         run: python -m src.discount_hunter || echo "⚠️ Discount hunter failed"
 
+      # 🎯 FSM+BT 量化決策引擎（Phase 2 橋接層）：讀 value_candidates/deep_analysis →
+      #    三層治理（大盤 FSM → 風控 FSM → 行為樹）→ 產出 data/decisions.json 供前端 loadDecisions() 讀取；失敗不中斷主流程。
+      - name: Run Decision Engine (FSM+BT 決策引擎)
+        run: python -m src.decision_runner || echo "⚠️ Decision engine failed"
+
       # ❌ 已刪除重複的 Generate Static Review Report 步驟（避免每天執行兩次分析）
 
       - name: Validate telemetry.json before commit
@@ -112,6 +117,10 @@ jobs:
           [ -f data/dca_plan.json ] && git add data/dca_plan.json || echo "⚠️ 無 dca_plan.json"
           # 🎯 Discount Hunter 輸出：discount_hunter.json 必須 commit——前端 loadDiscountHunter() 直接 fetch 此檔（特價區間＋二八分批建議）
           [ -f data/discount_hunter.json ] && git add data/discount_hunter.json || echo "⚠️ 無 discount_hunter.json"
+          # 🎯 FSM+BT 決策引擎輸出：decisions.json 必須 commit——前端 loadDecisions() 直接 fetch 此檔（三層治理確定性指令）
+          [ -f data/decisions.json ] && git add data/decisions.json || echo "⚠️ 無 decisions.json"
+          # 🛡️ 跨日引擎狀態必須 commit 回 repo——CI Runner 是拋棄式容器，engine_state.json 是唯一跨日記憶（熊市計數/熔斷鎖/peak/tp_taken）
+          [ -f data/engine_state.json ] && git add data/engine_state.json || echo "⚠️ 無 engine_state.json"
 
           git commit -m "🎯 Auto update: $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main

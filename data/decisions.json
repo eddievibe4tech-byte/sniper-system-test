@@ -1,0 +1,230 @@
+{
+  "updated_at": "2026-10-18T10:24:54.016186+08:00",
+  "environment": {
+    "market_state": "BULL",
+    "market_state_label": "牛市 (可積極做多)",
+    "portfolio_state": "NORMAL",
+    "portfolio_state_label": "正常運行",
+    "below_ma200_days": 0,
+    "locked_until": null,
+    "peak_capital": 1000000.0,
+    "drawdown_pct": 0.0,
+    "reasons": []
+  },
+  "market_snapshot": {
+    "index": 108.9,
+    "ma60": 107.1016668955485,
+    "ma200": 91.55,
+    "ma60_source": "yfinance_60d",
+    "bias_pct": 18.95,
+    "anchor_symbol": "0050",
+    "trading_days_below": 0
+  },
+  "decisions": [
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "2330",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "HOLD",
+      "decision_text": "【維持現狀】2330 無觸發事件，空手觀望。",
+      "position_size_pct": 0.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "未突破 20MA (收盤 2420.0 ≤ MA20 2491.0)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "2308",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "HOLD",
+      "decision_text": "【維持現狀】2308 無觸發事件，空手觀望。",
+      "position_size_pct": 0.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "未突破 20MA (收盤 1635.0 ≤ MA20 1848.25)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "2454",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "HOLD",
+      "decision_text": "【維持現狀】2454 無觸發事件，空手觀望。",
+      "position_size_pct": 0.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "未突破 20MA (收盤 4250.0 ≤ MA20 4790.5)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "2881",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "BUY",
+      "decision_text": "【開倉買進】2881 突破 20MA，建立 100% 標準部位。",
+      "position_size_pct": 1.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "突破 20MA (收盤 161.5 > MA20 154.28)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "2317",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "HOLD",
+      "decision_text": "【維持現狀】2317 無觸發事件，空手觀望。",
+      "position_size_pct": 0.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "未突破 20MA (收盤 244.0 ≤ MA20 249.38)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "2382",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "HOLD",
+      "decision_text": "【維持現狀】2382 無觸發事件，空手觀望。",
+      "position_size_pct": 0.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "未突破 20MA (收盤 322.0 ≤ MA20 333.07)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "3711",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "HOLD",
+      "decision_text": "【維持現狀】3711 無觸發事件，空手觀望。",
+      "position_size_pct": 0.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "未突破 20MA (收盤 671.0 ≤ MA20 698.65)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "3017",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "HOLD",
+      "decision_text": "【維持現狀】3017 無觸發事件，空手觀望。",
+      "position_size_pct": 0.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "未突破 20MA (收盤 3315.0 ≤ MA20 3402.0)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "1504",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "HOLD",
+      "decision_text": "【維持現狀】1504 無觸發事件，空手觀望。",
+      "position_size_pct": 0.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "未突破 20MA (收盤 69.7 ≤ MA20 69.91)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "1519",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "HOLD",
+      "decision_text": "【維持現狀】1519 無觸發事件，空手觀望。",
+      "position_size_pct": 0.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "未突破 20MA (收盤 656.0 ≤ MA20 694.45)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "2303",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "HOLD",
+      "decision_text": "【維持現狀】2303 無觸發事件，空手觀望。",
+      "position_size_pct": 0.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "未突破 20MA (收盤 133.0 ≤ MA20 149.95)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "2882",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "BUY",
+      "decision_text": "【開倉買進】2882 突破 20MA，建立 100% 標準部位。",
+      "position_size_pct": 1.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "突破 20MA (收盤 116.0 > MA20 112.2)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "2412",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "BUY",
+      "decision_text": "【開倉買進】2412 突破 20MA，建立 100% 標準部位。",
+      "position_size_pct": 1.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "突破 20MA (收盤 153.0 > MA20 146.22)"
+      ]
+    },
+    {
+      "timestamp": "2026-10-18T10:24:54.016186+08:00",
+      "symbol": "2002",
+      "market_state": "牛市 (可積極做多)",
+      "portfolio_state": "正常運行",
+      "action": "BUY",
+      "decision_text": "【開倉買進】2002 突破 20MA，建立 100% 標準部位。",
+      "position_size_pct": 1.0,
+      "config_version": "1.0.0",
+      "reasons": [
+        "突破 20MA (收盤 19.55 > MA20 18.95)"
+      ]
+    }
+  ],
+  "config": {
+    "market": {
+      "bull_enter_above_ma60": 0.01,
+      "bull_exit_below_ma60": -0.005,
+      "bear_enter_below_ma200": -0.01,
+      "bear_confirm_days": 3,
+      "bear_exit_above_ma200": 0.005
+    },
+    "portfolio": {
+      "defensive_drawdown": 0.05,
+      "defensive_consecutive_losses": 3,
+      "breaker_drawdown": 0.1,
+      "breaker_lock_days": 7,
+      "recover_drawdown": 0.02
+    },
+    "execution": {
+      "stop_loss_pct": 0.08,
+      "tp_trigger_profit_pct": 0.15,
+      "tp_trail_pct": 0.1,
+      "tp_close_ratio": 0.5
+    },
+    "version": "1.0.0"
+  }
+}
