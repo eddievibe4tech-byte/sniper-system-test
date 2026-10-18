@@ -167,43 +167,34 @@ class ActionStripCodeFences(BTNode):
         r"(?:^|(?<=\n))[^\n]*?[ \t]*```[a-zA-Z0-9_-]*[ \t]*\n.*?\n[ \t]*```[ \t]*(?=\n|$)",
         flags=re.S)
 
-    @classmethod
-    def _drop_outermost_pair(cls, text: str):
-        """若最外層是一对「整行開圍欄 + 整行收圍欄」（LLM 把全文包進代碼塊），
-        剝除外殼、保留內部內容（零資料遺失）。回傳新文字或 None。"""
-        m_open = re.match(r"[ \t]*```[a-zA-Z0-9_-]*[ \t]*\n", text)
-        if not m_open:
-            return None
-        body = text[m_open.end():]
-        m_close = re.search(r"\n[ \t]*```[ \t]*$", body)
-        if not m_close:
-            return None
-        inner = body[:m_close.start()].strip()
-        return inner or None
-
     def tick(self, ctx: CleanContext) -> BTStatus:
         original = ctx.cleaned_text or ctx.raw_text
         text = original
-        # 0a) 🛡️ 最外殼剝除：整份準則被包進 ```markdown ... ``` 時，只去外殼留內容。
-        outer = self._drop_outermost_pair(text)
-        if outer is not None:
-            text = outer
-        # 0b) 切除「內嵌 ```json ... ``` 成對區塊」（純格式雜訊，整塊丟棄）。
+
+        # 策略 1：提取「整個文本被最外殼代碼塊包裹」的內部內容（零資料遺失）
+        fence_match = re.search(r'^[ \t]*```[a-zA-Z0-9_-]*\s*\n(.*?)\n[ \t]*```[ \t]*$', text, flags=re.S | re.M)
+        if fence_match:
+            inner = fence_match.group(1).strip()
+            if inner and "```" not in inner:
+                text = inner
+                ctx.repair_logs.append("提取代碼塊內部內容")
+
+        # 策略 2：切除內嵌 ```json ... ``` 成對區塊（純格式雜訊，整塊丟棄）。
         #     必須在通用圍欄行拔除「之前」執行：若先拔圍欄行，碎碎念（如
         #     "請輸出合法的 JSON 格式如下："）會與 JSON 資料行失去邊界而殘留。
         pruned = self._FENCE_PAIR_RE.sub("\n", text).strip()
         if pruned and "```" not in pruned:
             text = pruned
         else:
-            # 0c) 內嵌圍欄前帶行內前綴（如碎碎念 "…JSON 格式如下：```json\n{...}\n```"）：
-            #     連同前綴整塊切除；合法準則文字不含 ``` → 非貪婪匹配不會跨越誤刪。
+            # 內嵌圍欄前帶行內前綴（如碎碎念 "…JSON 格式如下：```json\n{...}\n```"）：
+            # 連同前綴整塊切除；合法準則文字不含 ``` → 非貪婪匹配不會跨越誤刪。
             pruned2 = self._FENCE_INLINE_OPEN_RE.sub("\n", text).strip()
             if pruned2 and "```" not in pruned2:
                 text = pruned2
             else:
-                # 0d) 黏行兜底：碎碎念與開圍欄同行且無收圍欄等罕見變體，
-                #     以「JSON 字眼 + 圍欄」共現為強訊號，從該行起整段切除
-                #     （合法範本絕不會同時出現兩者 → 不誤刪；僅當保留正文 >120 字才採用）。
+                # 黏行兜底：碎碎念與開圍欄同行且無收圍欄等罕見變體，
+                # 以「JSON 字眼 + 圍欄」共現為強訊號，從該行起整段切除
+                # （合法範本絕不會同時出現兩者 → 不誤刪；僅當保留正文 >120 字才採用）。
                 m = re.search(r"^.*?\bJSON\b.*?```.*$", text, flags=re.S | re.M)
                 if m:
                     head = text[:m.start()].rstrip()
@@ -215,11 +206,23 @@ class ActionStripCodeFences(BTNode):
         stripped = re.sub(r"^[ \t]*```[a-zA-Z0-9_-]*(?=[ \t]|\b)[ \t]*", "", stripped, flags=re.M)
         # 3) 拔除「行尾收圍欄」（如 "{...} ```"）
         stripped = re.sub(r"[ \t]*```[ \t]*$", "", stripped, flags=re.M)
-        # 4) 兜底：清除任何殘留 ``` 標記，保留內部內容（不丟失資料）
-        stripped = stripped.replace("```", "")
+        # 4) 🛡️ 極簡暴力兜底（依建議方案）：先以通用成對正則提取圍欄「內部內容」
+        #    （LLM 把 JSON/準則包進 ```json ... ``` 時保留實質資料），再清除一切殘留 ``` 標記。
+        stripped = re.sub(r'```[a-zA-Z0-9_-]*\s*\n(.*?)\n\s*```', r'\1', stripped, flags=re.S)
+        stripped = stripped.replace('```', '')
+        # 5) 順序調整修復：若中途步驟已把「內嵌圍欄＋碎碎念」退化為裸 JSON 行，
+        #    補做一次文末格式雜訊剔除（NAG 行掃描），避免碎碎念文字與 JSON 失去邊界而殘留。
+        _nag = ActionPruneFormatNoise._NAG_RE
+        _ls = stripped.splitlines()
+        if any(_nag.search(l) for l in _ls[-6:]):
+            pre_prune = ctx.cleaned_text
+            ctx.cleaned_text = stripped.strip()
+            ActionPruneFormatNoise().tick(ctx)
+            stripped = ctx.cleaned_text
+            ctx.cleaned_text = pre_prune  # 還原，交由下方統一賦值
         if stripped.strip() != original.strip():
             ctx.cleaned_text = stripped.strip()
-            ctx.repair_logs.append("已移除 Markdown 圍欄")
+            ctx.repair_logs.append("已移除所有 Markdown 代碼塊／圍欄標記")
         else:
             ctx.cleaned_text = stripped.strip()
         # 🛡️ 最終檢查：若清洗後仍包含 ```，視為失敗（理論上不該發生，因步驟 4 已兜底清除）
@@ -464,10 +467,15 @@ def generate_with_smart_retry(system_prompt: str, user_prompt: str,
         cleaned_rules, problems = clean_and_validate_with_bt(raw)
 
         # 🛡️ 最終檢查：確保沒有 Markdown 代碼塊（雙重保險，防止清洗管線漏網）
-        if cleaned_rules and "```" in cleaned_rules:
-            logger.warning("⚠️ 清洗後仍包含 Markdown，視為失敗")
-            problems = list(problems) + ["最終輸出仍包含 Markdown 代碼塊"]
-            cleaned_rules = None
+        if cleaned_rules:
+            if "```" in cleaned_rules:
+                logger.warning("⚠️ 清洗後仍包含 Markdown，視為失敗")
+                problems = list(problems) + ["最終輸出仍包含 Markdown 代碼塊"]
+                cleaned_rules = None
+            elif len(cleaned_rules) < 150:
+                logger.warning("⚠️ 清洗後長度不足 (%d 字)", len(cleaned_rules))
+                problems = list(problems) + [f"長度不足 ({len(cleaned_rules)} 字)"]
+                cleaned_rules = None
 
         if cleaned_rules:
             logger.info("✅ 第 %d 次嘗試通過準則驗證", attempt)
@@ -479,9 +487,12 @@ def generate_with_smart_retry(system_prompt: str, user_prompt: str,
         current_user_prompt = (
             f"你先前產出的策略規則存在以下問題：{', '.join(problems)}。\n"
             f"【先前草稿】：\n{raw}\n\n"
-            "請在維持原有良好邏輯的前提下修正上述問題。"
-            "⚠️ 重要提醒：請輸出純交易準則條列，嚴禁使用任何 Markdown 代碼塊（```），"
-            "嚴禁提及任何格式或 JSON。"
+            "請在維持原有良好邏輯的前提下修正上述問題。\n"
+            "⚠️ 重要提醒：\n"
+            "1. 請輸出純文本的策略規則條列\n"
+            "2. 嚴禁使用任何 Markdown 代碼塊（```）\n"
+            "3. 嚴禁提及任何格式或 JSON\n"
+            "4. 只需輸出策略規則內容本身"
         )
 
     return None
@@ -542,7 +553,8 @@ def main() -> int:
         "2. 必須涵蓋：金融股例外處理、假突破防守、法人/散戶融資逆向警訊。\n"
         "3. 缺失欄位不得視為 0 或負面證據。\n"
         "4. 長度控制在 150-2500 字，具體可操作（附數值門檻）。\n"
-        "5. 輸出必須是純文本的策略規則，嚴禁使用任何 Markdown 代碼塊（```）。"
+        "5. 輸出必須是純文本的策略規則，嚴禁使用任何 Markdown 代碼塊（```）。\n"
+        "6. 只需輸出策略規則內容本身，不要附加任何開場白、結語或格式說明。"
     )
     user = (
         f"當前模型勝率：{acc:.1f}%（已驗證 {len(verified)} 筆）。\n"
@@ -561,7 +573,9 @@ def main() -> int:
     # 🛡️ 最終檢查：確保沒有 Markdown 代碼塊（寫入前最後防線）
     if "```" in strategy_rules:
         logger.error("🚨 最終檢查失敗：策略規則仍包含 Markdown 代碼塊")
-        logger.error("內容預覽：%s", strategy_rules[:500])
+        logger.error("內容預覽（前 500 字）：%s", strategy_rules[:500])
+        logger.error("...")
+        logger.error("內容預覽（後 500 字）：%s", strategy_rules[-500:])
         return 1
 
     # 本地縫合：保證 14 個佔位符 100% 完整
