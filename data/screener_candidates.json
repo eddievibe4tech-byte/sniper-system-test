@@ -1,27 +1,17 @@
 {
   "candidates": [
     {
-      "code": "2324",
-      "name": "仁寶",
-      "industry": "電腦及週邊設備業",
-      "revenue_yoy": 35.45,
+      "code": "2885",
+      "name": "元大金",
+      "industry": "金融保險",
+      "revenue_yoy": 22.71,
       "inst_buy_days": 3,
-      "current_price": 36.7,
-      "ma20": 36.59,
-      "screened_at": "2026-10-16"
-    },
-    {
-      "code": "2002",
-      "name": "中鋼",
-      "industry": "鋼鐵工業",
-      "revenue_yoy": 27.13,
-      "inst_buy_days": 3,
-      "current_price": 19.55,
-      "ma20": 18.95,
-      "screened_at": "2026-10-16"
+      "current_price": 72.4,
+      "ma20": 70.05,
+      "screened_at": "2026-10-23"
     }
   ],
-  "updated_at": "2026-10-16T11:29:32.474045",
+  "updated_at": "2026-10-23T15:42:27.708454",
   "rules_applied": "STRICT",
   "error": null
 }
