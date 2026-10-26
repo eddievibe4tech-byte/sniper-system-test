@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-10-25T12:03:46.724912+08:00",
+  "updated_at": "2026-10-26T12:08:00.105122+08:00",
   "etf_monitor": [
     {
       "price": 698.58,
@@ -98,7 +98,7 @@
       "name": "Lockheed Martin Corporation",
       "sector": "Industrials",
       "price": 604.18,
-      "forward_pe": 18.25,
+      "forward_pe": 18.24,
       "peg": 1.14,
       "roe_pct": 80.19,
       "fcf_yield_pct": 4.04,
@@ -113,7 +113,7 @@
       "forward_pe": 10.06,
       "peg": 1.23,
       "roe_pct": 22.51,
-      "fcf_yield_pct": 5.16,
+      "fcf_yield_pct": 5.24,
       "ma200": 133.82,
       "status": "🟡 估值合理，列入觀察"
     },
