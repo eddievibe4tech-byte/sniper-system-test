@@ -25,7 +25,7 @@ def test_tsunami_bear_blocks_all_buys():
     tick_push_tree(bb)
     assert bb.push_priority == 5
     assert bb.is_blocked is True
-    assert "停止下單" in bb.push_title
+    assert "停止買入" in bb.push_title
     # 凍結情境絕不出現個股買入指南
     assert "2330" not in bb.push_message
 
@@ -114,7 +114,7 @@ def test_empty_decisions_is_all_clear():
 @pytest.mark.parametrize("state,pct,expected", [
     (MarketState.BEAR, -9.9, 5),          # 熊市+暴跌仍命中分支 1
     (MarketState.SIDEWAYS, -1.5, 4),      # 邊界值 -1.5% 命中分支 2
-    (MarketState.BULL, -2.49, 3),         # 未達 -2.5 且非震盪 → 分支 3
+    (MarketState.BULL, -2.49, 4),         # 未達 -2.5 但單日急挫 -> 牛市高波動防禦（分支 2）
 ])
 def test_selector_boundaries(state, pct, expected):
     bb = PushBlackboard(market_state=state, twii_change_pct=pct,
