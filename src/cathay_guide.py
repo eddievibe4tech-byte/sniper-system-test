@@ -52,8 +52,11 @@ def generate_cathay_guide(symbol: str, current_price: float,
                if stop_loss else "自訂停損價（建議 -6%~-8%）")
     tp_cond = (f"達 {take_profit:.1f} 獲利了結"
                if take_profit else "自訂停利價（建議 +10%~15%）")
+    # 🔴 PR Review 修正：entry_zone 可能只有 1 個元素（資料異常），
+    # 需同時檢查存在性與長度 >= 2，避免 IndexError 崩潰整個推播流程。
     buy_cond = (f"{entry_zone[0]:.1f}~{entry_zone[1]:.1f} 區間分批進場"
-                if entry_zone else f"{current_price:.1f} 附近限價買進")
+                if entry_zone and len(entry_zone) >= 2
+                else f"{current_price:.1f} 附近限價買進")
 
     shares_display = f"{total_shares} 股"
 

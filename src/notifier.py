@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 
 NTFY_ENDPOINT = "https://ntfy.sh"
 
+# ntfy.sh 訊息長度上限（bytes），預留 buffer 避免被伺服器拒絕
+NTFY_MAX_MESSAGE_BYTES = 4000
+
 
 def push_ntfy(title: str, message: str, priority: int = 4, click_url: str = "") -> bool:
     """發送 ntfy 推播（可選 Gmail 雙軌轉寄）。
@@ -37,6 +40,15 @@ def push_ntfy(title: str, message: str, priority: int = 4, click_url: str = "") 
 
     # 🆕 讀取 Gmail 轉寄地址（選配）：ntfy 原生 email 轉寄，免 SMTP 密碼
     alert_email = os.getenv("ALERT_EMAIL", "")
+
+    # 🟢 PR Review 修正：Priority 範圍驗證，限制在 ntfy 有效範圍 1~5
+    priority = max(1, min(5, int(priority)))
+
+    # 🟢 PR Review 修正：訊息長度檢查（ntfy 上限 4096 bytes，超長自動截斷）
+    message_bytes = message.encode("utf-8")
+    if len(message_bytes) > NTFY_MAX_MESSAGE_BYTES:
+        logger.warning(f"⚠️ 推播訊息過長 ({len(message_bytes)} bytes)，已截斷至 {NTFY_MAX_MESSAGE_BYTES} bytes")
+        message = message_bytes[:NTFY_MAX_MESSAGE_BYTES].decode("utf-8", errors="ignore")
 
     payload = {
         "topic": topic,

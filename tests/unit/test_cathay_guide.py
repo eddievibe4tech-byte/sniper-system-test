@@ -45,3 +45,18 @@ def test_missing_plan_still_generates_defaults():
     g = generate_cathay_guide("2330", 50.0, None, 100000)
     assert g["method"] == "二擇一智慧單"
     assert "自訂停損價" in g["stop_loss"]["condition"]
+
+
+def test_entry_zone_single_element_no_indexerror():
+    """🔴 PR Review 修正驗證：entry_zone 只有 1 個元素時不應拋出 IndexError，
+    應降級為「附近限價買進」文案。"""
+    g = generate_cathay_guide("2330", 500.0, {"entry_zone": [500.0]}, 50000)
+    assert g is not None
+    assert "附近限價買進" in g["entry"]["condition"]
+    assert "區間分批進場" not in g["entry"]["condition"]
+
+
+def test_entry_zone_empty_list_fallback():
+    """entry_zone 為空列表 → 同樣降級兜底文案。"""
+    g = generate_cathay_guide("2330", 50.0, {"entry_zone": []}, 100000)
+    assert "附近限價買進" in g["entry"]["condition"]

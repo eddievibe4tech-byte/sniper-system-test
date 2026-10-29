@@ -72,3 +72,23 @@ def test_network_exception_swallowed(monkeypatch):
 
     monkeypatch.setattr(notifier.requests, "post", boom)
     assert notifier.push_ntfy("t", "m") is False  # 不拋異常、不拖垮主流程
+
+
+def test_priority_clamped_to_1_5(monkeypatch):
+    """🟢 PR Review 修正驗證：priority 超出範圍時被限制在 1~5。"""
+    monkeypatch.setenv("NTFY_TOPIC", "test-topic")
+    captured = _capture_post(monkeypatch)
+    notifier.push_ntfy("t", "m", priority=10)
+    assert captured["payload"]["priority"] == 5
+    notifier.push_ntfy("t", "m", priority=-3)
+    assert captured["payload"]["priority"] == 1
+
+
+def test_long_message_truncated(monkeypatch):
+    """🟢 PR Review 修正驗證：超長訊息自動截斷至上限內。"""
+    monkeypatch.setenv("NTFY_TOPIC", "test-topic")
+    captured = _capture_post(monkeypatch)
+    long_msg = "中" * 3000  # UTF-8 每個「中」3 bytes = 9000 bytes
+    assert notifier.push_ntfy("t", long_msg) is True
+    sent = captured["payload"]["message"].encode("utf-8")
+    assert len(sent) <= notifier.NTFY_MAX_MESSAGE_BYTES
