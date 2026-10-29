@@ -84,7 +84,13 @@ jobs:
 
       # 🎯 FSM+BT 量化決策引擎（Phase 2 橋接層）：讀 value_candidates/deep_analysis →
       #    三層治理（大盤 FSM → 風控 FSM → 行為樹）→ 產出 data/decisions.json 供前端 loadDecisions() 讀取；失敗不中斷主流程。
-      - name: Run Decision Engine (FSM+BT 決策引擎)
+      # 📲 結尾串接「推播決策樹 (Push Behavior Tree)」＋ ntfy 雙軌通知（App 彈窗 + Gmail 轉寄）：
+      #    NTFY_TOPIC 未設定時自動跳過；ALERT_EMAIL 為選配（ntfy 原生 email 轉寄，免 SMTP 密碼）。
+      - name: Run Decision Engine (FSM+BT 決策引擎＋智能推播)
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+          DASHBOARD_URL: ${{ secrets.DASHBOARD_URL }}
         run: python -m src.decision_runner || echo "⚠️ Decision engine failed"
 
       # ❌ 已刪除重複的 Generate Static Review Report 步驟（避免每天執行兩次分析）

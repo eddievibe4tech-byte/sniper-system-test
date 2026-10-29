@@ -38,9 +38,13 @@ from typing import Dict, List, Optional
 try:  # 作為 package 執行（python -m src.decision_runner）
     from src.quant_engine import DecisionEngine, EngineConfig
     from src.quant_engine.blackboard import Blackboard, StockData, MarketState, PortfolioState
+    from src.push_behavior_tree import PushBlackboard, tick_push_tree, DEFAULT_BUDGET
+    from src.notifier import push_ntfy
 except ImportError:  # 在 src/ 目錄內直接執行
     from quant_engine import DecisionEngine, EngineConfig
     from quant_engine.blackboard import Blackboard, StockData, MarketState, PortfolioState
+    from push_behavior_tree import PushBlackboard, tick_push_tree, DEFAULT_BUDGET
+    from notifier import push_ntfy
 
 logger = logging.getLogger(__name__)
 TZ = timezone(timedelta(hours=8))
@@ -316,12 +320,16 @@ def run_decision_engine():
                 f"（本次{'已' if evaluated else '未（今日已評估過，冪等跳過）'}更新）")
 
     # ── 迴圈遍歷個股：純行為樹評估，不觸碰宏觀 FSM ─────────────────
+    # 🆕 預載 deep_analysis 的 trading_plan／現價，供推播決策樹產出券商指南
+    deep = load_json(DATA_DIR / "deep_analysis.json", {}) or {}
+    deep_map = {str(r.get("code")): r for r in (deep.get("all_results") or [])}
+
     decisions: List[dict] = []
     for stock in stocks:
         record = engine.evaluate_stock(bb, stock, now)
         # 🛡️ Review 🟡4：分層——關鍵理由前置、過程性攔截理由其後（前端只顯關鍵）
         critical, process = classify_reasons(record.reasons)
-        decisions.append({
+        d = {
             "timestamp": record.timestamp,
             "symbol": record.symbol,
             "market_state": record.market_state,
@@ -333,7 +341,12 @@ def run_decision_engine():
             "reasons": critical + process,
             "reasons_critical": critical,
             "reasons_process": process,
-        })
+        }
+        extra = deep_map.get(str(record.symbol), {})
+        d["current_price"] = float(extra.get("current_price") or stock.current_price or 0)
+        d["trading_plan"] = extra.get("trading_plan")
+        d["budget"] = DEFAULT_BUDGET
+        decisions.append(d)
 
     # 🛡️ 致命#4＋🔴1：把本輪所有 tp_taken=True 的符號连同觸發時的 cost_price 持久化
     tp_flags = {s.symbol: {"cost_price": s.cost_price, "tp_taken": True}
@@ -370,6 +383,35 @@ def run_decision_engine():
 
     # 🛡️ 致命#2：狀態寫回（在 decisions.json 之後——若中途崩潰，舊狀態仍自洽）
     save_engine_state(bb, tp_flags)
+
+    # ── 🌳 推播決策樹：FSM 判斷環境 → BT 決定推播策略 → ntfy 雙軌執行 ──
+    # ⚠️ twii_change_pct 代理指標：data pipeline 目前無大盤「當日漲跌幅」欄位，
+    #    沿用 market_snapshot.bias_pct（0050 對年線乖離率）作為市場強度代理。
+    #    待接入 TWII 当日涨跌幅後可替換（見 issue 驗收備註）。
+    try:
+        push_bb = PushBlackboard(
+            market_state=bb.market_state,
+            portfolio_state=bb.portfolio_state,
+            decisions=decisions,
+            twii_change_pct=market.get("bias_pct", 0.0),
+        )
+        tick_push_tree(push_bb)
+        output["push"] = {
+            "scenario": push_bb.scenario,
+            "priority": push_bb.push_priority,
+            "title": push_bb.push_title,
+            "message": push_bb.push_message,
+            "is_blocked": push_bb.is_blocked,
+        }
+        atomic_write_json(out_path, output)  # 把推播結果一并持久化供前端/除錯
+        if push_bb.push_title:
+            push_ntfy(title=push_bb.push_title,
+                      message=push_bb.push_message,
+                      priority=push_bb.push_priority)
+        logger.info(f"📲 推播決策樹命中【{push_bb.scenario}】Priority={push_bb.push_priority}")
+    except Exception as e:  # 推播是附加功能，絕不拖垮決策主流程與狀態寫回
+        logger.warning(f"⚠️ 推播決策樹執行失敗（不影響決策輸出）: {e}")
+
     return output
 
 
