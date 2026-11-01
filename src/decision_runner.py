@@ -38,11 +38,13 @@ from typing import Dict, List, Optional
 try:  # 作為 package 執行（python -m src.decision_runner）
     from src.quant_engine import DecisionEngine, EngineConfig
     from src.quant_engine.blackboard import Blackboard, StockData, MarketState, PortfolioState
+    from src.quant_engine.macro import MacroFSM, MacroFSMConfig, MacroState, compute_breadth
     from src.push_behavior_tree import PushBlackboard, tick_push_tree, DEFAULT_BUDGET
     from src.notifier import push_ntfy
 except ImportError:  # 在 src/ 目錄內直接執行
     from quant_engine import DecisionEngine, EngineConfig
     from quant_engine.blackboard import Blackboard, StockData, MarketState, PortfolioState
+    from quant_engine.macro import MacroFSM, MacroFSMConfig, MacroState, compute_breadth
     from push_behavior_tree import PushBlackboard, tick_push_tree, DEFAULT_BUDGET
     from notifier import push_ntfy
 
@@ -229,6 +231,14 @@ def load_engine_state() -> Dict:
         "portfolio_state": raw.get("portfolio_state"),
         "last_market_date": raw.get("last_market_date"),
         "tp_taken_symbols": _normalize_tp_map(raw.get("tp_taken_symbols")),
+        # 🛡️ Issue #3：Macro FSM 跨日狀態（防抖計數器／候選佇列必須可持久化，
+        # 否則 CI 無狀態 Runner 每日歸零 → 防抖形同虛設）
+        "macro_state": raw.get("macro_state"),
+        "days_in_current_state": int(raw.get("days_in_current_state", 0)),
+        "breadth_pct": float(raw.get("breadth_pct", 0.0)),
+        "macro_max_exposure": float(raw.get("macro_max_exposure", 0.0)),
+        "pending_state": raw.get("pending_state") or "",
+        "pending_days": int(raw.get("pending_days", 0)),
     }
     return state
 
@@ -251,6 +261,13 @@ def save_engine_state(bb: Blackboard, tp_flags: Dict[str, Dict]):
         "portfolio_state": bb.portfolio_state.name,
         "last_market_date": bb.last_market_date,
         "tp_taken_symbols": {k: tp_flags[k] for k in sorted(tp_flags)},
+        # 🛡️ Issue #3：Macro FSM 欄位寫回（str-Enum 的 .value 即狀態名，JSON 友善）
+        "macro_state": getattr(bb.macro_state, "value", bb.macro_state),
+        "days_in_current_state": bb.days_in_current_state,
+        "breadth_pct": bb.breadth_pct,
+        "macro_max_exposure": bb.macro_max_exposure,
+        "pending_state": bb.pending_state,
+        "pending_days": bb.pending_days,
     }
     atomic_write_json(STATE_PATH, snapshot)
     logger.info(f"💾 引擎狀態已原子寫回 {STATE_PATH}（熊市計數={bb.below_ma200_days}、"
@@ -309,6 +326,15 @@ def run_decision_engine():
         bb.market_state = MarketState[state["market_state"]]
     if state.get("portfolio_state") in PortfolioState.__members__:
         bb.portfolio_state = PortfolioState[state["portfolio_state"]]
+    # 🛡️ Issue #3：還原 Macro FSM 跨日狀態（非法/缺失值一律退回黑板保守預設）
+    _macro_raw = state.get("macro_state")
+    if _macro_raw in MacroState.__members__:
+        bb.macro_state = MacroState(_macro_raw)   # 統一轉 Enum 實例，生命週期型別純淨
+    bb.days_in_current_state = state["days_in_current_state"]
+    bb.breadth_pct = state["breadth_pct"]
+    bb.macro_max_exposure = state["macro_max_exposure"]
+    bb.pending_state = state["pending_state"]
+    bb.pending_days = state["pending_days"]
 
     # 🛡️ 致命#1：宏觀環境態勢——一天只需要且只能評估一次（冪等保護在 engine 內部）
     env_reasons_before = len(bb.reasons)
@@ -318,6 +344,27 @@ def run_decision_engine():
     bb.reasons = []  # 環境層理由不外洵到個股記錄
     logger.info(f"🌍 環境態勢：{bb.market_state.value} / {bb.portfolio_state.value}"
                 f"（本次{'已' if evaluated else '未（今日已評估過，冪等跳過）'}更新）")
+
+    # ── 🛡️ Issue #3：大盤狀態機（Macro FSM）＋ Proxy Breadth ──────────────
+    # 核心代理矩陣：0050（大型權值）+ 00733（中型動能），僅 2 次 API 呼叫。
+    # 網路失敗降級為空序列 → breadth valid=False → FSM 維持現狀，絕不崩潰。
+    macro_new_day = bool(evaluated)   # 冪等：與環境層共用「今日是否已評估」判定
+    try:
+        from src.quant_engine.macro import fetch_proxy_breadth_history
+    except ImportError:  # pragma: no cover
+        from quant_engine.macro import fetch_proxy_breadth_history
+    try:
+        large_closes, mid_closes = fetch_proxy_breadth_history()
+    except Exception as e:  # noqa: BLE001 — 附加層失敗不拖垮主流程
+        logger.warning(f"⚠️ Proxy Breadth 抓取失敗（Macro FSM 維持現狀）: {e}")
+        large_closes, mid_closes = [], []
+    breadth_snap = compute_breadth(large_closes, mid_closes, MacroFSMConfig())
+    macro_before = len(bb.reasons)
+    macro_state_now = MacroFSM().update(bb, breadth_snap, new_day=macro_new_day)
+    macro_reasons = list(bb.reasons[macro_before:])
+    bb.reasons = []  # 宏觀留痕不外洵到個股記錄（與環境層同款協定）
+    logger.info(f"🧭 宏觀四態：{macro_state_now}（曝險上限 {bb.macro_max_exposure:.0%}、"
+                f"寬度 {bb.breadth_pct:.0%}、已維持 {bb.days_in_current_state} 日）")
 
     # ── 迴圈遍歷個股：純行為樹評估，不觸碰宏觀 FSM ─────────────────
     # 🆕 預載 deep_analysis 的 trading_plan／現價，供推播決策樹產出券商指南
@@ -361,6 +408,14 @@ def run_decision_engine():
             "portfolio_state_label": bb.portfolio_state.value,
             "below_ma200_days": bb.below_ma200_days,
             "locked_until": bb.locked_until,
+            # 🛡️ Issue #3：宏觀四態快照（前端/報表可讀）
+            "macro_state": macro_state_now,
+            "macro_max_exposure": bb.macro_max_exposure,
+            "breadth_pct": bb.breadth_pct,
+            "days_in_current_state": bb.days_in_current_state,
+            "pending_state": bb.pending_state,
+            "pending_days": bb.pending_days,
+            "macro_reasons": macro_reasons,
             "peak_capital": bb.peak_capital,
             "drawdown_pct": round((bb.peak_capital - bb.current_capital) / bb.peak_capital * 100, 2)
             if bb.peak_capital > 0 else 0.0,
