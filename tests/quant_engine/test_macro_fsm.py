@@ -24,15 +24,36 @@ from src.quant_engine.macro import (
 # ---------------------------------------------------------------------------
 # Helpers：合成可直接控制條件的 breadth 快照 + 黑板
 # ---------------------------------------------------------------------------
-def make_bb(macro_state: str = "STRONG_TREND", days: int = 5,
-            pending_days: int = 0) -> Blackboard:
-    """pending_days：候選新條件已連續成立天數（防抖觀察佇列）。"""
+def make_bb(macro_state="STRONG_TREND", days: int = 5,
+            pending_days: int = 0, pending_state: str = "") -> Blackboard:
+    """pending_days：候選新條件已連續成立天數（防抖觀察佇列）。
+
+    ⚠️ pending_days > 0 时必须同时指定 pending_state（候選狀態名），
+    否則 FSM 會視為「新的候選」而把計數歸 1（觀察佇列語義）。
+    macro_state/pending_state 可傳字串或 Enum，一律正規化為大寫 name 字串。
+    """
+    if not isinstance(macro_state, str):
+        macro_state = getattr(macro_state, "name", None) or str(macro_state)
+    if pending_state and not isinstance(pending_state, str):
+        pending_state = getattr(pending_state, "name", None) or str(pending_state)
     return Blackboard(
         market_index=1000, market_ma60=950, market_ma200=900,
         peak_capital=1_000_000, current_capital=1_000_000,
-        macro_state=macro_state, days_in_current_state=days,
+        macro_state=macro_state.upper(), days_in_current_state=days,
+        pending_state=pending_state.upper() if pending_state else "",
         pending_days=pending_days,
     )
+
+
+# dst ➜ 對應的「昨日首次偵見」候選參數（供矩陣完備性測試構造自洽快照）
+_DST_KWARGS = {
+    "STRONG_TREND": dict(lg_above60=True, lg_high60=False,
+                         lg_ma20=105.0, lg_ma60=100.0, mid_above20=True),
+    "DIVERGENCE_BULL": dict(lg_above60=True, lg_high60=True, mid_above20=False),
+    "CHOPPY_MARKET": dict(lg_above60=True, lg_high60=False,
+                          lg_ma20=100.5, lg_ma60=100.0, mid_above20=True),
+    "BEAR_DEFENSE": dict(lg_above60=False),
+}
 
 
 def breadth(valid=True, lg_above60=True, lg_high60=False,
@@ -95,7 +116,8 @@ class TestDivergenceBull:
         """0050 > 60MA 且創 60 日高，但 00733 < 20MA ➜ DIVERGENCE_BULL / 0.3。"""
         # 防抖語義：條件須連續成立 confirm_days 日。此處以 pending_days=1
         # 模擬「昨日已首次偵見背離」，本次 update 為第 2 日 ➜ 放行切換。
-        bb = make_bb(macro_state="STRONG_TREND", days=5, pending_days=1)
+        bb = make_bb(macro_state="STRONG_TREND", days=5, pending_days=1,
+                     pending_state="DIVERGENCE_BULL")
         out = fsm.update(bb, breadth(lg_high60=True, mid_above20=False))
         assert out == "DIVERGENCE_BULL"
         assert bb.macro_state is MacroState.DIVERGENCE_BULL
@@ -112,7 +134,8 @@ class TestDivergenceBull:
 class TestChoppyMarket:
     def test_choppy_when_ma_gap_below_2pct(self, fsm):
         """大盤 > 60MA，但 |MA20-MA60|/MA60 < 2% ➜ CHOPPY_MARKET（禁止追高）。"""
-        bb = make_bb(macro_state="STRONG_TREND", days=5, pending_days=1)
+        bb = make_bb(macro_state="STRONG_TREND", days=5, pending_days=1,
+                     pending_state="CHOPPY_MARKET")
         # gap = |101-100|/100 = 1% < 2%
         out = fsm.update(bb, breadth(lg_ma20=101.0, lg_ma60=100.0, mid_above20=True))
         assert out == "CHOPPY_MARKET"
@@ -121,7 +144,8 @@ class TestChoppyMarket:
 
     def test_not_choppy_when_gap_above_2pct(self, fsm):
         """gap = 5% ➜ 健康強趨勢 STRONG_TREND（100% 曝險）。"""
-        bb = make_bb(macro_state="BEAR_DEFENSE", days=5, pending_days=1)
+        bb = make_bb(macro_state="BEAR_DEFENSE", days=5, pending_days=1,
+                     pending_state="STRONG_TREND")
         out = fsm.update(bb, breadth(lg_ma20=105.0, lg_ma60=100.0, mid_above20=True))
         assert out == "STRONG_TREND"
         assert bb.macro_max_exposure == pytest.approx(1.0)
@@ -177,18 +201,11 @@ class TestTransitionMatrixCompleteness:
         """任取 (src ➜ dst)：給足穩定天數與目標條件，一次 update 即可抵達。"""
         if src == dst:
             return
-        # pending_days=confirm_days-1：模擬目標條件已於昨日首次成立，
-        # 本次 update 為確認日第 2 天 ➜ 防抖放行，一次抵達 dst。
-        bb = make_bb(macro_state=src, days=99, pending_days=fsm.cfg.confirm_days - 1)
-        kwargs = {
-            "STRONG_TREND": dict(lg_above60=True, lg_high60=False,
-                                 lg_ma20=105.0, lg_ma60=100.0, mid_above20=True),
-            "DIVERGENCE_BULL": dict(lg_above60=True, lg_high60=True, mid_above20=False),
-            "CHOPPY_MARKET": dict(lg_above60=True, lg_high60=False,
-                                  lg_ma20=100.5, lg_ma60=100.0, mid_above20=True),
-            "BEAR_DEFENSE": dict(lg_above60=False),
-        }[dst]
-        out = fsm.update(bb, breadth(**kwargs))
+        # pending_days=confirm_days-1 且 pending_state=dst：模擬目標條件已於
+        # 昨日首次成立（觀察佇列對齊），本次 update 為確認日第 2 天 ➜ 防抖放行。
+        bb = make_bb(macro_state=src, days=99,
+                     pending_days=fsm.cfg.confirm_days - 1, pending_state=dst)
+        out = fsm.update(bb, breadth(**_DST_KWARGS[dst]))
         assert out == dst
         assert bb.macro_state is MacroState(dst)
         assert bb.macro_max_exposure == pytest.approx(
@@ -203,18 +220,20 @@ class TestVacuumZoneFill:
         """AC 字面情境：大盤在 60MA 上、MA20/MA60 距離 > 2%，但代理寬度僅 45%
         （< 50%）➜ 四態條件不完整，FSM 必須穩定輸出 SIDEWAYS 緩衝態，
         不得拋例外、不得殘留髒預設值。"""
-        bb = make_bb(macro_state="STRONG_TREND", days=99, pending_days=1)
+        bb = make_bb(macro_state="STRONG_TREND", days=99, pending_days=1,
+                     pending_state="SIDEWAYS")
         out = fsm.update(bb, breadth(lg_above60=True, lg_high60=False,
                                      lg_ma20=105.0, lg_ma60=100.0,
                                      mid_above20=False, breadth_pct=0.45))
         assert out == "SIDEWAYS"                      # 震盪緩衝填補
-        assert bb.macro_state is MarketState.SIDEWAYS  # 復用既有枚舉，型別安全
+        assert bb.macro_state is MacroState.SIDEWAYS   # 真空緩衝態，型別安全可持久化
         assert bb.macro_max_exposure == pytest.approx(0.5)
         assert any("真空" in r or "震盪緩衝" in r or "寬度" in r for r in bb.reasons)
 
     def test_discrete_vacuum_combo_also_buffered(self, fsm):
         """離散代理矩陣下的另一真空組合（0050 獨強、未創高）同樣穩定緩衝。"""
-        bb = make_bb(macro_state="STRONG_TREND", days=99, pending_days=1)
+        bb = make_bb(macro_state="STRONG_TREND", days=99, pending_days=1,
+                     pending_state="SIDEWAYS")
         out = fsm.update(bb, breadth(lg_above60=True, lg_high60=False,
                                      lg_ma20=105.0, lg_ma60=100.0,
                                      mid_above20=False))
@@ -253,3 +272,70 @@ class TestPersistenceFields:
         }
         restored = json.loads(json.dumps(snap))
         assert restored["macro_state"] == "DIVERGENCE_BULL"
+
+# ---------------------------------------------------------------------------
+# 整合面：decision_runner 的 Macro FSM 每日 tick（網路以 monkeypatch stub）
+# ---------------------------------------------------------------------------
+class TestRunnerIntegration:
+    def test_runner_tick_persists_and_idempotent(self, tmp_path, monkeypatch):
+        """模擬 CI：Day1 首次評估寫回 → Day2 載入還原 → 同日重複執行冪等凍結。"""
+        import json as _json
+        from src import decision_runner as dr
+
+        state_path = tmp_path / "engine_state.json"
+        monkeypatch.setattr(dr, "STATE_PATH", state_path)
+
+        # stub 網路邊界：0050 單調上升（創高）、00733 下跌（< 20MA）➜ 背離情境
+        monkeypatch.setattr(
+            "src.quant_engine.macro.fetch_proxy_breadth_history",
+            lambda days=120: ([100 + i * 0.5 for i in range(120)],
+                              [100 - i * 0.5 for i in range(120)]))
+
+        cfg = MacroFSMConfig()
+        snap = compute_breadth([100 + i * 0.5 for i in range(120)],
+                               [100 - i * 0.5 for i in range(120)], cfg)
+        fsm = MacroFSM(cfg)
+
+        # ── Day 1：從預設 BEAR_DEFENSE 出發，條件首見 ➜ pending=1，不跳變
+        bb = Blackboard(market_index=1000, market_ma60=950, market_ma200=900,
+                        peak_capital=1_000_000, current_capital=1_000_000)
+        out1 = fsm.update(bb, snap)
+        assert out1 == "BEAR_DEFENSE" and bb.pending_days == 1
+        dr.save_engine_state(bb, {})
+
+        # ── Day 2：新 process 從 JSON 還原（CI 無狀態 Runner 唯一記憶）
+        st = dr.load_engine_state()
+        assert st["pending_state"] == "DIVERGENCE_BULL" and st["pending_days"] == 1
+        bb2 = Blackboard(market_index=1000, market_ma60=950, market_ma200=900,
+                         peak_capital=st["peak_capital"],
+                         current_capital=st["current_capital"])
+        bb2.macro_state = st["macro_state"]
+        bb2.pending_state = st["pending_state"]
+        bb2.pending_days = st["pending_days"]
+        out2 = fsm.update(bb2, snap)          # 條件第 2 日 ➜ 防抖放行
+        assert out2 == "DIVERGENCE_BULL"
+        assert bb2.macro_max_exposure == pytest.approx(0.3)
+        dr.save_engine_state(bb2, {})
+
+        # 往復驗證：str-Enum 序列化為純字串（JSON 友善、跨版本可還原）
+        raw = _json.loads(state_path.read_text(encoding="utf-8"))
+        assert raw["macro_state"] == "DIVERGENCE_BULL"
+        st3 = dr.load_engine_state()
+        assert st3["macro_state"] == "DIVERGENCE_BULL"
+        assert st3["macro_max_exposure"] == pytest.approx(0.3)
+
+        # ── 同日重複執行（new_day=False）➜ 計數器與佇列完全凍結
+        before = (bb2.macro_state, bb2.days_in_current_state,
+                  bb2.pending_state, bb2.pending_days)
+        again = fsm.update(bb2, compute_breadth([], [], cfg), new_day=False)
+        assert again == "DIVERGENCE_BULL"
+        assert (bb2.macro_state, bb2.days_in_current_state,
+                bb2.pending_state, bb2.pending_days) == before
+
+    def test_fetch_failure_degrades_to_keep_status(self, monkeypatch):
+        """fetch 回傳空序列（網路降級）➜ breadth invalid ➜ FSM 維持現狀零例外。"""
+        bb = make_bb(macro_state="CHOPPY_MARKET", days=4)
+        snap = compute_breadth([], [], MacroFSMConfig())
+        assert snap["valid"] is False
+        out = MacroFSM().update(bb, snap)
+        assert out == "CHOPPY_MARKET"

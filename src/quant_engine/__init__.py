@@ -7,7 +7,11 @@
 """
 from .config import EngineConfig, MarketFSMConfig, PortfolioFSMConfig, ExecutionConfig
 from .engine import DecisionEngine
+from .macro import (DEFAULT_MAX_EXPOSURE, MacroFSM, MacroFSMConfig,
+                    MacroState, compute_breadth)
 from .records import DecisionRecord
 
 __version__ = "2.9.2"
-__all__ = ["DecisionEngine", "EngineConfig", "DecisionRecord"]
+__all__ = ["DecisionEngine", "EngineConfig", "DecisionRecord",
+           "MacroFSM", "MacroFSMConfig", "MacroState",
+           "compute_breadth", "DEFAULT_MAX_EXPOSURE"]

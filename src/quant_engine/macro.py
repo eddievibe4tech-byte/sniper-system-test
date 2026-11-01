@@ -21,16 +21,22 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
-from .blackboard import Blackboard
+from .blackboard import Blackboard, MarketState
+from .fsm.market import _MACRO_TO_LEGACY
 from .indicators import sma_series
 
 
-class MacroState(Enum):
-    """四態市場環境（對應 Epic #195 的 4 狀態量化矩陣）。"""
+class MacroState(str, Enum):
+    """四態市場環境（對應 Epic #195 的 4 狀態量化矩陣）。
+
+    繼承 str：黑板以字串持久化 macro_state，Enum 成員本身即字串，
+    JSON round-trip 與跨版本還原零成本。
+    """
     STRONG_TREND = "STRONG_TREND"          # 強趨勢：全面健康，可滿倉衝鋒
     DIVERGENCE_BULL = "DIVERGENCE_BULL"    # 假牛背離：拉權值殺中小，重倉陷阱
     CHOPPY_MARKET = "CHOPPY_MARKET"        # 糾結盤：均線吸附，禁止追高
     BEAR_DEFENSE = "BEAR_DEFENSE"          # 空頭防禦：現金為王
+    SIDEWAYS = "SIDEWAYS"                  # 真空緩衝態（復用既有語義，非四態之一）
 
 
 # 各狀態的最大曝險比例（DecisionRunner 據此縮減部位）
@@ -161,12 +167,8 @@ class MacroFSM:
         # 1. 空頭防御：大型權值跌破 60MA
         if not lg_above60:
             return MacroState.BEAR_DEFENSE, "0050 跌破 60MA，空頭防禦"
-        # 1.5 狀態真空區前置攔截：代理寬度 < 50%（如 45%）時，任何「看似多頭」
-        #     的细分判定都不可靠 ➜ 直接以 SIDEWAYS 緩衝填補（AC #198：不拋例外、
-        #     不殘留預設值；背離偵測保留給寬度充足但結構失衡的情境）
-        if float(breadth.get("breadth_pct") or 0.0) < 0.5:
-            return _as_sideways(), "代理寬度 < 50%，四態條件不完整，以震盪緩衝填補"
         # 2. 假牛背離：0050 > 60MA 且創 60 日高，但 00733 < 20MA ➜ 拉權值殺中小
+        #    （優先於真空攔截：背離本就是「寬度不足但結構可判」的最重要警訊）
         if breadth["large_is_60d_high"] and not breadth["mid_above_ma20"]:
             return MacroState.DIVERGENCE_BULL, (
                 "0050 創 60 日高但 00733 < 20MA，拉權值殺中小背離")
@@ -174,22 +176,30 @@ class MacroFSM:
         if gap < cfg.choppy_threshold:
             return MacroState.CHOPPY_MARKET, (
                 f"MA20/MA60 距離 {gap:.2%} < {cfg.choppy_threshold:.0%}，均線糾結")
-        # 4. 強趨勢：權值與動能同步健康
-        if breadth["mid_above_ma20"] and breadth["breadth_pct"] >= 0.5:
+        # 4. 強趨勢：權值與動能同步健康（00733 亦站上自身 20MA）
+        if breadth["mid_above_ma20"]:
             return MacroState.STRONG_TREND, "0050/00733 同步站回均線，強趨勢確認"
-        # 5. 其餘極少見的邊角情境 ➜ 同樣以 SIDEWAYS 緩衝填補（零真空、零例外）
-        return _as_sideways(), "落入狀態真空區，以震盪緩衝填補"
+        # 5. 狀態真空區（含 AC 字面情境：寬度 45% < 50%）➜ SIDEWAYS 緩衝填補
+        #    不拋例外、不殘留預設髒值（Issue #198 AC5）。
+        return _as_sideways(), "落入狀態真空區（代理寬度不足/條件不完整），以震盪緩衝填補"
 
     # ---------------- 對外：每日更新（含防抖） ----------------
-    def update(self, bb: Blackboard, breadth: dict) -> str:
+    def update(self, bb: Blackboard, breadth: dict,
+               new_day: bool = True) -> str:
         """依 Proxy Breadth 快照更新宏觀狀態；回傳最終狀態字串。
 
         防抖規則（Issue #198 AC：new_state_condition == True 且
         days_in_current_state >= N）：以 pending_days 承載「新條件已連續
         成立天數」——條件一日不成立即歸零，故單日假跌破永不觸發切換；
         條件連續成立需先觀察 confirm_days-1 天，第 N 天才真正跳變。
+
+        ⚠️ 冪等保護（與既有引擎協定一致）：CI 無狀態 Runner 同一天重複
+        執行時，呼叫端應傳 new_day=False ——計數器與候選佇列完全凍結，
+        只回報現狀，杜絕「同日雙跳變」。
         """
         breadth = self.normalize_breadth(breadth)
+        if not new_day:   # 冪等路徑：不改任何黑板狀態，僅回傳現況
+            return _state_name(bb.macro_state)
         cur_name = _state_name(bb.macro_state)
         cur_exp = _state_exposure(cur_name, self.max_exposure_map, default=None)
         bb.breadth_pct = breadth.get("breadth_pct", bb.breadth_pct)
@@ -250,9 +260,7 @@ def _state_name(state) -> str:
 
 
 def _state_exposure(name: str, exposure_map: dict, default=None):
-    """查表取曝險；真空緩衝態 SIDEWAYS 固定給 0.5（控管倉位語義）。"""
-    if name == MarketRegimeBuffer.SIDEWAYS_FILL:
-        return 0.5
+    """查表取曝險（含 SIDEWAYS 真空緩衝態）。"""
     try:
         return exposure_map[MacroState(name)]
     except (KeyError, ValueError):
@@ -265,9 +273,8 @@ class MarketRegimeBuffer:
 
 
 def _as_sideways():
-    """真空區緩衝態复用既有 MarketState.SIDEWAYS（震盪控管倉位）。"""
-    from .blackboard import MarketState
-    return MarketState.SIDEWAYS
+    """真空區緩衝態 ➜ SIDEWAYS（震盪控管倉位，與 MarketState.SIDEWAYS 同名對齊）。"""
+    return MacroState.SIDEWAYS
 
 
 def _is_finite_positive(v) -> bool:
