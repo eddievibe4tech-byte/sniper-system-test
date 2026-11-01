@@ -288,20 +288,19 @@ class ActionAddPosition(BTNode):
         # 🛡️ Issue #4：Break-Even 已由同序列首位的 CheckAndMoveStopToBreakEven
         # 「就地提交」（AC#2 同步輸出）；能走到這裡代表該 Condition 已 SUCCESS，
         # 保本上移必然生效或早已完成，此處不重複處理。
-        # 🛡️ Issue #4（目標部位 = 風險預算閥門 ＋ 名目上限封頂）：
-        # sizer 的雙重閥門採「取小值」，若直接沿用，低價股會被名目上限
-        # （20% × 1M ÷ 103 ≈ 1,941 股）壓制 —— Trial(50%) 僅 970 股，向下取整
-        # 不足一張 ➜ REJECT_MIN_LOT，AC#1 三階段建倉在正常測試情境永遠無法啟動。
-        # 正金字塔語意下，trial/add 各別金額皆 ≤ 目標總金額 ≤ 名目上限，風險仍受控；
-        # 故加碼基數以風險預算股數為準，再依既有 max_weight 政策換算名目硬上限封頂。
-        risk_shares = calc_position_size(
-            capital=bb.current_capital, price=s.current_price, atr=s.atr,
-            risk_pct=0.01, max_weight=1.0, lot_size=self.cfg.lot_size,
-            round_to_lot=False).shares
+        # 🛡️ Issue #4（目標部位口徑最終定案）： pyramid 進度欄位
+        # current_position_ratio 的「100%」錨定在【名目上限部位】
+        # （20% × capital ÷ price，與開倉路徑 CheckLotBoundary 的 max_weight=0.20
+        # 同一政策），而非純風險預算股數。原實作以 risk_shares(1% budget) 當
+        # 基數：低 ATR 標的（如 atr=2 ➜ 5,000 股）Trial 50% = 2,500 股，加碼後
+        # 實際金額達帳戶 25%，直接擊穿 20% 名目上限 —— 金字塔建倉本身違反風控。
+        # 名額分配論證：目標總金額 ≤ 20%×capital；各階段金額佔比 50%/30%/20%，
+        # 最大單筆 Trial = 10% ≤ 20% ✓；Break-Even 完成後舊部位停損於保本線，
+        # 最壞情況總虧損 ≈ trial 部位 × buffer（< 1% 風險預算）✓。
         notional_cap_shares = int(bb.current_capital * self.cfg.max_position_weight
-                                  / s.current_price)
-        target_shares = min(risk_shares, notional_cap_shares) \
-            if notional_cap_shares > 0 else risk_shares
+                                  / s.current_price) \
+            if s.current_price > 0 else 0
+        target_shares = notional_cap_shares
         add_raw = target_shares * stage
         add_shares, reject = apply_lot_mode(
             add_raw, s.current_price, mode=self.cfg.lot_mode,

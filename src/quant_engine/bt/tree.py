@@ -25,6 +25,8 @@ def build_trading_behavior_tree(cfg: ExecutionConfig,
         Sequence([CheckStopLoss(cfg), ActionStopLoss()]),
         Sequence([CheckTakeProfit(cfg), ActionTakeProfit(cfg)]),
         # 🛡️ AC#1/#2：正金字塔加碼 —— Break-Even 必須是序列第一個 Condition
+        # （AC#2 工程實作提示明文要求；冪等設計使未達加碼門檻的 tick 重複
+        #   執行無副作用，僅同 tick 去重輸出 MOVE_STOP_TO_BREAK_EVEN。）
         Sequence([ConditionPortfolioAllowed(),
                   CheckAndMoveStopToBreakEven(lc),
                   CheckAddCondition(lc),
