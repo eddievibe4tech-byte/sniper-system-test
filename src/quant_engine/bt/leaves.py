@@ -262,6 +262,31 @@ class CheckAddCondition(BTNode):
         gain_needed = self.cfg.add_min_gain_atr * s.atr
         if s.current_price < s.cost_price + gain_needed:
             return NodeStatus.FAILURE
+        # 🛡️ Issue #199（方案 A 前置閘門）：階段名額以既有持倉為基數
+        # （add_raw = shares_held × stage）。零股模式或臨界進位後仍歸零 ➜
+        # 直接 FAILURE，杜絕「保本指令已同步輸出、加碼卻被攔截」的半副作用 tick。
+        # ⚠️ AC#1 明文 Trial(50%) 亦屬本序列產出 —— shares_held <= 0 時以
+        # 【風控核准名額】當基數落地首批：優先沿用開倉路徑 CheckLotBoundary
+        # 寫入的 target_shares；純微觀測試/引擎單檔路徑未帶入持倉資料時，
+        # 退回與 CheckLotBoundary 同款協定即時換算（雙重閥門 ∧ 邊界處理），
+        # 確保首批部位永不擊穿 20% 名目上限與 1% 風險預算。
+        if s.shares_held > 0:
+            add_raw = s.shares_held * stage
+        elif s.target_shares > 0:
+            add_raw = s.target_shares * stage
+        else:
+            from ..sizer import calc_position_size  # 延遲匯入：避免模組循環依賴
+            res = calc_position_size(
+                capital=bb.current_capital, price=s.current_price, atr=s.atr,
+                risk_pct=0.01, max_weight=self.cfg.max_position_weight,
+                lot_size=self.cfg.lot_size, round_to_lot=False)
+            add_raw = res.shares * stage
+        probe, _rej = apply_lot_mode(
+            add_raw, s.current_price, mode=self.cfg.lot_mode,
+            lot_size=self.cfg.lot_size, min_order_amount=self.cfg.min_order_amount,
+            round_up=True)
+        if probe <= 0:
+            return NodeStatus.FAILURE
         # 暫存本階段決策（stage/index），供同 Sequence 的 ActionAddPosition 取用
         bb._pending_stage = (stage, idx)  # type: ignore[attr-defined]
         return NodeStatus.SUCCESS
@@ -288,23 +313,30 @@ class ActionAddPosition(BTNode):
         # 🛡️ Issue #4：Break-Even 已由同序列首位的 CheckAndMoveStopToBreakEven
         # 「就地提交」（AC#2 同步輸出）；能走到這裡代表該 Condition 已 SUCCESS，
         # 保本上移必然生效或早已完成，此處不重複處理。
-        # 🛡️ Issue #4（目標部位口徑最終定案）： pyramid 進度欄位
-        # current_position_ratio 的「100%」錨定在【名目上限部位】
-        # （20% × capital ÷ price，與開倉路徑 CheckLotBoundary 的 max_weight=0.20
-        # 同一政策），而非純風險預算股數。原實作以 risk_shares(1% budget) 當
-        # 基數：低 ATR 標的（如 atr=2 ➜ 5,000 股）Trial 50% = 2,500 股，加碼後
-        # 實際金額達帳戶 25%，直接擊穿 20% 名目上限 —— 金字塔建倉本身違反風控。
-        # 名額分配論證：目標總金額 ≤ 20%×capital；各階段金額佔比 50%/30%/20%，
-        # 最大單筆 Trial = 10% ≤ 20% ✓；Break-Even 完成後舊部位停損於保本線，
-        # 最壞情況總虧損 ≈ trial 部位 × buffer（< 1% 風險預算）✓。
+        # 🛡️ Issue #199（方案 A 最終定案：名額基數 + 臨界進位）：
+        # pyramid 進度欄位 current_position_ratio 的「100%」錨定在【風控核准
+        # 名額】，階段名額依 AC#1 明文比例直接計算：
+        #     add_raw = notional_cap × stage   （50% / 30% / 20%，嚴禁倒金字塔）
+        # 原實作兩處缺陷：
+        #   1. Trial 基數誤用 shares_held（空手=0）➜ raw=0 ➜ REJECT_INVALID_INPUT，
+        #      正金字塔第一階段即中斷；
+        #   2. ROUND_LOT 無條件捨去：低總值股票（$10、名額 2,000 股）的 30%
+        #      增量 = 600 股不足一張 ➜ 第二階段永不落地。
+        # 解法：基數改采與開倉路徑 CheckLotBoundary 同一政策的【名目上限部位】
+        # （20%×capital÷price ∧ 1% 風險預算雙重閥門），加碼湊整採臨界進位
+        # （ceil_to_lot，增量 ≤ lot-1 股）。風控論證：各階段金額佔比
+        # 50%/30%/20%，最大單筆 Trial = 10% ≤ 20% ✓；Break-Even 保本停損先於
+        # 加碼提交（Sequence 首位），最壞情況總虧損 ≈ trial 部位 × buffer
+        # < 1% 風險預算 ✓ —— 加碼不擊穿風控，僅推進進度。
+        if s.current_price <= 0:
+            return NodeStatus.FAILURE
         notional_cap_shares = int(bb.current_capital * self.cfg.max_position_weight
-                                  / s.current_price) \
-            if s.current_price > 0 else 0
-        target_shares = notional_cap_shares
-        add_raw = target_shares * stage
+                                  / s.current_price)
+        add_raw = notional_cap_shares * stage
         add_shares, reject = apply_lot_mode(
             add_raw, s.current_price, mode=self.cfg.lot_mode,
-            lot_size=self.cfg.lot_size, min_order_amount=self.cfg.min_order_amount)
+            lot_size=self.cfg.lot_size, min_order_amount=self.cfg.min_order_amount,
+            round_up=True)
         if reject:
             # AC#4：邊界攔截 —— 拒絕下單、不留半成品指令，轉為觀望留痕
             _push_order(bb, "REJECT_MIN_ORDER_THRESHOLD")
