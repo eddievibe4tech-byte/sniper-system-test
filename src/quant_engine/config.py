@@ -38,6 +38,20 @@ class ExecutionConfig:
 
 
 @dataclass(frozen=True)
+class LifecycleConfig:
+    """🛡️ Issue #4（量化引擎 v2.0）：正金字塔生命週期閾值。
+
+    配置集中化（鋼板一協定）：加碼條件、Break-Even 緩衝、Trailing Stop
+    回撤倍數、整股/零股邊界全部在此，邏輯碼嚴禁散佈魔術數字。
+    """
+    add_min_gain_atr: float = 1.0     # 加碼門檻：現價 ≥ 成本 + 1×ATR（趨勢延續才准加碼）
+    be_buffer_pct: float = 0.003      # Break-Even 緩衝：停損上移至成本 ×(1+0.3%)（覆蓋交易成本）
+    trail_atr_mult: float = 2.5       # Trailing Stop：進場後最高價回撤 2.5×ATR ➜ 優先出場
+    lot_size: int = 1000              # 台股整股單位：1,000 股 = 1 張
+    min_order_amount: float = 5000.0  # 零股最低單筆金額：低于此額被手續費低消侵蝕 ➜ 攔截
+
+
+@dataclass(frozen=True)
 class EngineConfig:
     """引擎總配置：三個子域 + 版本號（寫入每筆 DecisionRecord 供審計）"""
     market: MarketFSMConfig = field(default_factory=MarketFSMConfig)

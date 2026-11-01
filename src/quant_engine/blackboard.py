@@ -85,6 +85,11 @@ class Blackboard:
     decision: str = ""
     action: str = "HOLD"
     position_size_pct: float = 0.0       # 🛡️ Review R2：倉位由 ActionBuy 決定寫入，engine 直接取用（DRY）
+    # ---------- 🛡️ Issue #4（量化引擎 v2.0）：生命週期指令承載 ----------
+    # BT 葉節點產出的結構化下單/風控指令（STOP_LOSS / TAKE_PROFIT / BUY / ADD_POSITION /
+    # MOVE_STOP_TO_BREAK_EVEN / TRAILING_STOP_EXIT / REJECT_MIN_ORDER_THRESHOLD），
+    # 每個 tick 起始由 engine.evaluate_stock() 重置為空列表（跨標的零污染協定同 reasons）。
+    orders: List[str] = field(default_factory=list)
     reasons: List[str] = field(default_factory=list)
 
 
