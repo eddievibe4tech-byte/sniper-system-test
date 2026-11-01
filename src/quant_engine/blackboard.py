@@ -38,6 +38,24 @@ class StockData:
     # 🛡️ Review 🔴1：tp_taken 綁定的持倉成本。停利觸發時記下當時 cost_price，
     # 跨日還原時若 cost_price 改變（換手／加碼）→ 旗標作廢重置，避免「終身免疫」
     tp_taken_cost_price: float = 0.0
+    # ---------- 🛡️ Issue #4（量化引擎 v2.0）：正金字塔生命週期欄位 ----------
+    # Blackboard 擴充（工程實作提示）：以下欄位支援 Trailing Stop 與加碼判斷。
+    atr: float = 0.0                        # Wilder's ATR(14)（Issue #1 數學層產出）
+    shares_held: int = 0                    # 現行持股股數（金字塔加碼累計，AC#1/#2）
+    target_shares: int = 0                  # 風控層目標總部位股數（雙重閥門 + 邊界處理後）
+    highest_price_since_entry: float = 0.0  # 進場後最高價（Trailing Stop 錨點，只增不減）
+    current_position_ratio: float = 0.0     # 現行部位佔目標總部位比例（0~1，金字塔進度）
+    break_even_done: bool = False           # Break-Even 停損上移是否已完成（冪等防護）
+    trailing_stop_level: float = 0.0        # 追蹤停損價格（由 FSM/BT 維護，供下單層展示）
+
+    def __post_init__(self):
+        # 未帶入生命週期欄位的舊呼叫點自動對齊：既有管線 peak_price 即「進場後最高價」
+        # （extract_stocks 以現價初始化 peak、ActionTakeProfit 只升不降），
+        # 故 highest_price_since_entry 以其為初值；尚未建倉（cost<=0）時退回現價。
+        if self.highest_price_since_entry <= 0:
+            anchor = self.peak_price if self.peak_price > 0 else self.current_price
+            if anchor > 0 and (self.has_position or self.cost_price > 0):
+                self.highest_price_since_entry = anchor
 
 
 @dataclass
@@ -69,6 +87,11 @@ class Blackboard:
     decision: str = ""
     action: str = "HOLD"
     position_size_pct: float = 0.0       # 🛡️ Review R2：倉位由 ActionBuy 決定寫入，engine 直接取用（DRY）
+    # ---------- 🛡️ Issue #4（量化引擎 v2.0）：生命週期指令承載 ----------
+    # BT 葉節點產出的結構化下單/風控指令（STOP_LOSS / TAKE_PROFIT / BUY / ADD_POSITION /
+    # MOVE_STOP_TO_BREAK_EVEN / TRAILING_STOP_EXIT / REJECT_MIN_ORDER_THRESHOLD），
+    # 每個 tick 起始由 engine.evaluate_stock() 重置為空列表（跨標的零污染協定同 reasons）。
+    orders: List[str] = field(default_factory=list)
     reasons: List[str] = field(default_factory=list)
 
 

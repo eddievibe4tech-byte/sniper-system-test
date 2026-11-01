@@ -111,3 +111,23 @@ def calc_position_size(
         reason=(f"risk_budget={risk_budget:.0f}, stop_dist={stop_distance:.2f}, "
                 f"notional_cap={notional_budget:.0f}"),
     )
+
+
+# ---------------------------------------------------------------------------
+# 🛡️ Issue #4（量化引擎 v2.0）：正金字塔生命週期純函數 —— 再匯出
+#
+# 原實作已抽離至 lifecycle.py（獨立模組、單一職責），此處保留同名再匯出，
+# 讓既有 `from .sizer import next_pyramid_stage` 呼叫點零改動相容（DRY）。
+# ---------------------------------------------------------------------------
+from .lifecycle import (  # noqa: E402,F401
+    PYRAMID_STAGES,
+    PYRAMID_TRIAL_RATIO,
+    LotMode,
+    apply_lot_mode,
+    blended_cost_price,
+    break_even_stop_price,
+    floor_to_lot,
+    next_pyramid_stage,
+    trailing_stop_price,
+    worst_case_loss_pct,
+)
