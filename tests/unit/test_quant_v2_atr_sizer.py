@@ -13,8 +13,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.quant_engine.indicators import sma, wilder_atr, wilder_atr_last
-from src.quant_engine.sizer import calc_position_size
+from src.quant_engine.indicators import sma, sma_series, wilder_atr, wilder_atr_last
+from src.quant_engine.sizer import SizingGate, calc_position_size
 
 
 # ---------------------------------------------------------------------------
@@ -98,7 +98,16 @@ class TestWilderATR:
     def test_insufficient_data_returns_nan_not_error(self):
         h, l, c = _flat_series(5, 3.0)
         atr = wilder_atr(h, l, c, period=14)
-        assert all(math.isnan(v) for v in atr)
+        # Pandas 2.0+：以 pd.isna 統一處理 np.nan / pd.NA / None，升級不倒測
+        assert all(pd.isna(v) for v in atr)
+
+    def test_empty_array_returns_empty_series_no_indexerror(self):
+        """Code Review #201 Bug A：空陣列（新股/API 失敗）不得拋 IndexError。"""
+        out = wilder_atr([], [], [], period=14)
+        assert isinstance(out, pd.Series)
+        assert len(out) == 0
+        # helper 路徑同樣安全降級為 0.0
+        assert wilder_atr_last([], [], []) == 0.0
 
     def test_length_mismatch_raises_valueerror(self):
         with pytest.raises(ValueError):
@@ -156,10 +165,34 @@ class TestPositionSizerDualGate:
 
     def test_sub_lot_result_rejected_with_warning(self):
         """小資情境：算出股數 < 1 張 ➜ shares=0 + REJECTED（不勉強下單）。"""
-        with pytest.warns(None) if False else _no_raise():
+        with _no_raise():
             r = calc_position_size(capital=50_000, price=100, atr=8,
                                    round_to_lot=True, lot_size=1000)
         assert r.shares == 0 and r.gate == "REJECTED"
+
+    def test_float_precision_no_under_buy(self):
+        """Code Review #201 Bug B：浮點誤差 4999.999999999999 不得「無故少買一張」。
+
+        capital=2,499,999.9999999995、price=100、max_weight=0.20 ➜
+        notional raw = capital*0.2/100 = 4999.999999999999（數學上恰為 5 張），
+        舊版 `raw // lot_size` 會截斷成 4,000 股（少買 1 張）；
+        epsilon (1e-9) + floor 防護後必須是 5,000 股。
+        """
+        r = calc_position_size(capital=2_499_999.9999999995, price=100,
+                               atr=0.0001, max_weight=0.20,
+                               round_to_lot=True, lot_size=1000)
+        assert r.gate == "NOTIONAL_CAP"
+        assert r.shares == 5000, f"浮點截斷導致少買一張: got {r.shares}"
+
+    def test_gate_is_sizinggate_enum(self):
+        """Code Review #201 架構 A：gate 為 SizingGate Enum 且與字串相等相容。"""
+        r = calc_position_size(capital=1_000_000, price=100, atr=10,
+                               round_to_lot=False)
+        assert isinstance(r.gate, SizingGate)
+        assert r.gate == "RISK"          # str-Enum 相容性：既有字串比對不破
+        assert r.gate.value == "RISK"
+        rej = calc_position_size(capital=0, price=100, atr=10)
+        assert rej.gate is SizingGate.REJECTED
 
     def test_purity_no_state_mutation(self):
         """Pure Function：同輸入必得同輸出（確定性，供 BT 回測重放）。"""
@@ -172,8 +205,20 @@ class TestSMAHelper:
     def test_sma_basic(self):
         vals = [1, 2, 3, 4, 5]
         out = sma(vals, 3)
-        assert math.isnan(out[0]) and math.isnan(out[1])
+        # Pandas 2.0+：pd.isna 統一處理 nan/NA/None
+        assert pd.isna(out[0]) and pd.isna(out[1])
         assert out[-1] == pytest.approx(4.0)
+
+    def test_sma_series_batch_version(self):
+        """Code Review #201 架構 B：sma_series 直接吃 pd.Series，供批次運算免重建構。"""
+        s = pd.Series([1, 2, 3, 4, 5], dtype="float64")
+        out = sma_series(s, 3)
+        assert isinstance(out, pd.Series)
+        assert len(out) == 5
+        assert pd.isna(out.iloc[0]) and pd.isna(out.iloc[1])
+        assert out.iloc[-1] == pytest.approx(4.0)
+        # list 版與 Series 版結果一致（NaN != NaN，改用 allclose 比對）
+        assert np.allclose(list(out), sma([1, 2, 3, 4, 5], 3), equal_nan=True)
 
 
 # 小型 context manager：斷言區塊內不拋例外
