@@ -20,6 +20,12 @@ class PortfolioState(Enum):
     CIRCUIT_BREAKER = "熔斷停機 (鎖死交易)"
 
 
+# 🛡️ Issue #3（量化引擎 v2.0）：Macro FSM 四態狀態名以字串承載於黑板
+# （STRONG_TREND / DIVERGENCE_BULL / CHOPPY_MARKET / BEAR_DEFENSE），
+# 與既有 MarketState Enum 並存、互不干擾，方便 JSON 持久化與跨版本還原。
+MACRO_STATE_DEFAULT = "BEAR_DEFENSE"
+
+
 @dataclass
 class StockData:
     symbol: str
@@ -50,6 +56,14 @@ class Blackboard:
     locked_until: Optional[str] = None   # ISO 格式時間
     below_ma200_days: int = 0            # 🛡️ Review#1/#2：熊市連日計數改由黑板承載（非 FSM 實例變數），可持久化、迴圈不重複累加
     last_market_date: Optional[str] = None  # 環境態勢最近評估日（ISO date），冪等保護用
+    # ---------- 🛡️ Issue #3：大盤狀態機（Macro FSM）與 Proxy Breadth ----------
+    macro_state: str = MACRO_STATE_DEFAULT  # 四態字串（見 MacroState Enum）
+    days_in_current_state: int = 0          # 防抖計數器：現況已維持的交易日數
+    breadth_pct: float = 0.0                # 代理寬度：站上各自 20MA 的代理佔比 (0~1)
+    macro_max_exposure: float = 0.0         # 現行狀態允許的最大曝險（下游縮倉依據）
+    action_note: str = ""                   # 環境層最近一次狀態轉換留痕（Runner 抽取後清空）
+    pending_state: str = ""                 # 防抖觀察佇列：候選新狀態名（"" = 無候選）
+    pending_days: int = 0                   # 防抖觀察佇列：候選條件已連續成立天數
     # 當前評估個股
     stock: Optional[StockData] = None
     decision: str = ""

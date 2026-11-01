@@ -13,6 +13,23 @@ from ..blackboard import Blackboard, MarketState
 from ..config import MarketFSMConfig
 
 
+# 🛡️ Issue #3 整合：MarketState（三態）與 MacroState（四態）的相容性映射。
+# 新舊 FSM 並行過渡期，任何一边的狀態跳變都必須同步另一邊，
+# 否則行為樹 ConditionMarketAllowed（讀 MarketState）會與宏觀曝險（讀 MacroState）脫節。
+_MACRO_TO_LEGACY = {
+    "STRONG_TREND": MarketState.BULL,
+    "DIVERGENCE_BULL": MarketState.SIDEWAYS,   # 假牛背離 ➜ 降格為震盪控管
+    "CHOPPY_MARKET": MarketState.SIDEWAYS,
+    "BEAR_DEFENSE": MarketState.BEAR,
+}
+# 反向映射僅供「舊狀態載入、新計數器歸零」的一次性對齊（非每日同步依據）
+_LEGACY_TO_MACRO = {
+    MarketState.BULL: "STRONG_TREND",
+    MarketState.SIDEWAYS: "CHOPPY_MARKET",
+    MarketState.BEAR: "BEAR_DEFENSE",
+}
+
+
 class MarketFSM:
     """🛡️ 滯回設計：均線附近震盪時不跳變狀態"""
 
