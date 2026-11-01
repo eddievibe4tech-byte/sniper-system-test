@@ -50,6 +50,7 @@ class LifecycleConfig:
     lot_mode: str = "ROUND_LOT"       # 下單位模式："ROUND_LOT" 整股 / "ODD_LOT" 零股
     lot_size: int = 1000              # 台股整股單位：1,000 股 = 1 張
     min_order_amount: float = 5000.0  # 零股最低單筆金額：低于此額被手續費低消侵蝕 ➜ 攔截
+    max_position_weight: float = 0.20  # 單一標的名目上限佔帳戶比例（與 sizer 政策一致，AC#1 加碼封頂）
 
 
 @dataclass(frozen=True)

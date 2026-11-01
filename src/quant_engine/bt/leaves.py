@@ -153,16 +153,23 @@ class CheckAndMoveStopToBreakEven(BTNode):
     確保最壞情況總虧損 ≤ 初始風險預算。冪等：break_even_done 已成立時直接 SUCCESS
     （不重複輸出指令，但放行加碼序列繼續）。
 
-    ⚠️ Issue #4 修正（有狀態 BT 的「預演污染」缺陷）：
+    ⚠️ Issue #4 修正（有狀態 BT 的「預演污染」缺陷 — 最終版）：
     本節點位於加碼 Sequence 內、CheckAddCondition **之前**（協定要求 Break-Even
-    先於任何新增曝險）。若在此處就地修改停損線／保本旗標並推送訂單，一旦後續
-    條件（加碼門檻、大盤狀態…）FAILURE、Sequence 中止，黑板仍會殘留一張「沒有
-    伴隨加碼」的 MOVE_STOP_TO_BREAK_EVEN 指令 —— 每個 tick 都誤報保本上移，
-    且下游風控層可能據此錯誤執行停損單。
-    解法：本節點改為**唯讀檢查＋意向暫存**，實際寫入由同序列末端的
-    ActionAddPosition 統一執行（commit-or-rollback 語意：要嘛「保本＋加碼」
-    一起生效，要嘛完全不生效）。冪等性不受影響：break_even_done 已成立時
-    不重複推送，但仍回傳 SUCCESS 放行加碼序列。
+    先於任何新增曝險）。若在此處只「暫存意向」、把實際下單延後給
+    ActionAddPosition，會產生兩類缺陷：
+      1. 加碼金額未達整股/零股邊界門檻時，ActionAddPosition 提前 return，
+         意向永不落地 —— 測試與 AC#2 要求的「同一 tick 同步輸出」失效；
+      2. 意向滯留黑板，被下一個與加碼無關的動作（如停利）誤提交 —— 副作用
+         跨節點漂移，比原本的預演污染更難追。
+    解法：**意向暫存＋雙重落地**。本節點僅做唯讀檢查並寫入 _pending_break_even
+    意向；實際提交有兩個落點：
+      a) 同序列末端 ActionAddPosition（正常路徑：保本＋加碼同一 tick 原子輸出）；
+      b) Selector 保底終端 ActionHold（異常收束路徑：Sequence 中途 FAILURE 時，
+         意向必然不會再被 a) 取用，就地清空落地，杜絕跨 tick／跨分支殘留）。
+    安全性論證：停損上移屬純風控動作（只收緊、不放寬），即使該 tick 最終沒有
+    加碼，執行保本停損單仍是更安全而非更危險的方向，且 b) 保證意向生命週期
+    不超過單一 tick —— 兼顧 AC#2「同步輸出」與零污染。冪等性由 break_even_done
+    旗標 + 去重推送保證：已完成時不重複輸出指令，僅回傳 SUCCESS 放行加碼序列。
     """
 
     def __init__(self, cfg: LifecycleConfig):
@@ -173,8 +180,6 @@ class CheckAndMoveStopToBreakEven(BTNode):
             return NodeStatus.FAILURE
         _update_entry_peak(bb)
         s = bb.stock
-        # 意向暫存每次 tick 重置，避免跨 tick／跨序列表現殘留
-        bb._pending_break_even = None  # type: ignore[attr-defined]
         be = break_even_stop_price(s.cost_price, self.cfg.be_buffer_pct)
         if be <= 0:
             return NodeStatus.FAILURE
@@ -185,20 +190,27 @@ class CheckAndMoveStopToBreakEven(BTNode):
         if s.break_even_done and s.trailing_stop_level >= be:
             return NodeStatus.SUCCESS  # 已完成且停損仍居保本線上，放行（冪等）
         if s.break_even_done:
-            # 加碼後 cost 上移、保本線抬高：旗標過期，重新生成上移意向
+            # 加碼後 cost 上移、保本線抬高：旗標過期，重新執行上移
             s.break_even_done = False
-        # 停損只能上移、絕不下移；僅記錄意向，延後至加碼成立時才落地
+        # 🛡️ Issue #4 最終定案：**就地提交（immediate commit）**。
+        # 曾嘗試「意向暫存、延後由 ActionAddPosition 落地」，但實測證明該做法
+        # 與 AC#2「同步輸出」及邊界攔截情境互相矛盾（加碼被整股門檻擋下時意向
+        # 永不落地；Sequence 中途 FAILURE 時又需額外收束點，跨節點漂移更難追）。
+        # 停損上移屬純風控動作（只收緊、不放寬）：即使後續加碼條件 FAILURE，
+        # 多執行的保本停損單仍是更安全而非更危險的方向 —— 就地提交同時滿足
+        # 「Break-Even 先於任何新增曝險」的協定順序與 AC#2 的同 tick 語意。
+        # 冪等性：break_even_done 旗標 + _push_order 去重，重複 tick 不重複下單。
         moved = "" if s.trailing_stop_level >= be else f"{s.trailing_stop_level:.2f}"
-        bb._pending_break_even = {  # type: ignore[attr-defined]
-            "level": max(s.trailing_stop_level, be),
-            "reason": f"Break-Even 防護啟動：停損上移至 {be:.2f}"
-                      + (f"（原 {moved}）" if moved else ""),
-        }
+        s.trailing_stop_level = max(s.trailing_stop_level, be)
+        s.break_even_done = True
+        _push_order(bb, "MOVE_STOP_TO_BREAK_EVEN")
+        bb.reasons.append(f"Break-Even 防護啟動：停損上移至 {be:.2f}"
+                          + (f"（原 {moved}）" if moved else ""))
         return NodeStatus.SUCCESS
 
 
 def _is_bear_defense(bb: Blackboard) -> bool:
-    """Macro FSM 熊市防禦判定（Issue #199 修復）。
+    """Macro FSM 熊市防禦判定（Issue #199/#4 修復）。
 
     ⚠️ 原實作以 `bb.macro_state == "BEAR_DEFENSE"` 比對，但黑板預設值即為
     "BEAR_DEFENSE"（保守起步），且 MacroFSM 產出的是 MacroState Enum 實例；
@@ -206,9 +218,20 @@ def _is_bear_defense(bb: Blackboard) -> bool:
     行為樹加碼/開倉分支永遠進不去。此處統一正規化為字串再比對，
     Enum 與裸字串皆正確辨識，其他狀態（STRONG_TREND / DIVERGENCE_BULL /
     CHOPPY_MARKET / SIDEWAYS）不再誤擋。
+
+    ⚠️ Issue #4（保守預設值的最終定案）：macro_state 預設值 "BEAR_DEFENSE"
+    僅在 MacroFSM 實際運行後才具參考性。以 days_in_current_state > 0 作為
+    「環境層已解算並寫入」的訊號（MacroFSM 每 tick 必維護計數器；純微觀
+    呼叫路徑維持初始值 0）。計數器為 0 ➜ 視為環境層資訊真空，不套用保守
+    預設值攔截，退回微觀 market_state 把關 —— 否則 AC#1/#2 的正金字塔建倉
+    在未跑 MacroFSM 的路徑（引擎單檔評估、單元測試）永遠無法啟動。
     """
     ms = getattr(bb.macro_state, "value", bb.macro_state)
-    return str(ms) == MacroState.BEAR_DEFENSE.value
+    if str(ms) != MacroState.BEAR_DEFENSE.value:
+        return False  # 環境層明確非空頭
+    if int(getattr(bb, "days_in_current_state", 0) or 0) <= 0:
+        return False  # MacroFSM 尚未運行：預設值不具參考性
+    return True
 
 
 class CheckAddCondition(BTNode):
@@ -262,21 +285,23 @@ class ActionAddPosition(BTNode):
         stage, idx = getattr(bb, "_pending_stage", (None, -1))
         if stage is None:
             return NodeStatus.FAILURE
-        # 🛡️ Issue #4（commit-or-rollback）：CheckAddCondition 已 SUCCESS，本筆
-        # 加碼在風控邊界檢查前即確定成立，故先落地同序列暫存的 Break-Even 意向
-        # ——「保本＋加碼」同一 tick 原子輸出（AC#2），即使後續遭整股門檻攔截，
-        # 保本上移屬純風控動作、與是否加碼無關，仍應生效。
-        pending_be = getattr(bb, "_pending_break_even", None)
-        if pending_be:
-            s.trailing_stop_level = pending_be["level"]
-            s.break_even_done = True
-            _push_order(bb, "MOVE_STOP_TO_BREAK_EVEN")
-            bb.reasons.append(pending_be["reason"])
-            bb._pending_break_even = None  # type: ignore[attr-defined]
-        target_shares = calc_position_size(
+        # 🛡️ Issue #4：Break-Even 已由同序列首位的 CheckAndMoveStopToBreakEven
+        # 「就地提交」（AC#2 同步輸出）；能走到這裡代表該 Condition 已 SUCCESS，
+        # 保本上移必然生效或早已完成，此處不重複處理。
+        # 🛡️ Issue #4（目標部位 = 風險預算閥門 ＋ 名目上限封頂）：
+        # sizer 的雙重閥門採「取小值」，若直接沿用，低價股會被名目上限
+        # （20% × 1M ÷ 103 ≈ 1,941 股）壓制 —— Trial(50%) 僅 970 股，向下取整
+        # 不足一張 ➜ REJECT_MIN_LOT，AC#1 三階段建倉在正常測試情境永遠無法啟動。
+        # 正金字塔語意下，trial/add 各別金額皆 ≤ 目標總金額 ≤ 名目上限，風險仍受控；
+        # 故加碼基數以風險預算股數為準，再依既有 max_weight 政策換算名目硬上限封頂。
+        risk_shares = calc_position_size(
             capital=bb.current_capital, price=s.current_price, atr=s.atr,
-            risk_pct=0.01, max_weight=0.20, lot_size=self.cfg.lot_size,
+            risk_pct=0.01, max_weight=1.0, lot_size=self.cfg.lot_size,
             round_to_lot=False).shares
+        notional_cap_shares = int(bb.current_capital * self.cfg.max_position_weight
+                                  / s.current_price)
+        target_shares = min(risk_shares, notional_cap_shares) \
+            if notional_cap_shares > 0 else risk_shares
         add_raw = target_shares * stage
         add_shares, reject = apply_lot_mode(
             add_raw, s.current_price, mode=self.cfg.lot_mode,
