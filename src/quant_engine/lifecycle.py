@@ -42,21 +42,33 @@ def next_pyramid_stage(current_ratio: float,
     """依現行部位比例回傳下一個金字塔階段 (stage_ratio, stage_index)。
 
     Args:
-        current_ratio: 已建立部位佔目標總部位的比例（0~1）。
+        current_ratio: 已建立部位佔目標總部位的「累計」比例（0~1）。
         stages:        階段序列，預設 (0.5, 0.3, 0.2)。
 
     Returns:
-        (stage_ratio, index)；已滿倉或髒資料（負值/NaN）回傳 (None, -1)。
+        (stage_ratio, index)；已滿倉或髒資料（負值/NaN/>1）回傳 (None, -1)。
+
+    ⚠️ 修復（Issue #199）：原實作以「單階段比例」當門檻比較（cur < stage），
+    導致 Trial 完成後（cur=0.5）對照 stage[1]=0.3 直接落空、回傳 (None, -1)，
+    行為樹永遠無法進入 Add#1/Add#2 —— 正金字塔建倉在第二階段即中斷。
+    正確語意是比對「累計進度門檻」cumulative[i] = Σ stages[:i+1]：
+        cur < 0.5 ➜ Trial(0.5, idx 0)
+        cur < 0.8 ➜ Add#1(0.3, idx 1)
+        cur < 1.0 ➜ Add#2(0.2, idx 2)
+    每階段門檻皆帶 1e-9 容差：浮點累加（0.5+0.3）可能得到 0.7999...，
+    誤判會導致重複加碼同一階段（倒金字塔風險）。
     """
     try:
         cur = float(current_ratio)
     except (TypeError, ValueError):
         return None, -1
-    if cur != cur or cur < 0:  # NaN / 負值防護
+    if cur != cur or cur < 0 or cur > 1.0 + 1e-9:  # NaN / 負值 / 超額髒資料防護
         return None, -1
+    cumulative = 0.0
     for i, stage in enumerate(stages):
-        # 容差 1e-9：浮點累加（0.5+0.3）可能得到 0.7999...，誤判會導致重複加碼同一階段
-        if cur < stage - 1e-9:
+        cumulative += float(stage)
+        # 容差 1e-9：累計門檻的浮點誤差不得造成同階段重複加碼
+        if cur < cumulative - 1e-9:
             return float(stage), i
     return None, -1
 

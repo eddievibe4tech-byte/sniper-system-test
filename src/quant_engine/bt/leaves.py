@@ -16,6 +16,7 @@ from typing import Optional, Tuple
 
 from .nodes import BTNode, NodeStatus
 from ..blackboard import Blackboard, MarketState, PortfolioState
+from ..macro import MacroState
 from ..config import ExecutionConfig, LifecycleConfig
 from ..lifecycle import (
     apply_lot_mode,
@@ -177,6 +178,20 @@ class CheckAndMoveStopToBreakEven(BTNode):
         return NodeStatus.SUCCESS
 
 
+def _is_bear_defense(bb: Blackboard) -> bool:
+    """Macro FSM 熊市防禦判定（Issue #199 修復）。
+
+    ⚠️ 原實作以 `bb.macro_state == "BEAR_DEFENSE"` 比對，但黑板預設值即為
+    "BEAR_DEFENSE"（保守起步），且 MacroFSM 產出的是 MacroState Enum 實例；
+    兩者混合比較導致「未跑 Macro FSM 的黑板」一律被誤判為空頭防禦，
+    行為樹加碼/開倉分支永遠進不去。此處統一正規化為字串再比對，
+    Enum 與裸字串皆正確辨識，其他狀態（STRONG_TREND / DIVERGENCE_BULL /
+    CHOPPY_MARKET / SIDEWAYS）不再誤擋。
+    """
+    ms = getattr(bb.macro_state, "value", bb.macro_state)
+    return str(ms) == MacroState.BEAR_DEFENSE.value
+
+
 class CheckAddCondition(BTNode):
     """AC#1：正金字塔下一階段加碼條件。
 
@@ -198,7 +213,7 @@ class CheckAddCondition(BTNode):
         stage, idx = next_pyramid_stage(s.current_position_ratio)
         if stage is None:
             return NodeStatus.FAILURE  # 已滿倉或髒資料
-        if bb.macro_state == "BEAR_DEFENSE" or bb.market_state == MarketState.BEAR:
+        if _is_bear_defense(bb) or bb.market_state == MarketState.BEAR:
             return NodeStatus.FAILURE
         if s.ma20 > 0 and s.current_price < s.ma20:
             return NodeStatus.FAILURE
