@@ -38,13 +38,13 @@ from typing import Dict, List, Optional
 try:  # 作為 package 執行（python -m src.decision_runner）
     from src.quant_engine import DecisionEngine, EngineConfig
     from src.quant_engine.blackboard import Blackboard, StockData, MarketState, PortfolioState
-    from src.quant_engine.macro import MacroFSM, MacroFSMConfig, compute_breadth
+    from src.quant_engine.macro import MacroFSM, MacroFSMConfig, MacroState, compute_breadth
     from src.push_behavior_tree import PushBlackboard, tick_push_tree, DEFAULT_BUDGET
     from src.notifier import push_ntfy
 except ImportError:  # 在 src/ 目錄內直接執行
     from quant_engine import DecisionEngine, EngineConfig
     from quant_engine.blackboard import Blackboard, StockData, MarketState, PortfolioState
-    from quant_engine.macro import MacroFSM, MacroFSMConfig, compute_breadth
+    from quant_engine.macro import MacroFSM, MacroFSMConfig, MacroState, compute_breadth
     from push_behavior_tree import PushBlackboard, tick_push_tree, DEFAULT_BUDGET
     from notifier import push_ntfy
 
@@ -328,9 +328,8 @@ def run_decision_engine():
         bb.portfolio_state = PortfolioState[state["portfolio_state"]]
     # 🛡️ Issue #3：還原 Macro FSM 跨日狀態（非法/缺失值一律退回黑板保守預設）
     _macro_raw = state.get("macro_state")
-    if _macro_raw in ("STRONG_TREND", "DIVERGENCE_BULL", "CHOPPY_MARKET",
-                      "BEAR_DEFENSE", "SIDEWAYS"):
-        bb.macro_state = _macro_raw
+    if _macro_raw in MacroState.__members__:
+        bb.macro_state = MacroState(_macro_raw)   # 統一轉 Enum 實例，生命週期型別純淨
     bb.days_in_current_state = state["days_in_current_state"]
     bb.breadth_pct = state["breadth_pct"]
     bb.macro_max_exposure = state["macro_max_exposure"]

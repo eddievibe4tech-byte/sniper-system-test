@@ -40,11 +40,14 @@ class MacroState(str, Enum):
 
 
 # 各狀態的最大曝險比例（DecisionRunner 據此縮減部位）
+# ⚠️ 配置集中化：所有狀態（含 SIDEWAYS 真空緩衝態）風險配置一律在此表，
+#    邏輯碼嚴禁散佈魔術數字。
 DEFAULT_MAX_EXPOSURE = {
     MacroState.STRONG_TREND: 1.0,
     MacroState.DIVERGENCE_BULL: 0.3,
     MacroState.CHOPPY_MARKET: 0.5,
     MacroState.BEAR_DEFENSE: 0.0,
+    MacroState.SIDEWAYS: 0.5,          # 真空緩衝態：半倉觀望
 }
 
 
@@ -217,7 +220,9 @@ class MacroFSM:
         target_name = _state_name(target)
         if target_name == cur_name:
             bb.days_in_current_state += 1
-            bb.pending_state, bb.pending_days = "", 0   # 無需切換，清空觀察佇列
+            # 狀態未變 ➜ 市場沒有「切換意圖」，中斷防抖觀察佇列（非漏寫累加）：
+            # 若不清空，日後單日假訊號可繼承舊 pending_days 提前跳變。
+            bb.pending_state, bb.pending_days = "", 0
             bb.macro_max_exposure = cur_exp \
                 if cur_exp is not None else bb.macro_max_exposure
             return cur_name
@@ -229,7 +234,8 @@ class MacroFSM:
             bb.pending_state, bb.pending_days = target_name, 1
 
         if bb.pending_days >= self.cfg.confirm_days:
-            new_exp = _state_exposure(target_name, self.max_exposure_map, default=0.5)
+            # 曝險一律查表取得（配置集中化，無魔術數字）；未知狀態降級保守 0.0
+            new_exp = _state_exposure(target_name, self.max_exposure_map, default=0.0)
             bb.macro_state = target          # Enum 或 MarketState.SIDEWAYS 皆可持久化
             bb.macro_max_exposure = new_exp
             self._note(bb, f"[MacroFSM] {cur_name} ➜ {target_name}：{reason}")
@@ -260,10 +266,11 @@ def _state_name(state) -> str:
 
 
 def _state_exposure(name: str, exposure_map: dict, default=None):
-    """查表取曝險（含 SIDEWAYS 真空緩衝態）。"""
+    """查表取曝險（含 SIDEWAYS 真空緩衝態，全部配置在 DEFAULT_MAX_EXPOSURE）。"""
     try:
         return exposure_map[MacroState(name)]
     except (KeyError, ValueError):
+        logger.warning(f"[MacroFSM] 未知狀態 {name!r}，使用預設曝險 {default}")
         return default
 
 
@@ -286,23 +293,37 @@ def _is_finite_positive(v) -> bool:
 
 
 def fetch_proxy_breadth_history(days: int = 120):
-    """從 Yahoo Finance 抓取核心代理矩陣收盤序列（0050 + 00733，共 2 次呼叫）。
+    """從 Yahoo Finance 抓取核心代理矩陣收盤序列（0050 + 00733）。
 
     ⚠️ 網路層邊界：本函式是唯一允許碰外部世界的入口；任何失敗一律降級
     回傳 ({}, {})，讓 MacroFSM 走「資料不足 ➜ 維持現狀」路徑，嚴禁拋例外。
+
+    ✅ 批量下載：yf.download() 一次 HTTP 請求同時取得兩檔，將 CI 環境中
+    Yahoo Finance Rate Limit (429) 導致單檔抓取失敗的機率降到最低。
     """
     try:
         import yfinance as yf
     except ImportError:  # pragma: no cover — 環境未裝 yfinance 時降級
         return {}, {}
+    symbols = ["0050.TW", "00733.TW"]
     result = {}
-    for key, sym in (("large", "0050.TW"), ("mid", "00733.TW")):
-        try:
-            hist = yf.Ticker(sym).history(period=f"{days}d")
-            closes = [float(c) for c in hist["Close"].dropna().tolist()]
-            result[key] = closes
-        except Exception:  # noqa: BLE001 — 降級不崩潰
-            result[key] = []
+    try:
+        hist = yf.download(
+            tickers=symbols,
+            period=f"{days}d",
+            group_by="ticker",
+            auto_adjust=True,
+            threads=False,  # CI 環境避免多執行緒衝突
+        )
+        for key, sym in (("large", "0050.TW"), ("mid", "00733.TW")):
+            try:
+                # MultiIndex DataFrame ➜ 依 ticker 分欄取 Close
+                closes = hist[sym]["Close"].dropna().tolist()
+                result[key] = [float(c) for c in closes]
+            except Exception:  # noqa: BLE001 — 單檔解析失敗降級為空序列
+                result[key] = []
+    except Exception:  # noqa: BLE001 — 降級不崩潰
+        return {}, {}
     if not result.get("large") or not result.get("mid"):
         return {}, {}
     return result["large"], result["mid"]
