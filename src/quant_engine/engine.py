@@ -22,7 +22,7 @@ class DecisionEngine:
         self.cfg = cfg
         self.market_fsm = MarketFSM(cfg.market)
         self.portfolio_fsm = PortfolioFSM(cfg.portfolio)
-        self.tree = build_trading_behavior_tree(cfg.execution)
+        self.tree = build_trading_behavior_tree(cfg.execution, cfg.lifecycle)
 
     def evaluate_environment(self, bb: Blackboard, now: datetime,
                              trading_days_below: Optional[int] = None,
@@ -51,8 +51,9 @@ class DecisionEngine:
                        now: datetime) -> DecisionRecord:
         """個股行為樹評估（可在迴圈中遍歷；不觸碰任何宏觀 FSM）。"""
         bb.stock = stock
-        # 🛡️ 清空前一檔標的的殘留痕跡，避免 reasons/action 跨股票污染
+        # 🛡️ 清空前一檔標的的殘留痕跡，避免 reasons/action/orders 跨股票污染
         bb.reasons = []
+        bb.orders = []  # 🛡️ Issue #4：下單指令列表每 tick 重置（跨標的零污染協定同 reasons）
         bb.action = "HOLD"
         bb.decision = ""
         bb.position_size_pct = 0.0

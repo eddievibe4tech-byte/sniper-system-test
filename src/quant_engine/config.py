@@ -47,14 +47,16 @@ class LifecycleConfig:
     add_min_gain_atr: float = 1.0     # 加碼門檻：現價 ≥ 成本 + 1×ATR（趨勢延續才准加碼）
     be_buffer_pct: float = 0.003      # Break-Even 緩衝：停損上移至成本 ×(1+0.3%)（覆蓋交易成本）
     trail_atr_mult: float = 2.5       # Trailing Stop：進場後最高價回撤 2.5×ATR ➜ 優先出場
+    lot_mode: str = "ROUND_LOT"       # 下單位模式："ROUND_LOT" 整股 / "ODD_LOT" 零股
     lot_size: int = 1000              # 台股整股單位：1,000 股 = 1 張
     min_order_amount: float = 5000.0  # 零股最低單筆金額：低于此額被手續費低消侵蝕 ➜ 攔截
 
 
 @dataclass(frozen=True)
 class EngineConfig:
-    """引擎總配置：三個子域 + 版本號（寫入每筆 DecisionRecord 供審計）"""
+    """引擎總配置：四個子域 + 版本號（寫入每筆 DecisionRecord 供審計）"""
     market: MarketFSMConfig = field(default_factory=MarketFSMConfig)
     portfolio: PortfolioFSMConfig = field(default_factory=PortfolioFSMConfig)
     execution: ExecutionConfig = field(default_factory=ExecutionConfig)
+    lifecycle: LifecycleConfig = field(default_factory=LifecycleConfig)
     version: str = "1.0.0"

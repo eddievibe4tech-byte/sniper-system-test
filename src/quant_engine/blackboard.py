@@ -41,6 +41,8 @@ class StockData:
     # ---------- 🛡️ Issue #4（量化引擎 v2.0）：正金字塔生命週期欄位 ----------
     # Blackboard 擴充（工程實作提示）：以下欄位支援 Trailing Stop 與加碼判斷。
     atr: float = 0.0                        # Wilder's ATR(14)（Issue #1 數學層產出）
+    shares_held: int = 0                    # 現行持股股數（金字塔加碼累計，AC#1/#2）
+    target_shares: int = 0                  # 風控層目標總部位股數（雙重閥門 + 邊界處理後）
     highest_price_since_entry: float = 0.0  # 進場後最高價（Trailing Stop 錨點，只增不減）
     current_position_ratio: float = 0.0     # 現行部位佔目標總部位比例（0~1，金字塔進度）
     break_even_done: bool = False           # Break-Even 停損上移是否已完成（冪等防護）
