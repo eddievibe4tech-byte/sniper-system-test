@@ -30,6 +30,80 @@ class SizingGate(str, Enum):
     REJECTED = "REJECTED"            # 非法輸入 / 不足最低交易單位
 
 
+"""🛡️ Issue #4（量化引擎 v2.0）：正金字塔部位生命週期純函數。
+
+散戶思維的致命盲點（Epic #195 痛點 #3）：
+    倒金字塔加碼 —— 試單 30% ➜ 加碼 70%，瞬間墊高平均成本；一旦回踩均線，
+    放大後的全額部位將擊穿初始 1% 風險底線。
+
+機構級解法 —— 正金字塔（Pyramiding）+ Break-Even 強制防護：
+    - 部位嚴格依序 Trial (50%) ➜ Add (30%) ➜ Add (20%)，越加越少；
+    - 任何加碼動作之前，必須先將「原有部位」停損上移至 Break-Even（進場成本），
+      確保最壞情況總虧損 ≤ 初始風險預算（1%）。
+
+本模組為 Pure Logic（純函數、零副作用、不拋例外），與雙重閥門計算器同層，
+供行為樹葉節點與持久化層共用，杜絕散落各處的副本邏輯。
+"""
+from typing import Sequence, Tuple
+
+# 金字塔階段佔「目標總部位」的比例（由黑板 current_position_ratio 承載進度）。
+# 索引 0 = 尚未建倉時的下一階段（Trial）；最後一階段加碼完成後不再有加碼。
+PYRAMID_TRIAL_RATIO: float = 0.50
+PYRAMID_STAGES: Tuple[float, ...] = (0.50, 0.30, 0.20)
+
+
+def next_pyramid_stage(current_ratio: float,
+                       stages: Sequence[float] = PYRAMID_STAGES):
+    """依現行部位比例回傳下一個金字塔階段 (stage_ratio, stage_index)。
+
+    Args:
+        current_ratio: 已建立部位佔目標總部位的比例（0~1）。
+        stages:        階段序列，預設 (0.5, 0.3, 0.2)。
+
+    Returns:
+        (stage_ratio, index)；已滿倉或髒資料（負值/NaN）回傳 (None, -1)。
+    """
+    try:
+        cur = float(current_ratio)
+    except (TypeError, ValueError):
+        return None, -1
+    if cur != cur or cur < 0:  # NaN / 負值防護
+        return None, -1
+    for i, stage in enumerate(stages):
+        # 容差 1e-9：浮點累加（0.5+0.3）可能得到 0.7999...，誤判會導致重複加碼同一階段
+        if cur < stage - 1e-9:
+            return float(stage), i
+    return None, -1
+
+
+def blended_cost_price(old_shares: int, old_cost: float,
+                       add_shares: int, add_price: float) -> float:
+    """加碼後的加權平均成本（四捨五入至小數第 2 位）。
+
+    非法輸入一律降級回舊成本，嚴禁拋出例外（邊界防護協定與 sizer 一致）。
+    """
+    try:
+        if old_shares <= 0 or add_shares <= 0:
+            return float(old_cost)
+        total = (old_shares * old_cost + add_shares * add_price) / (old_shares + add_shares)
+        return round(total, 2)
+    except (TypeError, ValueError):
+        return float(old_cost or 0.0)
+
+
+def worst_case_loss_pct(cost: float, stop: float, weight: float) -> float:
+    """單一部位的「最壞情況虧損佔帳戶比例」＝ (cost-stop)/cost × weight。
+
+    供 AC 驗證：Break-Even 完成後的總虧損上界必須 ≤ 初始風險預算（1%）。
+    """
+    try:
+        if cost <= 0 or weight <= 0:
+            return 0.0
+        return max(0.0, (cost - stop) / cost) * weight
+    except (TypeError, ValueError):
+        return 0.0
+
+
 @dataclass(frozen=True)
 class SizingResult:
     shares: int              # 建議股數（含整股向下取整）
