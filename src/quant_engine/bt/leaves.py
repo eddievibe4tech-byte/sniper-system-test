@@ -152,6 +152,17 @@ class CheckAndMoveStopToBreakEven(BTNode):
     任何加碼動作之前，必須先將原有部位停損上移至 Break-Even（進場成本 ×(1+buffer)），
     確保最壞情況總虧損 ≤ 初始風險預算。冪等：break_even_done 已成立時直接 SUCCESS
     （不重複輸出指令，但放行加碼序列繼續）。
+
+    ⚠️ Issue #4 修正（有狀態 BT 的「預演污染」缺陷）：
+    本節點位於加碼 Sequence 內、CheckAddCondition **之前**（協定要求 Break-Even
+    先於任何新增曝險）。若在此處就地修改停損線／保本旗標並推送訂單，一旦後續
+    條件（加碼門檻、大盤狀態…）FAILURE、Sequence 中止，黑板仍會殘留一張「沒有
+    伴隨加碼」的 MOVE_STOP_TO_BREAK_EVEN 指令 —— 每個 tick 都誤報保本上移，
+    且下游風控層可能據此錯誤執行停損單。
+    解法：本節點改為**唯讀檢查＋意向暫存**，實際寫入由同序列末端的
+    ActionAddPosition 統一執行（commit-or-rollback 語意：要嘛「保本＋加碼」
+    一起生效，要嘛完全不生效）。冪等性不受影響：break_even_done 已成立時
+    不重複推送，但仍回傳 SUCCESS 放行加碼序列。
     """
 
     def __init__(self, cfg: LifecycleConfig):
@@ -162,19 +173,27 @@ class CheckAndMoveStopToBreakEven(BTNode):
             return NodeStatus.FAILURE
         _update_entry_peak(bb)
         s = bb.stock
-        if s.break_even_done:
-            return NodeStatus.SUCCESS  # 已完成，放行（冪等）
+        # 意向暫存每次 tick 重置，避免跨 tick／跨序列表現殘留
+        bb._pending_break_even = None  # type: ignore[attr-defined]
         be = break_even_stop_price(s.cost_price, self.cfg.be_buffer_pct)
         if be <= 0:
             return NodeStatus.FAILURE
-        # 停損只能上移、絕不下移；僅在確需移動時輸出指令
+        # 🛡️ Issue #4（保本錨點重算）：break_even_done 的語意是「停損已覆蓋
+        # 【當前】成本基準的保本線」。加碼使 cost_price 上移、保本線隨之抬高，
+        # 舊旗標立即失效 —— 以「停損線 ≥ 現行保本線」為準則直接覆核，
+        # 不依賴旗標時效性（旗標仅作持久化提示，真相永遠以價格條件為準）。
+        if s.break_even_done and s.trailing_stop_level >= be:
+            return NodeStatus.SUCCESS  # 已完成且停損仍居保本線上，放行（冪等）
+        if s.break_even_done:
+            # 加碼後 cost 上移、保本線抬高：旗標過期，重新生成上移意向
+            s.break_even_done = False
+        # 停損只能上移、絕不下移；僅記錄意向，延後至加碼成立時才落地
         moved = "" if s.trailing_stop_level >= be else f"{s.trailing_stop_level:.2f}"
-        s.trailing_stop_level = max(s.trailing_stop_level, be)
-        s.break_even_done = True
-        _push_order(bb, "MOVE_STOP_TO_BREAK_EVEN")
-        bb.reasons.append(
-            f"Break-Even 防護啟動：停損上移至 {be:.2f}"
-            + (f"（原 {moved}）" if moved else ""))
+        bb._pending_break_even = {  # type: ignore[attr-defined]
+            "level": max(s.trailing_stop_level, be),
+            "reason": f"Break-Even 防護啟動：停損上移至 {be:.2f}"
+                      + (f"（原 {moved}）" if moved else ""),
+        }
         return NodeStatus.SUCCESS
 
 
@@ -243,6 +262,17 @@ class ActionAddPosition(BTNode):
         stage, idx = getattr(bb, "_pending_stage", (None, -1))
         if stage is None:
             return NodeStatus.FAILURE
+        # 🛡️ Issue #4（commit-or-rollback）：CheckAddCondition 已 SUCCESS，本筆
+        # 加碼在風控邊界檢查前即確定成立，故先落地同序列暫存的 Break-Even 意向
+        # ——「保本＋加碼」同一 tick 原子輸出（AC#2），即使後續遭整股門檻攔截，
+        # 保本上移屬純風控動作、與是否加碼無關，仍應生效。
+        pending_be = getattr(bb, "_pending_break_even", None)
+        if pending_be:
+            s.trailing_stop_level = pending_be["level"]
+            s.break_even_done = True
+            _push_order(bb, "MOVE_STOP_TO_BREAK_EVEN")
+            bb.reasons.append(pending_be["reason"])
+            bb._pending_break_even = None  # type: ignore[attr-defined]
         target_shares = calc_position_size(
             capital=bb.current_capital, price=s.current_price, atr=s.atr,
             risk_pct=0.01, max_weight=0.20, lot_size=self.cfg.lot_size,
@@ -263,7 +293,11 @@ class ActionAddPosition(BTNode):
                                           add_shares, s.current_price)
         s.shares_held = old_shares + add_shares
         s.current_position_ratio = round(s.current_position_ratio + stage, 6)
-        s.break_even_done = False  # 🛡️ Review 🔴1 協定：換手即新倉，停利/保本旗標重置
+        # 🛡️ Issue #4（保本旗標不再無條件重置）：加碼後 cost 上移、保本線抬高，
+        # 下一次 tick 由 CheckAndMoveStopToBreakEven 以「停損線 ≥ 現行保本線」
+        # 準則自動覆核並生成新高位意向 —— 若在此處逕自置 False，會使每個 tick
+        # 都重新配對一張 MOVE_STOP_TO_BREAK_EVEN（重複下單指令污染）。
+        # tp_taken 仍須重置：換手即新倉，停利保護不得終身免疫（Review 🔴1）。
         s.tp_taken = False
         s.tp_taken_cost_price = 0.0
         _push_order(bb, "ADD_POSITION")
