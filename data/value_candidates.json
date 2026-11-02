@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-01T13:23:54.297039+08:00",
+  "updated_at": "2026-11-02T13:22:33.553091+08:00",
   "etf_monitor": [
     {
       "price": 694.81,
@@ -54,26 +54,26 @@
       "type": "全球配置"
     },
     {
-      "price": 104.95,
-      "ma200": 93.81,
-      "ma50": 108.93,
-      "bias_ma200_pct": 11.87,
-      "rsi14": 36.21,
-      "advice": "🔴 嚴重超買 (乖離 +11.9%)",
-      "strategy": "停止追高/減碼",
+      "price": 104.25,
+      "ma200": 94.01,
+      "ma50": 108.92,
+      "bias_ma200_pct": 10.89,
+      "rsi14": 34.61,
+      "advice": "🟢 罕見甜蜜點！(跌破/回踩年線或超賣)",
+      "strategy": "大筆加碼",
       "symbol": "0050",
       "name": "元大台灣50",
       "market": "🇹🇼",
       "type": "台股大盤"
     },
     {
-      "price": 240.75,
-      "ma200": 214.61,
-      "ma50": 249.46,
-      "bias_ma200_pct": 12.18,
-      "rsi14": 35.96,
-      "advice": "🔴 嚴重超買 (乖離 +12.2%)",
-      "strategy": "停止追高/減碼",
+      "price": 239.2,
+      "ma200": 215.07,
+      "ma50": 249.43,
+      "bias_ma200_pct": 11.22,
+      "rsi14": 34.34,
+      "advice": "🟢 罕見甜蜜點！(跌破/回踩年線或超賣)",
+      "strategy": "大筆加碼",
       "symbol": "006208",
       "name": "富邦台50 (低內扣)",
       "market": "🇹🇼",
@@ -113,7 +113,7 @@
       "forward_pe": 10.21,
       "peg": 1.25,
       "roe_pct": 22.51,
-      "fcf_yield_pct": 5.08,
+      "fcf_yield_pct": 5.16,
       "ma200": 135.3,
       "status": "🟡 估值合理，列入觀察"
     },
@@ -137,7 +137,7 @@
       "forward_pe": 15.59,
       "peg": 1.52,
       "roe_pct": 15.53,
-      "fcf_yield_pct": 3.71,
+      "fcf_yield_pct": 3.78,
       "ma200": 153.39,
       "status": "🟡 估值合理，列入觀察"
     },
@@ -158,7 +158,7 @@
       "name": "United Parcel Service, Inc.",
       "sector": "Industrials",
       "price": 108.25,
-      "forward_pe": 13.39,
+      "forward_pe": 13.38,
       "peg": 1.57,
       "roe_pct": 28.64,
       "fcf_yield_pct": 6.1,
@@ -175,6 +175,18 @@
       "roe_pct": 26.41,
       "fcf_yield_pct": 4.89,
       "ma200": 132.8,
+      "status": "🟡 估值合理，列入觀察"
+    },
+    {
+      "symbol": "BMY",
+      "name": "Bristol-Myers Squibb Company",
+      "sector": "Healthcare",
+      "price": 62.48,
+      "forward_pe": 9.4,
+      "peg": 17.32,
+      "roe_pct": 44.01,
+      "fcf_yield_pct": 4.98,
+      "ma200": 58.87,
       "status": "🟡 估值合理，列入觀察"
     }
   ],
