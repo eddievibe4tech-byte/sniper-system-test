@@ -1,12 +1,35 @@
 {
-  "candidates": [],
+  "candidates": [
+    {
+      "coin_id": "uniswap",
+      "symbol": "UNI",
+      "name": "Uniswap",
+      "price": 7.38,
+      "market_cap": 4474776151,
+      "change_24h": 5.95,
+      "change_7d": 2.84,
+      "rsi": 51.53,
+      "ma20": 7.13,
+      "price_above_ma20": true,
+      "fear_greed": 34,
+      "scenario": "右側確認",
+      "recommendation": "謹慎買入",
+      "win_rate": "72%",
+      "win_rate_note": "歷史統計：BTC 日線、1 年期；山寨幣僅供參考",
+      "position_size": "單筆 5,000-8,000 元",
+      "stop_loss": "跌破 MA20 停損",
+      "take_profit": "RSI > 70 或 FNG > 70 時獲利",
+      "holding_period": "1-3 個月",
+      "screened_at": "2026-11-04 07:19"
+    }
+  ],
   "fear_greed_index": {
-    "value": 26,
+    "value": 34,
     "classification": "Fear",
-    "timestamp": 1793664000
+    "timestamp": 1793750400
   },
   "market_scenario": null,
-  "updated_at": "2026-11-03T07:41:37.241078",
+  "updated_at": "2026-11-04T07:20:44.155351",
   "rules_applied": {
     "fear_greed_max": 75,
     "min_market_cap": 1000000000,
