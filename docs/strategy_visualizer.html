@@ -86,11 +86,13 @@ async function fetchChartData(symbol, range) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 2500);
   try {
-    const res = await fetch(`${API_BASE}/chart/${encodeURIComponent(symbol)}?timeframe=1d&range=${range}`, { signal: ctrl.signal });
+    /* Nice-to-have 2：正規化 trailing slash，避免部署後雙斜線 404 */
+    const base = API_BASE.replace(/\/$/, '');
+    const res = await fetch(`${base}/chart/${encodeURIComponent(symbol)}?timeframe=1d&range=${range}`, { signal: ctrl.signal });
     clearTimeout(t);
     if (!res.ok) return null;
     return await res.json();
-  } catch (e) { clearTimeout(t); return null; }
+  } catch (e) { clearTimeout(t); console.warn('API fetch failed:', e); return null; }
 }
 
 /* ---- 本機合成 Adj Close 資料（含除息情境驗證：無跳空斷崖）---- */
@@ -122,7 +124,7 @@ function synthData(symbol) {
   return {
     symbol, market_state:'Bull Pullback', risk_circuit_breaker:'Active', cooldown_remaining_hours:18,
     capital_pool:{used_pct:40},
-    series:{ timestamps:ts, ohlc_adj:ohlc, ma20:ma(20), ma60:ma(60), ma200:ma(200), rsi14:rsi, rolling_mdd:mdd },
+    series:{ timestamps:ts, ohlc_adj:ohlc, ma20:ma(20), ma60:ma(60), ma200:ma(200), rsi14:rsi, rolling_mdd:mdd, oversold_memory_bands:(()=>{ const b=[]; for(let i=0;i<rsi.length;i++){ if(rsi[i]<30){ const e=Math.min(i+4,rsi.length-1); if(b.length&&b[b.length-1].end>=i-1&&b[b.length-1].end<e) b[b.length-1].end=e; else b.push({start:i,end:e}); } } return b; })() },
     grid_levels:{ rolling_high:rh, stage1_price:rh*0.90, stage2_price:rh*0.85, stage3_price:rh*0.75, stage4_price:rh*0.65 },
     events,
   };
@@ -201,8 +203,13 @@ function render(data) {
     if (ev) {
       tip.innerHTML = `<b>▶ ${ev.type} (${ev.stage})</b><br>${ev.reason}<br>建議部位: ${ev.position_pct}`;
       tip.style.display='block';
-      tip.style.left = Math.min(param.point.x+15, window.innerWidth-280)+'px';
-      tip.style.top  = (window.scrollY + param.point.y + 60)+'px';
+      /* Critical Bug 1 修正：param.point 是相對 chart container 的座標，
+         需經 getBoundingClientRect() 換算為文件座標，避免滾動時 tooltip 偏移 */
+      const chartRect = document.getElementById('pane-price').getBoundingClientRect();
+      const left = chartRect.left + param.point.x + 15;
+      const top = chartRect.top + param.point.y + 60 + window.scrollY;
+      tip.style.left = Math.min(left, window.innerWidth - 280) + 'px';
+      tip.style.top = top + 'px';
     } else tip.style.display='none';
   });
   attachSync(c1, candle);
@@ -214,14 +221,22 @@ function render(data) {
   c2._mainSeries = rsiLine;
   rsiLine.createPriceLine({ price:30, color:'#f85149', lineStyle:LightweightCharts.LineStyle.Dotted, title:'超賣 30' });
   rsiLine.createPriceLine({ price:70, color:'#d29922', lineStyle:LightweightCharts.LineStyle.Dotted, title:'超買 70' });
-  /* 記憶窗口：RSI 跌破 30 起算的 5 交易日半透明黃色背景塊（histogram 底層技法） */
-  const bands = [];
-  for (let i=0;i<S.rsi14.length;i++){
-    if (S.rsi14[i] < 30){
-      for (let j=i;j<Math.min(i+5, S.rsi14.length);j++) bands.push(j);
+  /* 記憶窗口：直接使用後端 oversold_memory_bands（含重疊窗口合併），
+     避免前後端邏輯不一致（UX Issue 2 修正）。本地 synth 資料則即時計算。 */
+  let bands = S.oversold_memory_bands;
+  if (!bands) {
+    bands = [];
+    for (let i=0;i<S.rsi14.length;i++){
+      if (S.rsi14[i] != null && S.rsi14[i] < 30){
+        const end = Math.min(i+4, S.rsi14.length-1);
+        if (bands.length && bands[bands.length-1].end >= i-1 && bands[bands.length-1].end < end)
+          bands[bands.length-1].end = end;   // 重疊窗口合併，與後端同規則
+        else bands.push({start:i, end});
+      }
     }
   }
-  const bandSet = [...new Set(bands)];
+  const bandSet = [];
+  bands.forEach(b => { for (let i=b.start;i<=b.end;i++) bandSet.push(i); });
   const hist = c2.addHistogramSeries({ priceScaleId:'overlay-mem', color:'rgba(210,153,34,0.22)', priceFormat:{type:'volume'} });
   c2.priceScale('overlay-mem').applyOptions({ scaleMargins:{ top:0, bottom:0 } });
   hist.setData(bandSet.map(i=>({ time:T[i], value:100 })));
@@ -263,10 +278,11 @@ function render(data) {
 async function load() {
   const symbol = document.getElementById('symbolSel').value;
   const range = document.getElementById('rangeSel').value;
-  const t0 = performance.now();
   let data = await fetchChartData(symbol, range);
   const src = data ? 'API' : 'local-synth';
   if (!data) data = synthData(symbol);
+  /* UX Issue 1 修正：效能量測只涵蓋渲染時間，不含網路時間 */
+  const t0 = performance.now();
   render(data);
   const ms = (performance.now()-t0).toFixed(0);
   document.getElementById('perf').textContent = `渲染 ${ms}ms（AC:<350ms）｜來源:${src}`;

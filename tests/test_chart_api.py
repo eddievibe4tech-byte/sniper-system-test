@@ -133,3 +133,37 @@ class TestAdjClosePayload:
         for ev in p2["events"]:
             pct = float(ev["position_pct"].rstrip("%"))
             assert pct <= 20.0
+
+
+class TestPositionSizing:
+    """Code Review 修正驗證：ATR 動態部位分級不再被 cap 一律截斷為同值。"""
+
+    def test_stage_allocation_respects_cap(self):
+        """所有事件部位不得超過單檔 20% 上限。"""
+        closes = [100.0] * 20 + [100 - i * 0.6 for i in range(1, 40)]
+        series = _series(closes, opens=[c * 0.99 for c in closes])  # 紅K
+        # 放量條件：突破日 volume > MA20 volume（前段均量低，後段放大）
+        series.volume = [1000.0] * 20 + [5000.0] * (len(closes) - 20)
+        p = build_chart_payload_from_series("2881.TW", series)
+        assert p["events"], "紅K+事件鏈情境應產生 BUY 事件"
+        for ev in p["events"]:
+            pct = float(ev["position_pct"].rstrip("%"))
+            assert pct <= 20.0
+
+    def test_base_differentiates_stages(self):
+        """Critical Bug 2 回歸測試：Stage 2/3 base(20%) 應大於 Stage 1/4 base(15%)。"""
+        from chart_api import _position_pct
+        # ATR% 恰為 2%（vol_factor=1），直接比較各 stage base
+        assert _position_pct("Stage 2", 2.0, 100.0) == "20.0%"
+        assert _position_pct("Stage 3", 2.0, 100.0) == "20.0%"
+        assert _position_pct("Stage 1", 2.0, 100.0) == "15.0%"
+        assert _position_pct("Stage 4", 2.0, 100.0) == "15.0%"
+
+    def test_atr_high_volatility_shrinks_position(self):
+        """高波動（ATR% 大）應減少部位；低波動可加成但不超過 20% 上限。"""
+        from chart_api import _position_pct
+        high = float(_position_pct("Stage 2", 4.0, 100.0).rstrip("%"))   # ATR 4% → factor 0.5
+        low = float(_position_pct("Stage 2", 1.0, 100.0).rstrip("%"))    # ATR 1% → factor  capped 20%
+        assert high < low
+        assert low <= 20.0
+        assert high == 10.0  # 20% * 0.5

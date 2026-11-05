@@ -31,8 +31,8 @@ RSI_PERIOD = 14               # Wilder's RSI
 RSI_OVERSOLD = 30.0
 RSI_OVERBOUGHT = 70.0
 OVERSOLD_MEMORY_DAYS = 5      # 超賣記憶窗口（事件鏈第一階段）
-HYSTERESIS_LOW = -0.07        # 遲滯緩衝帶下緣
-HYSTERESIS_HIGH = -0.10       # 遲滯緩衝帶上緣（MDD 達此值才允許升級 Stage）
+HYSTERESIS_UPPER = -0.07      # 遲滯緩衝帶上緣（MDD 高於此為 Normal）
+HYSTERESIS_LOWER = -0.10      # 遲滯緩衝帶下緣（MDD 低於此才允許升級 Stage 1）
 
 # 階梯回撤網格：Stage -> (回撤起點, 回撤終點, 資金釋放比例, 顏色, 標籤)
 GRID_STAGES: List[Tuple[str, float, float, float, str, str]] = [
@@ -152,13 +152,19 @@ def oversold_memory_bands(rsi: Sequence[Optional[float]]) -> List[Dict[str, int]
 
 
 def hysteresis_stage(mdd_series: Sequence[float]) -> List[str]:
-    """Rolling MDD 的多級狀態序列；-7%~-10% 灰色緩衝區內維持前一狀態不切換。"""
+    """Rolling MDD 的多級狀態序列。
+
+    遲滯邏輯：
+    - MDD > -7% → Normal
+    - -10% < MDD ≤ -7% → 維持前一狀態（緩衝帶，防止邊界洗盤）
+    - MDD ≤ -10% → Stage 1 或更深
+    """
     states: List[str] = []
     prev = "Normal"
     for mdd in mdd_series:
-        if mdd > HYSTERESIS_LOW:                      # > -7%
+        if mdd > HYSTERESIS_UPPER:                    # > -7%
             state = "Normal"
-        elif mdd > HYSTERESIS_HIGH:                   # -7% ~ -10% 遲滯緩衝帶
+        elif mdd > HYSTERESIS_LOWER:                  # -7% ~ -10% 遲滯緩衝帶
             state = prev                              # 維持原狀態不切換
         elif mdd > -0.15:
             state = "Stage 1"
@@ -262,12 +268,28 @@ def build_chart_payload_from_series(
 
 
 def _position_pct(stage: str, atr: Optional[float], close: float) -> str:
-    """ATR 動態部位：單檔上限 15%~20%，高波動少買（簡化風險平價表達）。"""
-    base = {"Stage 1": 0.20, "Stage 2": 0.30, "Stage 3": 0.30, "Stage 4": 0.20}[stage]
-    capped = min(base, 0.20)  # 單檔持倉上限 20%
+    """ATR 動態部位：單檔上限 20%，依階段與波動率調整。
+
+    修正 Code Review Critical Bug 2：原本 base 30% 被 min(base, 0.20) 一律截斷，
+    導致各 Stage 失去分級差異。現改為定義時即確保 ≤ 20% 上限：
+    - Stage 1 初步進場保守 15%；Stage 2/3 深度回撤加碼 20%；Stage 4 末日彈藥 15%。
+    """
+    base = {
+        "Stage 1": 0.15,  # 初步進場，保守
+        "Stage 2": 0.20,  # 深度回撤，加碼（單檔上限 20%）
+        "Stage 3": 0.20,  # 深度回撤，加碼（單檔上限 20%）
+        "Stage 4": 0.15,  # 末日彈藥，保守
+    }[stage]
+
+    capped = base  # 已在定義時確保 ≤ 20%
+
     if atr and close > 0:
-        vol_factor = max(0.5, min(1.0, 0.02 / (atr / close)))  # ATR% 2% 為基準
+        # ATR% 2% 為基準：高波動（ATR% > 2%）減少部位，低波動最多加成至 1.2x
+        atr_pct = atr / close
+        vol_factor = max(0.5, min(1.2, 0.02 / atr_pct))
         capped = round(capped * vol_factor, 3)
+        capped = min(capped, 0.20)  # 確保不超過單檔 20% 上限
+
     return f"{round(capped * 100, 1)}%"
 
 
