@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>互動式量化決策圖表 | Interactive Strategy & Decision Visualizer</title>
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --text: #e6edf3; --muted: #8b949e;
+    --green: #2ea043; --yellow: #d29922; --red: #f85149; --gray: #6e7681;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, "Noto Sans TC", sans-serif; }
+  /* ===== HUD 頂部狀態列 ===== */
+  #hud {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 10px 14px; background: var(--panel); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #hud .badge { display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:16px; font-size:13px; font-weight:600; }
+  .badge.bull   { background: rgba(46,160,67,.18);  color:var(--green);  border:1px solid var(--green); }
+  .badge.pull   { background: rgba(210,153,34,.18); color:var(--yellow); border:1px solid var(--yellow); }
+  .badge.panic  { background: rgba(248,81,73,.18);  color:var(--red);    border:1px solid var(--red); }
+  .badge.risk-ok  { background: rgba(46,160,67,.12); color:var(--green); border:1px dashed var(--green); }
+  .badge.risk-lock{ background: rgba(248,81,73,.12); color:var(--red);   border:1px dashed var(--red); }
+  #capital { font-size:12px; color:var(--muted); margin-left:auto; }
+  select, button { background:var(--panel); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:5px 10px; font-size:13px; }
+  /* ===== 三圖層 Panes ===== */
+  .pane-wrap { padding: 6px 10px; }
+  .pane-title { font-size: 12px; color: var(--muted); padding: 4px 4px; }
+  .chart-box  { border:1px solid var(--border); border-radius:8px; overflow:hidden; background:#0c1017; }
+  #pane-price { height: 46vh; min-height: 300px; }
+  #pane-rsi   { height: 22vh; min-height: 150px; }
+  #pane-mdd   { height: 22vh; min-height: 150px; }
+  /* Tooltip 浮動卡片 */
+  #tooltip {
+    position:absolute; display:none; pointer-events:none; z-index:99;
+    background:var(--panel); border:1px solid var(--border); border-radius:8px;
+    padding:8px 10px; font-size:12px; max-width:260px; box-shadow:0 6px 20px rgba(0,0,0,.5);
+  }
+  #tooltip b { color: var(--green); }
+  /* RWD：手機垂直堆疊、字級縮小，不得破圖 */
+  @media (max-width: 640px) {
+    #pane-price { height: 38vh; } #pane-rsi, #pane-mdd { height: 20vh; }
+    #hud { font-size: 11px; padding: 8px; } #capital { width:100%; margin-left:0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 頂部 HUD 狀態列：大盤 FSM / 風控斷路器 / 資金池水位 -->
+<div id="hud">
+  <select id="symbolSel">
+    <option value="0050.TW">0050 富邦台50</option>
+    <option value="006208.TW">006208 兆豐台50</option>
+    <option value="2881.TW">2881 富邦金</option>
+  </select>
+  <select id="rangeSel">
+    <option value="1y">近 1 年</option><option value="3y">近 3 年</option><option value="5y">近 5 年</option>
+  </select>
+  <span id="fsmBadge" class="badge pull">大盤狀態: Bull Pullback ⚠️</span>
+  <span id="riskBadge" class="badge risk-lock">風控: 熔斷鎖定 🛡️（冷卻剩 18h）</span>
+  <span id="capital">資金池: 已動用 40% ｜ 剩餘防禦子彈 60%</span>
+  <span id="perf" style="font-size:11px;color:var(--muted)"></span>
+</div>
+
+<div class="pane-wrap"><div class="pane-title">Pane 1 ｜ 主圖：Adj Close K 線 + 20/60/200MA + MDD 階梯網格 + BUY 打點</div><div id="pane-price" class="chart-box"></div></div>
+<div class="pane-wrap"><div class="pane-title">Pane 2 ｜ 副圖一：RSI(14) Wilder's + 超賣記憶窗口（5 日黃色陰影）</div><div id="pane-rsi" class="chart-box"></div></div>
+<div class="pane-wrap"><div class="pane-title">Pane 3 ｜ 副圖二：Rolling MDD 回撤曲線 + 遲滯緩衝帶（-7%~-10% 灰色區）</div><div id="pane-mdd" class="chart-box"></div></div>
+<div id="tooltip"></div>
+
+<script>
+/* ===========================================================================
+ * 串接後端 GET /api/v1/chart/{symbol}?timeframe=1d&range=1y
+ * demo 模式（直接開檔或 API 不可用）退回本機合成資料，確保離線可驗收渲染。
+ * =========================================================================== */
+const API_BASE = (() => {
+  try { const u = new URLSearchParams(location.search).get('api'); if (u) return u; } catch(e){}
+  return location.protocol === 'file:' ? null : '/api/v1';
+})();
+
+async function fetchChartData(symbol, range) {
+  if (!API_BASE) return null;
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 2500);
+  try {
+    /* Nice-to-have 2：正規化 trailing slash，避免部署後雙斜線 404 */
+    const base = API_BASE.replace(/\/$/, '');
+    const res = await fetch(`${base}/chart/${encodeURIComponent(symbol)}?timeframe=1d&range=${range}`, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) { clearTimeout(t); console.warn('API fetch failed:', e); return null; }
+}
+
+/* ---- 本機合成 Adj Close 資料（含除息情境驗證：無跳空斷崖）---- */
+function synthData(symbol) {
+  const N = 252, ts = [], ohlc = [], rsi = [], mdd = [];
+  let price = symbol === '0050.TW' ? 115 : 58;
+  const now = Math.floor(Date.now()/1000) - N*86400;
+  let hh = price;
+  for (let i = 0; i < N; i++) {
+    const drift = Math.sin(i/34)*0.004 + (i>150 && i<200 ? -0.006 : 0.0012);
+    const o = price*(1+(Math.random()-0.5)*0.004);
+    const c = price*(1+drift+(Math.random()-0.5)*0.012);
+    const h = Math.max(o,c)*(1+Math.random()*0.004), l = Math.min(o,c)*(1-Math.random()*0.004);
+    ts.push(now+i*86400); ohlc.push([o,h,l,c]);
+    hh = Math.max(hh, c); if (i>=N-252) {} // rolling high 簡化
+    mdd.push((c-hh)/hh);
+    const r = 50 + 28*Math.sin(i/17) + (Math.random()-0.5)*6;
+    rsi.push(Math.max(5, Math.min(95, r)));
+    price = c;
+  }
+  const ma = w => ohlc.map((_,i)=> i<w-1 ? null : ohlc.slice(i-w+1,i+1).reduce((s,d)=>s+d[3],0)/w);
+  // 事件鏈 BUY：Stage1 + 紅K + RSI<30 記憶期
+  const events = [];
+  for (let i=30;i<N;i++){
+    if (mdd[i] <= -0.10 && ohlc[i][3] > ohlc[i][0] && rsi[i] < 38 && !events.length)
+      events.push({timestamp: ts[i], type:'BUY', stage:'Stage 1', position_pct:'16.5%', reason:'【觸發】近5日RSI超賣+紅K確認｜建議部位: ATR動態分配 16.5%｜當前大盤: Normal'});
+  }
+  const rh = Math.max(...ohlc.map(d=>d[3]));
+  return {
+    symbol, market_state:'Bull Pullback', risk_circuit_breaker:'Active', cooldown_remaining_hours:18,
+    capital_pool:{used_pct:40},
+    series:{ timestamps:ts, ohlc_adj:ohlc, ma20:ma(20), ma60:ma(60), ma200:ma(200), rsi14:rsi, rolling_mdd:mdd, oversold_memory_bands:(()=>{ const b=[]; for(let i=0;i<rsi.length;i++){ if(rsi[i]<30){ const e=Math.min(i+4,rsi.length-1); if(b.length&&b[b.length-1].end>=i-1&&b[b.length-1].end<e) b[b.length-1].end=e; else b.push({start:i,end:e}); } } return b; })() },
+    grid_levels:{ rolling_high:rh, stage1_price:rh*0.90, stage2_price:rh*0.85, stage3_price:rh*0.75, stage4_price:rh*0.65 },
+    events,
+  };
+}
+
+const GRID_STYLE = [
+  {key:'stage1_price', color:'#ff9800', title:'Stage 1 -10%~-15%｜釋放 20% 資金'},
+  {key:'stage2_price', color:'#e65100', title:'Stage 2 -15%~-25%｜釋放 30% 資金'},
+  {key:'stage3_price', color:'#d32f2f', title:'Stage 3 -25%~-35%｜釋放 30% 資金'},
+  {key:'stage4_price', color:'#4a148c', title:'Stage 4 ≥-35%｜末日彈藥 20%'},
+];
+
+let charts = [], syncing = false;
+
+function mkChart(el) {
+  const c = LightweightCharts.createChart(el, {
+    layout:{ background:{type:'solid', color:'#0c1017'}, textColor:'#8b949e', fontSize:11 },
+    grid:{ vertLines:{color:'#1c2128'}, horzLines:{color:'#1c2128'} },
+    rightPriceScale:{ borderColor:'#30363d' },
+    timeScale:{ borderColor:'#30363d', timeVisible:false },
+    crosshair:{ mode: LightweightCharts.CrosshairMode.Normal },
+    autoSize: true,
+  });
+  charts.push(c);
+  return c;
+}
+
+/* Crosshair Sync：主圖游標滑動時 Pane2/Pane3 時間軸 100% 垂直對齊 */
+function syncCrosshair(source, param) {
+  if (syncing) return; syncing = true;
+  charts.forEach(c => { if (c !== source) c.setCrosshairPosition(param.price ?? 0, param.time, c.seriesList?.[0] || c.attachedSeries); });
+  syncing = false;
+}
+function attachSync(chart, series) {
+  chart.subscribeCrosshairMove(param => {
+    if (syncing) return; syncing = true;
+    charts.forEach(c => {
+      if (c === chart) return;
+      const s = c._mainSeries; if (!s) return;
+      if (param.time) c.setCrosshairPosition(s.data()?.slice(-1)[0]?.value ?? 0, param.time, s);
+      else c.clearCrosshairPosition();
+    });
+    syncing = false;
+  });
+}
+
+function render(data) {
+  document.getElementById('pane-price').innerHTML='';
+  document.getElementById('pane-rsi').innerHTML='';
+  document.getElementById('pane-mdd').innerHTML='';
+  charts = [];
+  const S = data.series, T = S.timestamps;
+
+  /* ---------- Pane 1：主圖 ---------- */
+  const c1 = mkChart(document.getElementById('pane-price'));
+  const candle = c1.addCandlestickSeries({ upColor:'#2ea043', downColor:'#f85149', wickUpColor:'#2ea043', wickDownColor:'#f85149', borderVisible:false });
+  candle.setData(T.map((t,i)=>({ time:t, open:S.ohlc_adj[i][0], high:S.ohlc_adj[i][1], low:S.ohlc_adj[i][2], close:S.ohlc_adj[i][3] })));
+  c1._mainSeries = candle;
+  [['ma20','#58a6ff','20MA 短期防守'],['ma60','#d29922','60MA 季線'],['ma200','#f85149','200MA 年線']].forEach(([k,color,name])=>{
+    const ln = c1.addLineSeries({ color, lineWidth: k==='ma20'?2:1, priceLineVisible:false, lastValueVisible:true, title:name });
+    ln.setData(T.map((t,i)=> S[k][i]==null ? null : {time:t, value:S[k][i]}).filter(Boolean));
+  });
+  /* 階梯回撤網格水平虛線（依滾動高點動態計算） */
+  GRID_STYLE.forEach(g => {
+    const p = data.grid_levels[g.key]; if (p==null) return;
+    candle.createPriceLine({ price:p, color:g.color, lineStyle:LightweightCharts.LineStyle.Dashed, lineWidth:1, title:g.title });
+  });
+  /* BUY 決策打點 Marker + Tooltip */
+  const markers = (data.events||[]).map(ev => ({ time:ev.timestamp, position:'belowBar', color:'#2ea043', shape:'arrowUp', text:`BUY ${ev.stage} ${ev.position_pct}` }));
+  markers.sort((a,b)=>a.time-b.time);
+  candle.setMarkers(markers);
+  const tip = document.getElementById('tooltip');
+  c1.subscribeCrosshairMove(param => {
+    if (!param.time || !param.point) { tip.style.display='none'; return; }
+    const ev = (data.events||[]).find(e=>e.timestamp===param.time);
+    if (ev) {
+      tip.innerHTML = `<b>▶ ${ev.type} (${ev.stage})</b><br>${ev.reason}<br>建議部位: ${ev.position_pct}`;
+      tip.style.display='block';
+      /* Critical Bug 1 修正：param.point 是相對 chart container 的座標，
+         需經 getBoundingClientRect() 換算為文件座標，避免滾動時 tooltip 偏移 */
+      const chartRect = document.getElementById('pane-price').getBoundingClientRect();
+      const left = chartRect.left + param.point.x + 15;
+      const top = chartRect.top + param.point.y + 60 + window.scrollY;
+      tip.style.left = Math.min(left, window.innerWidth - 280) + 'px';
+      tip.style.top = top + 'px';
+    } else tip.style.display='none';
+  });
+  attachSync(c1, candle);
+
+  /* ---------- Pane 2：RSI + 超賣記憶窗口 ---------- */
+  const c2 = mkChart(document.getElementById('pane-rsi'));
+  const rsiLine = c2.addLineSeries({ color:'#bc8cff', lineWidth:2, title:'RSI(14)', priceLineVisible:false });
+  rsiLine.setData(T.map((t,i)=>({time:t, value:S.rsi14[i]})));
+  c2._mainSeries = rsiLine;
+  rsiLine.createPriceLine({ price:30, color:'#f85149', lineStyle:LightweightCharts.LineStyle.Dotted, title:'超賣 30' });
+  rsiLine.createPriceLine({ price:70, color:'#d29922', lineStyle:LightweightCharts.LineStyle.Dotted, title:'超買 70' });
+  /* 記憶窗口：直接使用後端 oversold_memory_bands（含重疊窗口合併），
+     避免前後端邏輯不一致（UX Issue 2 修正）。本地 synth 資料則即時計算。 */
+  let bands = S.oversold_memory_bands;
+  if (!bands) {
+    bands = [];
+    for (let i=0;i<S.rsi14.length;i++){
+      if (S.rsi14[i] != null && S.rsi14[i] < 30){
+        const end = Math.min(i+4, S.rsi14.length-1);
+        if (bands.length && bands[bands.length-1].end >= i-1 && bands[bands.length-1].end < end)
+          bands[bands.length-1].end = end;   // 重疊窗口合併，與後端同規則
+        else bands.push({start:i, end});
+      }
+    }
+  }
+  const bandSet = [];
+  bands.forEach(b => { for (let i=b.start;i<=b.end;i++) bandSet.push(i); });
+  const hist = c2.addHistogramSeries({ priceScaleId:'overlay-mem', color:'rgba(210,153,34,0.22)', priceFormat:{type:'volume'} });
+  c2.priceScale('overlay-mem').applyOptions({ scaleMargins:{ top:0, bottom:0 } });
+  hist.setData(bandSet.map(i=>({ time:T[i], value:100 })));
+  attachSync(c2, rsiLine);
+
+  /* ---------- Pane 3：Rolling MDD + 遲滯緩衝帶 ---------- */
+  const c3 = mkChart(document.getElementById('pane-mdd'));
+  const area = c3.addAreaSeries({ lineColor:'#39bae6', topColor:'rgba(57,186,230,0.05)', bottomColor:'rgba(57,186,230,0.35)', lineWidth:2, title:'MDD%' });
+  area.setData(T.map((t,i)=>({ time:t, value:+(S.rolling_mdd[i]*100).toFixed(2) })));
+  c3._mainSeries = area;
+  /* 灰色遲滯緩衝帶：-7 ~ -10 % */
+  const hz = c3.addBaselineSeries({ baseValue:{type:'price', price:-7}, topLineColor:'rgba(110,118,129,0)', topFillColor:'rgba(110,118,129,0)', bottomLineColor:'#6e7681', bottomFillColor:'rgba(110,118,129,0.25)' });
+  hz.setData(T.map((t,i)=>({ time:t, value:-10 })));
+  area.createPriceLine({ price:-10, color:'#ff9800', lineStyle:LightweightCharts.LineStyle.Dashed, title:'Stage 1 門檻 -10%' });
+  attachSync(c3, area);
+
+  /* 三圖時間軸範圍同步 */
+  const fitAll = () => charts.forEach(c => c.timeScale().fitContent());
+  fitAll();
+  charts.forEach(c => c.timeScale().subscribeVisibleLogicalRangeChange(r => {
+    if (syncing || !r) return; syncing = true;
+    charts.forEach(o => { if (o!==c) o.timeScale().setVisibleLogicalRange(r); });
+    syncing = false;
+  }));
+
+  /* ---------- HUD 更新 ---------- */
+  const fsm = data.market_state;
+  const fsmEl = document.getElementById('fsmBadge');
+  fsmEl.textContent = `大盤狀態: ${fsm} ${fsm==='Strong Bull'?'🟢':fsm==='Market Panic'?'🔴':'⚠️'}`;
+  fsmEl.className = 'badge ' + (fsm==='Strong Bull'?'bull':fsm==='Market Panic'?'panic':'pull');
+  const riskEl = document.getElementById('riskBadge');
+  const locked = data.risk_circuit_breaker === 'Active' || data.risk_circuit_breaker === 'Suspended';
+  riskEl.textContent = locked ? `風控: 斷路器鎖定 🛡️（冷卻剩 ${data.cooldown_remaining_hours}h）` : '風控: Normal 🛡️';
+  riskEl.className = 'badge ' + (locked?'risk-lock':'risk-ok');
+  const used = data.capital_pool?.used_pct ?? 0;
+  document.getElementById('capital').textContent = `資金池: 已動用 ${used}% ｜ 剩餘防禦子彈 ${100-used}%`;
+}
+
+async function load() {
+  const symbol = document.getElementById('symbolSel').value;
+  const range = document.getElementById('rangeSel').value;
+  let data = await fetchChartData(symbol, range);
+  const src = data ? 'API' : 'local-synth';
+  if (!data) data = synthData(symbol);
+  /* UX Issue 1 修正：效能量測只涵蓋渲染時間，不含網路時間 */
+  const t0 = performance.now();
+  render(data);
+  const ms = (performance.now()-t0).toFixed(0);
+  document.getElementById('perf').textContent = `渲染 ${ms}ms（AC:<350ms）｜來源:${src}`;
+}
+document.getElementById('symbolSel').addEventListener('change', load);
+document.getElementById('rangeSel').addEventListener('change', load);
+load();
+</script>
+</body>
+</html>
