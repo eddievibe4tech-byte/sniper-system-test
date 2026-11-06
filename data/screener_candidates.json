@@ -1,27 +1,27 @@
 {
   "candidates": [
     {
-      "code": "4938",
-      "name": "和碩",
-      "industry": "電子工業",
-      "revenue_yoy": 86.89,
-      "inst_buy_days": 3,
-      "current_price": 102.5,
-      "ma20": 98.22,
-      "screened_at": "2026-10-30"
+      "code": "3443",
+      "name": "創意",
+      "industry": "半導體業",
+      "revenue_yoy": 126.96,
+      "inst_buy_days": 2,
+      "current_price": 6205.0,
+      "ma20": 7612.5,
+      "screened_at": "2026-11-06"
     },
     {
-      "code": "2356",
-      "name": "英業達",
+      "code": "6669",
+      "name": "緯穎",
       "industry": "電腦及週邊設備業",
-      "revenue_yoy": 62.87,
-      "inst_buy_days": 3,
-      "current_price": 59.5,
-      "ma20": 59.48,
-      "screened_at": "2026-10-30"
+      "revenue_yoy": 80.94,
+      "inst_buy_days": 2,
+      "current_price": 1555.0,
+      "ma20": 1926.0,
+      "screened_at": "2026-11-06"
     }
   ],
-  "updated_at": "2026-10-30T16:59:31.678233",
-  "rules_applied": "STRICT",
+  "updated_at": "2026-11-06T17:53:50.598205",
+  "rules_applied": "RELAXED (auto)",
   "error": null
 }
