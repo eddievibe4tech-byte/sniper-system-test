@@ -1,0 +1,19 @@
+themes:
+  - theme_id: cyber_security
+    seasonal_months: [1, 2, 3]
+    stocks:
+      - symbol: 2480.TW
+        role: individual
+        odd_lot_allowed: true
+      - symbol: 00770.TW # 範例，實際可能沒有此 ETF
+        role: etf
+        odd_lot_allowed: false
+  - theme_id: power_shortage
+    seasonal_months: [6, 7, 8]
+    stocks:
+      - symbol: 1504.TW # 東元
+        role: pick_and_shovel
+        odd_lot_allowed: true
+      - symbol: 9933.TW # 中鼎
+        role: pick_and_shovel
+        odd_lot_allowed: true
