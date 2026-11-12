@@ -1,12 +1,35 @@
 {
-  "candidates": [],
+  "candidates": [
+    {
+      "coin_id": "avalanche-2",
+      "symbol": "AVAX",
+      "name": "Avalanche",
+      "price": 8.63,
+      "market_cap": 3849478791,
+      "change_24h": 0.73,
+      "change_7d": -1.64,
+      "rsi": 46.9,
+      "ma20": 8.56,
+      "price_above_ma20": true,
+      "fear_greed": 28,
+      "scenario": "中性",
+      "recommendation": "觀望",
+      "win_rate": "-",
+      "win_rate_note": "",
+      "position_size": "等待明確訊號",
+      "stop_loss": "不適用",
+      "take_profit": "不適用",
+      "holding_period": "不適用",
+      "screened_at": "2026-11-12 08:02"
+    }
+  ],
   "fear_greed_index": {
-    "value": 29,
+    "value": 28,
     "classification": "Fear",
-    "timestamp": 1794355200
+    "timestamp": 1794441600
   },
   "market_scenario": null,
-  "updated_at": "2026-11-11T07:34:02.058171",
+  "updated_at": "2026-11-12T08:03:21.408248",
   "rules_applied": {
     "fear_greed_max": 75,
     "min_market_cap": 1000000000,
