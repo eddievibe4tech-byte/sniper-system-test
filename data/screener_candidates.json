@@ -3,25 +3,15 @@
     {
       "code": "3443",
       "name": "創意",
-      "industry": "半導體業",
+      "industry": "電子工業",
       "revenue_yoy": 126.96,
-      "inst_buy_days": 2,
-      "current_price": 6205.0,
-      "ma20": 7612.5,
-      "screened_at": "2026-11-06"
-    },
-    {
-      "code": "6669",
-      "name": "緯穎",
-      "industry": "電腦及週邊設備業",
-      "revenue_yoy": 80.94,
-      "inst_buy_days": 2,
-      "current_price": 1555.0,
-      "ma20": 1926.0,
-      "screened_at": "2026-11-06"
+      "inst_buy_days": 3,
+      "current_price": 8610.0,
+      "ma20": 7461.0,
+      "screened_at": "2026-11-13"
     }
   ],
-  "updated_at": "2026-11-06T17:53:50.598205",
-  "rules_applied": "RELAXED (auto)",
+  "updated_at": "2026-11-13T18:28:40.162667",
+  "rules_applied": "STRICT",
   "error": null
 }
