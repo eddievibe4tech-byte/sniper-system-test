@@ -1,5 +1,5 @@
 {
-  "current_version": 5,
+  "current_version": 6,
   "versions": [
     {
       "version": 1,
@@ -46,10 +46,20 @@
       "prev_accuracy": 59.8,
       "verified_samples": 420,
       "trigger": "weekly_optimization"
+    },
+    {
+      "version": 6,
+      "prev_version": 5,
+      "created_at": "2026-11-15T16:53:32.331087+08:00",
+      "description": "自動優化·行為樹清洗版（觸發時 v2 分類準確率 59.8%）",
+      "prompt_file": "prompts/main_analysis_v6.txt",
+      "prev_accuracy": 59.8,
+      "verified_samples": 420,
+      "trigger": "weekly_optimization"
     }
   ],
   "metadata": {
-    "last_updated": "2026-11-08T16:40:10.164293+08:00",
-    "total_runs": 4
+    "last_updated": "2026-11-15T16:53:32.331139+08:00",
+    "total_runs": 5
   }
 }
