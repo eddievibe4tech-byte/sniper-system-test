@@ -1,17 +1,57 @@
 {
   "candidates": [
     {
-      "code": "3443",
-      "name": "創意",
+      "code": "6669",
+      "name": "緯穎",
       "industry": "電子工業",
-      "revenue_yoy": 126.96,
+      "revenue_yoy": 80.94,
+      "inst_buy_days": 2,
+      "current_price": 1325.0,
+      "ma20": 1670.0,
+      "screened_at": "2026-11-20"
+    },
+    {
+      "code": "4938",
+      "name": "和碩",
+      "industry": "電腦及週邊設備業",
+      "revenue_yoy": 59.62,
+      "inst_buy_days": 2,
+      "current_price": 78.1,
+      "ma20": 95.16,
+      "screened_at": "2026-11-20"
+    },
+    {
+      "code": "2301",
+      "name": "光寶科",
+      "industry": "電腦及週邊設備業",
+      "revenue_yoy": 32.01,
+      "inst_buy_days": 2,
+      "current_price": 175.5,
+      "ma20": 225.78,
+      "screened_at": "2026-11-20"
+    },
+    {
+      "code": "2308",
+      "name": "台達電",
+      "industry": "電子零組件業",
+      "revenue_yoy": 30.12,
       "inst_buy_days": 3,
-      "current_price": 8610.0,
-      "ma20": 7461.0,
-      "screened_at": "2026-11-13"
+      "current_price": 900.0,
+      "ma20": 1240.5,
+      "screened_at": "2026-11-20"
+    },
+    {
+      "code": "2303",
+      "name": "聯電",
+      "industry": "電子工業",
+      "revenue_yoy": 18.33,
+      "inst_buy_days": 3,
+      "current_price": 80.3,
+      "ma20": 103.24,
+      "screened_at": "2026-11-20"
     }
   ],
-  "updated_at": "2026-11-13T18:28:40.162667",
-  "rules_applied": "STRICT",
+  "updated_at": "2026-11-20T19:02:55.874444",
+  "rules_applied": "RELAXED (auto)",
   "error": null
 }
