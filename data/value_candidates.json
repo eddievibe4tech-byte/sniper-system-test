@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-26T15:42:40.935602+08:00",
+  "updated_at": "2026-11-27T15:42:13.255350+08:00",
   "etf_monitor": [
     {
       "price": 658.87,
@@ -54,11 +54,11 @@
       "type": "全球配置"
     },
     {
-      "price": 92.85,
-      "ma200": 96.24,
-      "ma50": 105.24,
-      "bias_ma200_pct": -3.52,
-      "rsi14": 42.41,
+      "price": 92.4,
+      "ma200": 96.33,
+      "ma50": 104.88,
+      "bias_ma200_pct": -4.08,
+      "rsi14": 42.89,
       "advice": "🟢 罕見甜蜜點！(跌破/回踩年線或超賣)",
       "strategy": "大筆加碼",
       "symbol": "0050",
@@ -67,11 +67,11 @@
       "type": "台股大盤"
     },
     {
-      "price": 208.75,
-      "ma200": 216.35,
-      "ma50": 236.76,
-      "bias_ma200_pct": -3.51,
-      "rsi14": 42.36,
+      "price": 208.0,
+      "ma200": 216.55,
+      "ma50": 235.97,
+      "bias_ma200_pct": -3.95,
+      "rsi14": 42.97,
       "advice": "🟢 罕見甜蜜點！(跌破/回踩年線或超賣)",
       "strategy": "大筆加碼",
       "symbol": "006208",
@@ -110,7 +110,7 @@
       "name": "ConocoPhillips",
       "sector": "Energy",
       "price": 135.02,
-      "forward_pe": 11.92,
+      "forward_pe": 11.75,
       "peg": 0.61,
       "roe_pct": 17.66,
       "fcf_yield_pct": 7.18,
@@ -159,7 +159,7 @@
       "sector": "Consumer Defensive",
       "price": 172.22,
       "forward_pe": 17.62,
-      "peg": 8.49,
+      "peg": 8.61,
       "roe_pct": 29.02,
       "fcf_yield_pct": 3.16,
       "ma200": 137.06,
@@ -171,7 +171,7 @@
       "sector": "Industrials",
       "price": 111.47,
       "forward_pe": 13.77,
-      "peg": 21.19,
+      "peg": 21.65,
       "roe_pct": 28.64,
       "fcf_yield_pct": 6.6,
       "ma200": 101.51,
