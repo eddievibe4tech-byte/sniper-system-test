@@ -1,57 +1,57 @@
 {
   "candidates": [
     {
-      "code": "6669",
-      "name": "緯穎",
-      "industry": "電子工業",
-      "revenue_yoy": 80.94,
-      "inst_buy_days": 2,
-      "current_price": 1325.0,
-      "ma20": 1670.0,
-      "screened_at": "2026-11-20"
+      "code": "2356",
+      "name": "英業達",
+      "industry": "電腦及週邊設備業",
+      "revenue_yoy": 46.02,
+      "inst_buy_days": 3,
+      "current_price": 41.9,
+      "ma20": 47.35,
+      "screened_at": "2026-11-27"
     },
     {
-      "code": "4938",
-      "name": "和碩",
-      "industry": "電腦及週邊設備業",
-      "revenue_yoy": 59.62,
-      "inst_buy_days": 2,
-      "current_price": 78.1,
-      "ma20": 95.16,
-      "screened_at": "2026-11-20"
+      "code": "2317",
+      "name": "鴻海",
+      "industry": "電子工業",
+      "revenue_yoy": 45.73,
+      "inst_buy_days": 4,
+      "current_price": 219.0,
+      "ma20": 228.15,
+      "screened_at": "2026-11-27"
     },
     {
       "code": "2301",
       "name": "光寶科",
       "industry": "電腦及週邊設備業",
       "revenue_yoy": 32.01,
-      "inst_buy_days": 2,
-      "current_price": 175.5,
-      "ma20": 225.78,
-      "screened_at": "2026-11-20"
+      "inst_buy_days": 4,
+      "current_price": 195.5,
+      "ma20": 211.3,
+      "screened_at": "2026-11-27"
     },
     {
-      "code": "2308",
-      "name": "台達電",
-      "industry": "電子零組件業",
-      "revenue_yoy": 30.12,
+      "code": "2002",
+      "name": "中鋼",
+      "industry": "鋼鐵工業",
+      "revenue_yoy": 30.98,
       "inst_buy_days": 3,
-      "current_price": 900.0,
-      "ma20": 1240.5,
-      "screened_at": "2026-11-20"
+      "current_price": 17.25,
+      "ma20": 18.16,
+      "screened_at": "2026-11-27"
     },
     {
-      "code": "2303",
-      "name": "聯電",
+      "code": "2412",
+      "name": "中華電",
       "industry": "電子工業",
-      "revenue_yoy": 18.33,
+      "revenue_yoy": 13.45,
       "inst_buy_days": 3,
-      "current_price": 80.3,
-      "ma20": 103.24,
-      "screened_at": "2026-11-20"
+      "current_price": 165.5,
+      "ma20": 162.85,
+      "screened_at": "2026-11-27"
     }
   ],
-  "updated_at": "2026-11-20T19:02:55.874444",
+  "updated_at": "2026-11-27T19:53:51.912628",
   "rules_applied": "RELAXED (auto)",
   "error": null
 }
