@@ -1,35 +1,35 @@
 {
   "candidates": [
     {
-      "coin_id": "bitcoin",
-      "symbol": "BTC",
-      "name": "Bitcoin",
-      "price": 60778,
-      "market_cap": 1222701290906,
-      "change_24h": 2.77,
-      "change_7d": -4.41,
-      "rsi": 29.07,
-      "ma20": 65974.28,
-      "price_above_ma20": false,
-      "fear_greed": 11,
-      "scenario": "黃金買點",
-      "recommendation": "積極買入",
-      "win_rate": "90%",
-      "win_rate_note": "歷史統計：BTC 日線、1 年期；山寨幣僅供參考",
-      "position_size": "≤ 加密貨幣預算 50%（分 2 批，單批 ≤ 5,000 元）",
-      "stop_loss": "再跌 15% 停損",
-      "take_profit": "RSI > 60 或 FNG > 60 時分批獲利",
-      "holding_period": "3-6 個月",
-      "screened_at": "2026-11-26 09:12"
+      "coin_id": "chainlink",
+      "symbol": "LINK",
+      "name": "Chainlink",
+      "price": 9.58,
+      "market_cap": 7348743189,
+      "change_24h": 3.83,
+      "change_7d": 8.42,
+      "rsi": 46.99,
+      "ma20": 9.39,
+      "price_above_ma20": true,
+      "fear_greed": 12,
+      "scenario": "中性",
+      "recommendation": "觀望",
+      "win_rate": "-",
+      "win_rate_note": "",
+      "position_size": "等待明確訊號",
+      "stop_loss": "不適用",
+      "take_profit": "不適用",
+      "holding_period": "不適用",
+      "screened_at": "2026-11-27 09:30"
     }
   ],
   "fear_greed_index": {
-    "value": 11,
+    "value": 12,
     "classification": "Extreme Fear",
-    "timestamp": 1795651200
+    "timestamp": 1795737600
   },
   "market_scenario": null,
-  "updated_at": "2026-11-26T09:16:22.788163",
+  "updated_at": "2026-11-27T09:31:44.233422",
   "rules_applied": {
     "fear_greed_max": 75,
     "min_market_cap": 1000000000,
